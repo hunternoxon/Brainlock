@@ -1,4 +1,4 @@
-// app.js (v3) — simplified tray CTAs + subcategory options + stateful module CTAs
+// app.js (v3b) — simplified tray CTAs + subcategory options + stateful module CTAs
 export class BrainlockApp {
   constructor(model, opts) {
     this.model = model;
@@ -122,7 +122,7 @@ export class BrainlockApp {
     this.updateHUD(); }
   skip(){ this.model.state.flow=0; this.ui.subText.textContent='Skipped'; this.next(); }
   next(){ if(this.model.state.mode==='SOLO'){ this.countDone=(this.countDone||0)+1; if(this.countDone>=this.model.state.soloCount) return this.endSession(); } this.pushNextTrick(); this.setTray('active'); }
-  endSession(){ const score=this.model.state.score; const entry={{id:Date.now(), value:score, created_at:new Date().toISOString()}};
+  endSession(){ const score=this.model.state.score; const entry={id:Date.now(), value:score, created_at:new Date().toISOString()};
     this.high.push(entry); this.high.sort((a,b)=>b.value-a.value); this.high=this.high.slice(0,100); localStorage.setItem('brainlock:highscores', JSON.stringify(this.high));
     this.ui.trickText.textContent='Session Over'; this.ui.subText.textContent='Final: '+score+' — High: '+(this.high[0]?.value);
     this.model.state.sessionActive=false; this.setTray('over'); this.updateHUD(); }
