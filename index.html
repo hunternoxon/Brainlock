@@ -183,16 +183,16 @@
   </dialog>
 
   <script type="module">
-    import {{ BrainlockModel }} from './model.js?v=2025.08.13-0403'
-    import {{ BrainlockApp }} from './app.js?v=2025.08.13-0403'
-    window.BRAINLOCK = new BrainlockApp(new BrainlockModel(), {{
+    import { BrainlockModel } from './model.js?v=2025.08.13-0403'
+    import { BrainlockApp } from './app.js?v=2025.08.13-0403'
+    window.BRAINLOCK = new BrainlockApp(new BrainlockModel(), {
       version: "2025.08.13-0403"
-    }});
-    if ('serviceWorker' in navigator) {{
-      window.addEventListener('load', () => {{
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js?v=2025.08.13-0403');
-      }});
-    }}
+      });
+    }
   </script>
 </body>
 </html>
