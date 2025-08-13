@@ -1,161 +1,209 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta name="theme-color" content="#0b0b0f"/><link rel="manifest" href="manifest.webmanifest?v=2025.08.13-0507"/>
-<title>Brainlock</title>
-<style>
-:root{--bg:#0b0b0f;--panel:#121218;--muted:#8a8a96;--text:#f5f7fa;--accent:#fff;--ok:#73e2a7;--miss:#ff7575;--blue:#4da3ff;--pill:9999px;--radius:16px;--shadow:0 10px 30px rgba(0,0,0,.45);--line:rgba(255,255,255,.08)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%;background:var(--bg);color:var(--text);margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif}
-.app{display:grid;grid-template-rows:auto 1fr auto;min-height:100dvh}.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px}
-.title{font-weight:600;font-size:18px;opacity:.92}.iconbtn{width:44px;height:44px;border-radius:var(--pill);background:#1a1a22;display:grid;place-items:center;border:1px solid var(--line)}
-.content{padding:0 16px 24px}.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
-.tray{position:sticky;bottom:0;padding:16px;background:linear-gradient(180deg,rgba(11,11,15,0),rgba(11,11,15,.9) 40%,rgba(11,11,15,1))}
-.tray-inner{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:var(--shadow)}
-.row{display:flex;gap:10px;align-items:center}.row-sb{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.col{display:flex;flex-direction:column;gap:8px}.big{font-size:22px;line-height:1.25;font-weight:600}.muted{color:var(--muted);font-size:13px}
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.cta{appearance:none;width:100%;padding:14px 16px;border-radius:var(--pill);border:none;font-weight:700;letter-spacing:.2px;font-size:16px}
-.cta.primary{background:var(--accent);color:#000}.cta.ok{background:var(--ok);color:#000}.cta.miss{background:var(--miss);color:#000}.cta.ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.14)}
-.cta.small{padding:10px 12px;font-size:14px;font-weight:600}.badge{padding:6px 10px;border-radius:var(--pill);font-size:12px;border:1px solid var(--line);color:var(--muted)}
-.scoreline{display:flex;gap:10px;align-items:center;justify-content:space-between;font-variant-numeric:tabular-nums}.tiny{font-size:11px;color:var(--muted)}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
-.hidden{display:none!important}.skate{display:flex;gap:6px;padding:10px 12px}.skate span{width:32px;height:38px;display:grid;place-items:center;border-radius:8px;border:1px dashed var(--line);color:var(--muted)}
-.skate span.on{border-style:solid;color:var(--miss);border-color:var(--miss)}.attempts{display:flex;gap:8px}.attempt-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.25);display:grid;place-items:center}
-.attempt-dot.active{border-color:var(--blue)}.attempt-dot .mark{font-size:12px;line-height:1}.attempt-dot.missed .mark{color:var(--miss)}.attempt-dot.landed .mark{color:var(--ok)}
-dialog.sheet{border:none;width:100%;max-width:720px;border-radius:24px 24px 0 0;padding:0;background:var(--panel);color:var(--text);position:fixed;bottom:0;left:50%;transform:translateX(-50%)}
-dialog.sheet::backdrop{background:rgba(0,0,0,.55)}.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--line)}
-.sheet-tabs{display:flex;gap:8px;padding:0 16px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}.tab{padding:8px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);cursor:pointer;user-select:none}
-.tab.on{background:#1f1f27;color:var(--text)}.sheet-body{padding:16px;display:none}.sheet-body.on{display:block}dialog.panel{border:none;border-radius:20px;width:min(680px,92vw);background:var(--panel);color:var(--text);padding:0}
-dialog.panel::backdrop{background:rgba(0,0,0,.6)}.panel-body{padding:16px}.row-wrap{display:flex;flex-wrap:wrap;gap:8px}.toggle{padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);cursor:pointer;user-select:none}
-.toggle.on{background:#1f1f27;border-color:rgba(255,255,255,.28)}.level{width:100%}.scorepeek{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline dotted}
-</style></head><body>
-<div class="app">
-  <div class="topbar">
-    <div class="title">Brainlock</div>
-    <div class="row">
-      <button id="dbgBtn" class="iconbtn" title="Debug">DBG</button>
-      <button id="settingsBtn" class="iconbtn" title="Settings">⚙️</button>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0f"/>
+  <link rel="manifest" href="manifest.webmanifest?v=2025.08.13-0559" />
+  <title>Brainlock</title>
+  <style>
+    :root {
+      --bg: #0b0b0f;
+      --panel: #121218;
+      --muted: #8a8a96;
+      --text: #f5f7fa;
+      --accent: #ffffff;
+      --ok: #73e2a7;
+      --miss: #ff7575;
+      --blue: #4da3ff;
+      --pill: 9999px;
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(0,0,0,.45);
+      --line: rgba(255,255,255,.08);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; }
+    .app { display: grid; grid-template-rows: auto 1fr auto; min-height: 100dvh; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px; }
+    .title { font-weight: 600; font-size: 18px; opacity: .92; }
+    .iconbtn { width: 44px; height: 44px; border-radius: var(--pill); background: #1a1a22; display: grid; place-items: center; border: 1px solid var(--line); }
+    .content { padding: 0 16px 24px; }
+    .card { background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--line); }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row-sb { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .col { display: flex; flex-direction: column; gap: 8px; }
+    .huge { font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: .2px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .cta { appearance: none; width: 100%; padding: 14px 16px; border-radius: var(--pill); border: none; font-weight: 700; letter-spacing: .2px; font-size: 16px; }
+    .cta.primary { background: var(--accent); color: #000; }
+    .cta.ok { background: var(--ok); color: #000; }
+    .cta.miss { background: var(--miss); color: #000; }
+    .cta.ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.14); }
+    .cta.small { padding: 10px 12px; font-size: 14px; font-weight:600; }
+    .badge { padding: 6px 10px; border-radius: var(--pill); font-size: 12px; border: 1px solid var(--line); color: var(--muted); }
+    .scoreline { display:flex; gap:10px; align-items:center; justify-content: space-between; font-variant-numeric: tabular-nums; }
+    .tiny { font-size: 11px; color: var(--muted); }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .hidden { display: none !important; }
+    .skate { display:flex; gap:8px; padding: 12px 14px; justify-content:center; }
+    .skate span { width: 40px; height: 48px; display:grid; place-items:center; border-radius: 10px; border: 1px dashed var(--line); color: var(--muted); font-weight:700; }
+    .skate span.on { border-style: solid; color: var(--miss); border-color: var(--miss); }
+    .attempts { display:flex; gap:8px; }
+    .attempt-dot { width: 18px; height:18px; border-radius: 50%; border:2px solid rgba(255,255,255,.25); display:grid; place-items:center; }
+    .attempt-dot.active { border-color: var(--blue); }
+    .attempt-dot .mark { font-size:12px; line-height:1; }
+    .attempt-dot.missed .mark { color: var(--miss); }
+    .attempt-dot.landed .mark { color: var(--ok); }
+    .tray { position: sticky; bottom: 0; padding: 16px; background: linear-gradient(180deg, rgba(11,11,15,0), rgba(11,11,15,.9) 40%, rgba(11,11,15,1)); }
+    .tray-inner { background: var(--panel); border: 1px solid var(--line); border-radius: calc(var(--radius) + 6px); padding: 14px; box-shadow: var(--shadow); }
+    dialog.sheet { border:none; width: 100%; max-width: 720px; border-radius: 24px 24px 0 0; padding:0; background: var(--panel); color:var(--text); position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); }
+    dialog.sheet::backdrop { background: rgba(0,0,0,.55); }
+    .sheet-head { display:flex; align-items:center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--line); }
+    .sheet-tabs { display:flex; gap:8px; padding: 0 16px 12px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+    .tab { padding:8px 12px; border-radius: var(--pill); border:1px solid var(--line); color:var(--muted); cursor:pointer; user-select:none; }
+    .tab.on { background:#1f1f27; color:var(--text); }
+    .sheet-body { padding: 16px; display:none; }
+    .sheet-body.on { display:block; }
+    .row-wrap { display:flex; flex-wrap:wrap; gap:8px; }
+    .toggle { padding: 10px 14px; border-radius: var(--pill); border: 1px solid rgba(255,255,255,.14); cursor: pointer; user-select: none; }
+    .toggle.on { background: #1f1f27; border-color: rgba(255,255,255,.28); }
+    .level { width: 100%; }
+    .scorepeek { font-size:12px; color:var(--muted); cursor:pointer; text-decoration: underline dotted; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">Brainlock</div>
+      <div class="row">
+        <button id="dbgBtn" class="iconbtn" title="Debug">DBG</button>
+        <button id="settingsBtn" class="iconbtn" title="Settings">⚙️</button>
+      </div>
     </div>
-  </div>
-  <div class="content">
-    <div class="card" style="padding:16px;">
-      <div class="row-sb">
-        <div class="col" style="flex:1;">
-          <div id="trickText" class="big">Tap Start Session</div>
-          <div class="row" style="gap:12px;align-items:center;">
-            <div class="muted" id="subText">Configure options, then start. You have 3 tries per trick.</div>
-            <div class="attempts" id="attemptDots" aria-label="Attempts"></div>
+    <div class="content">
+      <div class="card" style="padding:16px;">
+        <div class="row-sb">
+          <div class="col" style="flex:1;">
+            <div id="trickText" class="huge">Tap Start Session</div>
+            <div class="row" style="gap:12px;align-items:center;">
+              <div class="muted" id="subText">Configure options, then start. You have 3 tries per trick.</div>
+              <div class="attempts" id="attemptDots" aria-label="Attempts"></div>
+            </div>
+            <div class="scorepeek" id="scorePeek" title="Tap for breakdown"></div>
           </div>
-          <div class="scorepeek" id="scorePeek" title="Tap for breakdown"></div>
+          <div class="col" style="align-items:flex-end; gap:6px;">
+            <span class="badge" id="levelBadge">Level 1</span>
+            <span class="badge" id="modeBadge">Mode: SKATE</span>
+          </div>
         </div>
-        <div class="col" style="align-items:flex-end; gap:6px;">
-          <span class="badge" id="levelBadge">Level 1</span>
-          <span class="badge" id="modeBadge">Mode: SKATE</span>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card" style="padding:10px;">
+        <div class="skate" id="skateLetters"><span>S</span><span>K</span><span>A</span><span>T</span><span>E</span></div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card" style="padding:14px;">
+        <div class="scoreline">
+          <div><span class="tiny">Score</span><div id="scoreVal" class="kbd">0</div></div>
+          <div><span class="tiny">High</span><div id="highVal" class="kbd">0</div></div>
+          <div><span class="tiny">Streak</span><div id="streakVal" class="kbd">0</div></div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card" style="padding:14px;">
+        <div class="row" style="gap:10px;">
+          <button id="optionsBtn" class="cta ghost">Game Options</button>
+          <button id="endBtnModule" class="cta ghost hidden">End Session</button>
         </div>
       </div>
     </div>
-    <div style="height:12px"></div>
-    <div class="card" style="padding:10px;"><div class="skate" id="skateLetters"><span>S</span><span>K</span><span>A</span><span>T</span><span>E</span></div></div>
-    <div style="height:12px"></div>
-    <div class="card" style="padding:14px;">
-      <div class="scoreline">
-        <div><span class="tiny">Score</span><div id="scoreVal" class="kbd">0</div></div>
-        <div><span class="tiny">High</span><div id="highVal" class="kbd">0</div></div>
-        <div><span class="tiny">Streak</span><div id="streakVal" class="kbd">0</div></div>
+    <div class="tray">
+      <div class="tray-inner">
+        <div id="trayStart" class="grid-2">
+          <button id="startBtn" class="cta primary">Start a New Session</button>
+        </div>
+        <div id="trayActive" class="grid-2 hidden">
+          <button id="landBtn" class="cta ok">Land</button>
+          <button id="missBtn" class="cta miss">Miss</button>
+          <button id="skipBtn" class="cta ghost">Skip</button>
+        </div>
+        <div id="trayLanded" class="grid-2 hidden">
+          <button id="nextBtnLanded" class="cta primary">Next Trick</button>
+        </div>
+        <div id="trayMissed" class="grid-2 hidden">
+          <button id="nextBtnMissed" class="cta primary">Next Trick</button>
+        </div>
+        <div id="trayOver" class="grid-2 hidden">
+          <button id="restartBtn" class="cta primary">Start a New Session</button>
+        </div>
       </div>
     </div>
   </div>
-  <div class="tray">
-    <div class="tray-inner">
-      <div class="row-sb" style="margin-bottom:10px;">
-        <button id="optionsBtn" class="cta ghost small" style="max-width:160px;">Game Options</button>
-        <button id="endBtnTop" class="cta ghost small" style="max-width:180px;">End Session</button>
+  <dialog id="optionsDlg" class="sheet">
+    <div class="sheet-head"><div class="title">Game Options</div><button class="iconbtn" id="closeOptions">✕</button></div>
+    <div class="sheet-tabs" id="optTabs">
+      <div class="tab on" data-tab="mode">Mode</div>
+      <div class="tab" data-tab="level">Level</div>
+      <div class="tab" data-tab="stances">Stances</div>
+      <div class="tab" data-tab="obstacles">Obstacles</div>
+      <div class="tab" data-tab="families">Categories</div>
+      <div class="tab" data-tab="flips">Flip Tricks</div>
+      <div class="tab" data-tab="grinds">Grinds</div>
+      <div class="tab" data-tab="manuals">Manuals</div>
+      <div class="tab" data-tab="spins">Spins</div>
+    </div>
+    <div class="sheet-body on" data-page="mode">
+      <div class="row-wrap">
+        <div data-mode="SKATE" class="toggle on">SKATE (5 letters)</div>
+        <div data-mode="SOLO" class="toggle">Solo (set count)</div>
       </div>
-      <div id="trayStart" class="grid-2">
-        <button id="startBtn" class="cta primary">Start Session</button>
-        <button id="endBtn" class="cta ghost">End Session</button>
-      </div>
-      <div id="trayActive" class="grid-2 hidden">
-        <button id="landBtn" class="cta ok">Land</button>
-        <button id="missBtn" class="cta miss">Miss</button>
-        <button id="skipBtn" class="cta ghost">Skip</button>
-        <button id="endBtn2" class="cta ghost">End Session</button>
-      </div>
-      <div id="trayLanded" class="grid-2 hidden">
-        <button id="nextBtnLanded" class="cta primary">Next Trick</button>
-        <button id="endBtn3" class="cta ghost">End Session</button>
-      </div>
-      <div id="trayMissed" class="grid-2 hidden">
-        <button id="nextBtnMissed" class="cta primary">Next Trick</button>
-        <button id="endBtn4" class="cta ghost">End Session</button>
-      </div>
-      <div id="trayOver" class="grid-2 hidden">
-        <button id="restartBtn" class="cta primary">Start a New Session</button>
-        <button id="endBtn5" class="cta ghost">End Session</button>
+      <div class="row" style="gap:10px; align-items:center; margin-top:10px;">
+        <span class="muted">Solo Count</span>
+        <input id="soloCount" type="range" min="5" max="30" value="10" class="level" />
+        <span id="soloCountVal" class="kbd">10</span>
       </div>
     </div>
-  </div>
-</div>
-<!-- Options Sheet -->
-<dialog id="optionsDlg" class="sheet">
-  <div class="sheet-head"><div class="title">Game Options</div><button class="iconbtn" id="closeOptions">✕</button></div>
-  <div class="sheet-tabs" id="optTabs">
-    <div class="tab on" data-tab="mode">Mode</div>
-    <div class="tab" data-tab="level">Level</div>
-    <div class="tab" data-tab="stances">Stances</div>
-    <div class="tab" data-tab="families">Categories</div>
-    <div class="tab" data-tab="obstacles">Obstacles</div>
-  </div>
-  <div class="sheet-body on" data-page="mode">
-    <div class="row-wrap">
-      <div data-mode="SKATE" class="toggle on">SKATE (5 letters)</div>
-      <div data-mode="SOLO" class="toggle">Solo (set count)</div>
+    <div class="sheet-body" data-page="level">
+      <div class="row" style="gap:10px; align-items:center;">
+        <span class="muted">Level (1–10)</span>
+        <input id="levelRange" class="level" type="range" min="1" max="10" value="1" />
+        <span id="levelVal" class="kbd">1</span>
+      </div>
     </div>
-    <div class="row" style="gap:10px;align-items:center;margin-top:10px;">
-      <span class="muted">Solo Count</span>
-      <input id="soloCount" type="range" min="5" max="30" value="10" class="level"/>
-      <span id="soloCountVal" class="kbd">10</span>
-    </div>
-  </div>
-  <div class="sheet-body" data-page="level">
-    <div class="row" style="gap:10px;align-items:center;">
-      <span class="muted">Level (1–10)</span>
-      <input id="levelRange" class="level" type="range" min="1" max="10" value="1"/>
-      <span id="levelVal" class="kbd">1</span>
-    </div>
-  </div>
-  <div class="sheet-body" data-page="stances"><div id="stances" class="row-wrap"></div></div>
-  <div class="sheet-body" data-page="families"><div id="families" class="row-wrap"></div><div class="tiny" style="margin-top:8px;">“Flip Tricks” toggles flips.</div></div>
-  <div class="sheet-body" data-page="obstacles"><div id="obstacles" class="row-wrap"></div></div>
-</dialog>
-<!-- Settings -->
-<dialog id="settingsDlg" class="panel">
-  <div class="panel-body">
-    <div class="row-sb"><h3 style="margin:0;">Settings</h3><button class="iconbtn" id="closeSettings">✕</button></div>
-    <div class="group" style="border-top:1px solid var(--line);padding-top:12px;margin-top:12px;">
-      <div class="muted">Nickname</div>
-      <input id="nickInput" placeholder="Enter nickname" style="width:100%;margin-top:6px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#11121a;color:var(--text);"/>
-    </div>
-    <div class="group" style="border-top:1px solid var(--line);padding-top:12px;margin-top:12px;">
-      <div class="muted">Rules & Notes</div>
-      <div class="tiny">3 tries per trick. SKATE adds a letter after 3 misses. Solo plays a set number of tricks.</div>
-    </div>
-    <div class="group" style="border-top:1px solid var(--line);padding-top:12px;margin-top:12px;">
-      <div class="muted">Feedback</div>
-      <textarea id="fbInput" rows="3" placeholder="Tell us what's up…" style="width:100%;margin-top:6px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#11121a;color:var(--text);"></textarea>
+    <div class="sheet-body" data-page="stances"><div id="stances" class="row-wrap"></div></div>
+    <div class="sheet-body" data-page="obstacles"><div id="obstacles" class="row-wrap"></div></div>
+    <div class="sheet-body" data-page="families"><div id="families" class="row-wrap"></div></div>
+    <div class="sheet-body" data-page="flips"><div id="flipSubs" class="row-wrap"></div><div class="tiny">Enabled only if “Flip Tricks” is ON.</div></div>
+    <div class="sheet-body" data-page="grinds"><div id="grindSubs" class="row-wrap"></div><div class="tiny">Enabled only if “Grinds” is ON.</div></div>
+    <div class="sheet-body" data-page="manuals"><div id="manualSubs" class="row-wrap"></div><div class="tiny">Enabled only if “Manuals” is ON.</div></div>
+    <div class="sheet-body" data-page="spins"><div id="spinSubs" class="row-wrap"></div><div class="tiny">Enabled only if “Spins” is ON.</div></div>
+  </dialog>
+  <dialog id="settingsDlg" class="sheet">
+    <div class="sheet-head"><div class="title">Settings</div><button class="iconbtn" id="closeSettings">✕</button></div>
+    <div class="sheet-body on" data-page="settings" style="display:block;">
+      <div class="row" style="gap:8px; align-items:center;">
+        <span class="muted">Nickname</span>
+        <input id="nickInput" placeholder="Enter nickname" style="flex:1; padding:12px; border-radius:12px; border:1px solid var(--line); background:#11121a; color:var(--text);" />
+      </div>
+      <div class="row" style="margin-top:12px;"><span class="muted">Feedback</span></div>
+      <textarea id="fbInput" rows="3" placeholder="Tell us what's up…" style="width:100%; margin-top:6px; padding:12px; border-radius:12px; border:1px solid var(--line); background:#11121a; color:var(--text);"></textarea>
       <div class="row" style="margin-top:8px;"><button id="saveFeedback" class="cta ghost small" style="max-width:160px;">Save Locally</button></div>
+      <div class="row-wrap" style="border-top:1px solid var(--line); padding-top:12px; margin-top:12px;">
+        <button id="clearScores" class="toggle">Clear High Scores</button>
+        <button id="toggleAdmin" class="toggle">Toggle Admin</button>
+        <button id="clearCaches" class="toggle">Clear Caches</button>
+      </div>
+      <div class="tiny" id="buildInfo">Build v2025.08.13-0559</div>
     </div>
-    <div class="group" style="border-top:1px solid var(--line);padding-top:12px;margin-top:12px;">
-      <div class="muted">Admin</div>
-      <div class="row-wrap" style="margin-top:6px;"><button id="clearScores" class="toggle">Clear High Scores</button><button id="toggleAdmin" class="toggle">Toggle Admin</button><button id="clearCaches" class="toggle">Clear Caches</button></div>
-      <div class="tiny" id="buildInfo">Build v2025.08.13-0507</div>
-    </div>
-  </div>
-</dialog>
-<!-- Score breakdown + Debug -->
-<dialog id="scoreDlg" class="panel"><div class="panel-body"><div class="row-sb"><h3 style="margin:0;">Score Breakdown</h3><button class="iconbtn" id="closeScore">✕</button></div><pre id="scoreOut" class="tiny" style="white-space:pre-wrap;"></pre></div></dialog>
-<dialog id="dbgDlg" class="panel"><div class="panel-body"><div class="row-sb"><h3 style="margin:0;">Debug</h3><button class="iconbtn" id="closeDbg">✕</button></div><pre id="dbgOut" class="tiny" style="white-space:pre-wrap;"></pre></div></dialog>
-<script type="module">
-  import { BrainlockModel } from './model.js?v=2025.08.13-0507'
-  import { BrainlockApp } from './app.js?v=2025.08.13-0507'
-  window.BRAINLOCK = new BrainlockApp(new BrainlockModel(), {version: "2025.08.13-0507"});
-  if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=2025.08.13-0507'))}
-</script>
-</body></html>
+  </dialog>
+  <dialog id="scoreDlg" class="sheet"><div class="sheet-head"><div class="title">Score Breakdown</div><button class="iconbtn" id="closeScore">✕</button></div><div class="sheet-body on" style="display:block;"><pre id="scoreOut" class="tiny" style="white-space: pre-wrap;"></pre></div></dialog>
+  <dialog id="dbgDlg" class="sheet"><div class="sheet-head"><div class="title">Debug</div><button class="iconbtn" id="closeDbg">✕</button></div><div class="sheet-body on" style="display:block;"><pre id="dbgOut" class="tiny" style="white-space: pre-wrap;"></pre></div></dialog>
+  <script type="module">
+    import { BrainlockModel } from './model.js?v=2025.08.13-0559'
+    import { BrainlockApp } from './app.js?v=2025.08.13-0559'
+    window.BRAINLOCK = new BrainlockApp(new BrainlockModel(), { version: "2025.08.13-0559" });
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js?v=2025.08.13-0559'); }); }
+  </script>
+</body>
+</html>
