@@ -1,0 +1,651 @@
+{
+  "obstacles": {
+    "flat": {
+      "tier": 1,
+      "patterns": [
+        "flip-only",
+        "manual-only"
+      ],
+      "weight_by_level": [
+        8,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1,
+        1
+      ]
+    },
+    "manual pad": {
+      "tier": 1,
+      "patterns": [
+        "flip-only",
+        "manual-only",
+        "grind-only"
+      ],
+      "weight_by_level": [
+        7,
+        7,
+        6,
+        5,
+        4,
+        4,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "box": {
+      "tier": 1,
+      "patterns": [
+        "manual-only",
+        "grind-only"
+      ],
+      "weight_by_level": [
+        6,
+        6,
+        6,
+        5,
+        4,
+        4,
+        3,
+        3,
+        2,
+        2
+      ]
+    },
+    "curb": {
+      "tier": 1,
+      "patterns": [
+        "flip-only",
+        "manual-only",
+        "grind-only"
+      ],
+      "weight_by_level": [
+        6,
+        6,
+        6,
+        5,
+        4,
+        4,
+        3,
+        3,
+        2,
+        2
+      ]
+    },
+    "bank": {
+      "tier": 1,
+      "patterns": [
+        "flip-only",
+        "manual-only"
+      ],
+      "weight_by_level": [
+        5,
+        5,
+        5,
+        5,
+        4,
+        3,
+        3,
+        2,
+        1,
+        1
+      ]
+    },
+    "ledge": {
+      "tier": 2,
+      "patterns": [
+        "grind-only",
+        "flip\u2192grind",
+        "manual-only"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        8
+      ]
+    },
+    "quarterpipe": {
+      "tier": 2,
+      "patterns": [
+        "flip-only",
+        "manual-only"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        6,
+        5,
+        5
+      ]
+    },
+    "flatbar": {
+      "tier": 2,
+      "patterns": [
+        "grind-only",
+        "flip\u2192grind"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        7
+      ]
+    },
+    "rail": {
+      "tier": 2,
+      "patterns": [
+        "grind-only",
+        "flip\u2192grind"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        7
+      ]
+    },
+    "gap": {
+      "tier": 2,
+      "patterns": [
+        "flip-only"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        6,
+        7
+      ]
+    },
+    "hubba": {
+      "tier": 3,
+      "patterns": [
+        "grind-only",
+        "flip\u2192grind"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        4,
+        6,
+        8
+      ]
+    },
+    "handrail": {
+      "tier": 3,
+      "patterns": [
+        "grind-only"
+      ],
+      "weight_by_level": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        4,
+        6,
+        8
+      ]
+    }
+  },
+  "stances": {
+    "regular": {
+      "weight_by_level": [
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    "fakie": {
+      "weight_by_level": [
+        0,
+        1,
+        2,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "nollie": {
+      "weight_by_level": [
+        0,
+        0,
+        0,
+        2,
+        3,
+        3,
+        4,
+        4,
+        5,
+        5
+      ]
+    },
+    "switch": {
+      "weight_by_level": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
+  },
+  "families": {
+    "flips": {
+      "label": "Flip Tricks",
+      "subs": {
+        "kickflip": {
+          "diff": 1,
+          "minLevel": 1,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap",
+            "manual pad",
+            "curb",
+            "quarterpipe"
+          ]
+        },
+        "heelflip": {
+          "diff": 1,
+          "minLevel": 1,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap",
+            "manual pad",
+            "curb",
+            "quarterpipe"
+          ]
+        },
+        "hardflip": {
+          "diff": 3,
+          "minLevel": 4,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap"
+          ]
+        },
+        "inward heelflip": {
+          "diff": 3,
+          "minLevel": 4,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap"
+          ]
+        },
+        "tre flip": {
+          "diff": 5,
+          "minLevel": 6,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap"
+          ]
+        },
+        "360 flip": {
+          "diff": 5,
+          "minLevel": 6,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap"
+          ]
+        },
+        "laser flip": {
+          "diff": 6,
+          "minLevel": 8,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap"
+          ]
+        },
+        "impossible": {
+          "diff": 6,
+          "minLevel": 8,
+          "allowed_obstacles": [
+            "flat",
+            "bank",
+            "gap"
+          ]
+        }
+      }
+    },
+    "grinds": {
+      "label": "Grinds",
+      "subs": {
+        "50-50": {
+          "diff": 1,
+          "minLevel": 2,
+          "allowed_obstacles": [
+            "curb",
+            "box",
+            "ledge",
+            "flatbar",
+            "rail",
+            "hubba",
+            "handrail"
+          ]
+        },
+        "5-0": {
+          "diff": 2,
+          "minLevel": 3,
+          "allowed_obstacles": [
+            "curb",
+            "box",
+            "ledge",
+            "flatbar",
+            "rail",
+            "hubba",
+            "handrail"
+          ]
+        },
+        "boardslide": {
+          "diff": 2,
+          "minLevel": 3,
+          "allowed_obstacles": [
+            "flatbar",
+            "rail",
+            "handrail"
+          ]
+        },
+        "noseslide": {
+          "diff": 2,
+          "minLevel": 3,
+          "allowed_obstacles": [
+            "curb",
+            "box",
+            "ledge"
+          ]
+        },
+        "tailslide": {
+          "diff": 3,
+          "minLevel": 4,
+          "allowed_obstacles": [
+            "curb",
+            "ledge",
+            "hubba"
+          ]
+        },
+        "lipslide": {
+          "diff": 3,
+          "minLevel": 4,
+          "allowed_obstacles": [
+            "flatbar",
+            "rail",
+            "handrail"
+          ]
+        },
+        "smith": {
+          "diff": 4,
+          "minLevel": 5,
+          "allowed_obstacles": [
+            "ledge",
+            "flatbar",
+            "rail",
+            "hubba",
+            "handrail"
+          ]
+        },
+        "feeble": {
+          "diff": 4,
+          "minLevel": 5,
+          "allowed_obstacles": [
+            "flatbar",
+            "rail",
+            "handrail"
+          ]
+        },
+        "crooked": {
+          "diff": 4,
+          "minLevel": 5,
+          "allowed_obstacles": [
+            "ledge",
+            "hubba"
+          ]
+        },
+        "nosegrind": {
+          "diff": 4,
+          "minLevel": 5,
+          "allowed_obstacles": [
+            "ledge",
+            "hubba"
+          ]
+        },
+        "overcrook": {
+          "diff": 5,
+          "minLevel": 6,
+          "allowed_obstacles": [
+            "ledge",
+            "hubba",
+            "handrail"
+          ]
+        },
+        "bluntslide": {
+          "diff": 6,
+          "minLevel": 7,
+          "allowed_obstacles": [
+            "ledge",
+            "hubba",
+            "handrail"
+          ]
+        },
+        "noseblunt": {
+          "diff": 7,
+          "minLevel": 8,
+          "allowed_obstacles": [
+            "ledge",
+            "hubba",
+            "handrail"
+          ]
+        },
+        "salad": {
+          "diff": 4,
+          "minLevel": 5,
+          "allowed_obstacles": [
+            "ledge",
+            "flatbar",
+            "rail"
+          ]
+        }
+      }
+    },
+    "manuals": {
+      "label": "Manuals",
+      "subs": {
+        "manual": {
+          "diff": 1,
+          "minLevel": 1,
+          "allowed_obstacles": [
+            "flat",
+            "manual pad",
+            "box",
+            "curb"
+          ]
+        },
+        "nose manual": {
+          "diff": 2,
+          "minLevel": 2,
+          "allowed_obstacles": [
+            "flat",
+            "manual pad",
+            "box",
+            "curb"
+          ]
+        }
+      }
+    },
+    "spins": {
+      "label": "Spins",
+      "subs": {
+        "180": {
+          "diff": 1,
+          "minLevel": 2,
+          "as_modifier": true
+        },
+        "360": {
+          "diff": 3,
+          "minLevel": 6,
+          "as_modifier": true
+        }
+      }
+    }
+  },
+  "scoring": {
+    "stance": {
+      "fakie": 0.2,
+      "nollie": 0.25,
+      "switch": 0.25
+    },
+    "flip": {
+      "kickflip": 0.3,
+      "heelflip": 0.35,
+      "hardflip": 0.55,
+      "inward heelflip": 0.6,
+      "tre flip": 0.8,
+      "360 flip": 0.8,
+      "laser flip": 0.85,
+      "impossible": 0.9
+    },
+    "spin": {
+      "180": 0.1,
+      "360": 0.3
+    },
+    "manual": {
+      "manual": 0.25,
+      "nose manual": 0.3
+    },
+    "grind_base": {
+      "50-50": 0.3,
+      "5-0": 0.35,
+      "boardslide": 0.35,
+      "noseslide": 0.4,
+      "tailslide": 0.45,
+      "lipslide": 0.5,
+      "smith": 0.6,
+      "feeble": 0.65,
+      "crooked": 0.7,
+      "nosegrind": 0.7,
+      "bluntslide": 0.8,
+      "noseblunt": 0.9,
+      "overcrook": 0.85,
+      "salad": 0.65
+    },
+    "grind_dir_mult": {
+      "smith": {
+        "FS": 1.1,
+        "BS": 1.2
+      },
+      "feeble": {
+        "FS": 1.15,
+        "BS": 1.05
+      },
+      "crooked": {
+        "FS": 1.12,
+        "BS": 1.06
+      },
+      "overcrook": {
+        "FS": 1.18,
+        "BS": 1.25
+      },
+      "noseblunt": {
+        "FS": 1.0,
+        "BS": 1.05
+      },
+      "bluntslide": {
+        "FS": 1.0,
+        "BS": 1.05
+      }
+    },
+    "obstacle_add": {
+      "flat": 0,
+      "manual pad": 0.1,
+      "box": 0.1,
+      "curb": 0.15,
+      "ledge": 0.25,
+      "hubba": 0.35,
+      "flatbar": 0.35,
+      "rail": 0.45,
+      "handrail": 0.55,
+      "gap": 0.5,
+      "bank": 0.25,
+      "quarterpipe": 0.45
+    },
+    "attempt_mult": {
+      "1": 1.0,
+      "2": 0.85,
+      "3": 0.75
+    },
+    "flow_mult_cap": 0.15,
+    "flow_step": 0.03,
+    "combo_mult": {
+      "flip&grind": 1.25,
+      "flip&spin": 1.3,
+      "spin&grind": 1.15,
+      "manual&(flip|spin)": 1.1,
+      "gap&flip&spin": 1.1
+    },
+    "scale": 100
+  }
+}
