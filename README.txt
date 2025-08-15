@@ -1,14 +1,11 @@
-# Brainlock PWA v4.5.1-20250815032356
+Brainlock PWA v4.5.2-20250815035525
 
-## Quick deploy (GitHub)
-1. Create a repo on GitHub (public works fine).
-2. Upload **all files** in this zip to the repo root.
-3. Settings → Pages → Source: **GitHub Actions** or Branch: **main / root**.
-4. Wait for the page to publish, then open it on your phone.
-5. Tap the browser menu → **Add to Home Screen** (PWA install).
+Quick deploy (GitHub Pages)
+1) Create repo → upload all files from this zip into repo root
+2) Settings → Pages → enable Pages (main branch / root)
+3) Open site on phone and "Add to Home Screen"
 
-## Notes
-- First launch: open **Settings → Enable Sounds** to allow the loud ding when a session ends.
-- To use NL scoring: **Settings → Use NL Scoring**.
-- To import your spreadsheet values: convert to JSON shaped like `nl-tables.json` and use **Settings → Import NL Tables**.
-- Works fully offline after first load (service worker caches assets).
+Notes
+- Options (stances, obstacles, categories, subs, level) apply immediately and persist.
+- NL scoring toggle is in Settings (you can import custom tables via JSON).
+- Offline after first load; Settings → Enable Sounds for the loud ding on session end.

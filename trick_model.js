@@ -1,20 +1,56 @@
 export default class BrainlockModel {
-  constructor() { this.cfg=null; this.ready=this.loadConfig(); this.reset(); }
-  async loadConfig(){ try{ const res=await fetch('./model-config.json'); this.cfg=await res.json(); }catch(e){ this.cfg={}; } }
-  reset(){
-    const obst=Object.keys(this.cfg?.obstacles||{"flat":{}});
-    this.state={ level:1, mode:'SKATE', soloCount:10, sessionActive:false,
-      stances:new Set(['regular','fakie','nollie','switch']),
-      families:new Set(['flips','grinds','manuals','spins']),
-      obstacles:new Set(obst),
-      sub:{ flips:new Set(Object.keys(this.cfg?.families?.flips?.subs||{})),
-            grinds:new Set(Object.keys(this.cfg?.families?.grinds?.subs||{})),
-            manuals:new Set(Object.keys(this.cfg?.families?.manuals?.subs||{})),
-            spins:new Set(Object.keys(this.cfg?.families?.spins?.subs||{})) },
-      flow:0, repeatMap:new Map(), letters:0, score:0, why:'' };
+  constructor() {
+    this.cfg=null; this.state=null;
+    this.ready=this.loadConfig();
+    this.reset();
   }
+  async loadConfig(){
+    try{ const res=await fetch('./model-config.json'); this.cfg=await res.json(); }
+    catch(e){ this.cfg={}; }
+    this.ensureSetsInitialized();
+  }
+  ensureSetsInitialized(){
+    const O = Object.keys(this.cfg?.obstacles||{"flat":{});
+    const F = this.cfg?.families||{};
+    const stanceKeys = ['regular','fakie','nollie','switch'];
+    if(!this.state) this.state={};
+    this.state.sub = this.state.sub || {};
+    if(!(this.state.stances instanceof Set)) this.state.stances = new Set(stanceKeys);
+    if(!(this.state.families instanceof Set)) this.state.families = new Set(['flips','grinds','manuals','spins']);
+    if(!(this.state.obstacles instanceof Set)) this.state.obstacles = new Set(O);
+    for(const k of ['flips','grinds','manuals','spins']){
+      if(!(this.state.sub[k] instanceof Set)){
+        const subs = Object.keys(F?.[k]?.subs||{});
+        this.state.sub[k] = new Set(subs);
+      } else {
+        const allow = new Set(Object.keys(F?.[k]?.subs||{}));
+        for(const val of [...this.state.sub[k]]) if(!allow.has(val)) this.state.sub[k].delete(val);
+        if(this.state.sub[k].size===0) for(const x of allow) this.state.sub[k].add(x);
+      }
+    }
+    const allowOb = new Set(O);
+    for(const val of [...this.state.obstacles]) if(!allowOb.has(val)) this.state.obstacles.delete(val);
+    if(this.state.obstacles.size===0) for(const x of allowOb) this.state.obstacles.add(x);
+    const allowSt = new Set(stanceKeys);
+    for(const val of [...this.state.stances]) if(!allowSt.has(val)) this.state.stances.delete(val);
+    if(this.state.stances.size===0) this.state.stances = new Set(stanceKeys);
+  }
+  reset(){
+    if(!this.state) this.state={};
+    this.ensureSetsInitialized();
+    this.state.level = this.state.level || 1;
+    this.state.mode = this.state.mode || 'SKATE';
+    this.state.soloCount = this.state.soloCount || 10;
+    this.state.sessionActive=false;
+    this.state.flow=0;
+    this.state.repeatMap=new Map();
+    this.state.letters=0;
+    this.state.score=0;
+    this.state.why='';
+  }
+  // -------- selection helpers --------
   weightedPick(items, wfn){ const arr=items.map(v=>({v,w:Math.max(0,wfn(v))})); const tot=arr.reduce((s,a)=>s+a.w,0); if(tot<=0) return null; let r=Math.random()*tot; for(const a of arr){ if((r-=a.w)<=0) return a.v; } return arr[arr.length-1]?.v??null; }
-  stancePool(){ const L=this.state.level-1, S=this.cfg?.stances||{}; const c=[...this.state.stances].filter(s=>S[s]); return c.length? this.weightedPick(c, s=>S[s].weight_by_level?.[L]??1) : 'regular'; }
+  stancePool(){ const L=this.state.level-1, S=this.cfg?.stances||{}; const enabled=[...this.state.stances].filter(s=>S[s]); return enabled.length? this.weightedPick(enabled, s=>S[s].weight_by_level?.[L]??1) : 'regular'; }
   obstaclePool(){ const L=this.state.level-1, O=this.cfg?.obstacles||{}; const enabled=[...this.state.obstacles].filter(o=>O[o]); return enabled.length? this.weightedPick(enabled, o=>O[o].weight_by_level?.[L]??1) : 'flat'; }
   legalPatternForObstacle(ob){ const pats=this.cfg?.obstacles?.[ob]?.patterns || ['flip-only']; return pats.slice(); }
   famOn(name){ return this.state.families.has(name); }
@@ -27,9 +63,10 @@ export default class BrainlockModel {
   pickManual(ob){ const L=this.state.level-1; const subs=[...this.state.sub.manuals]; const allowed=subs.filter(s=>this.allowedManualOnObstacle(s,ob,L+1)); if(!allowed.length) return null; return this.weightedPick(allowed, s=> (this.cfg?.families?.manuals?.subs?.[s]?.weight_by_level?.[L] ?? 1)); }
   pickSpin(){ const L=this.state.level; const freq=(L<=3)?0.08:(L<=6)?0.28:0.50; if(Math.random()>freq) return null; const subs=[...this.state.sub.spins].filter(s=> (this.cfg?.families?.spins?.subs?.[s]?.minLevel||1) <= L); if(!subs.length) return null; return this.weightedPick(subs, _=>1); }
   patternPool(ob){ let pats=this.legalPatternForObstacle(ob); const fams=this.state.families; pats=pats.filter(p=>{ if(p.includes('flip') && (!fams.has('flips')||!this.hasSubs('flips'))) return false; if(p.includes('grind') && (!fams.has('grinds')||!this.hasSubs('grinds'))) return false; if(p.includes('manual') && (!fams.has('manuals')||!this.hasSubs('manuals'))) return false; if(p==='flip→manual'&& ob!=='manual pad') return false; return true;}); if(!pats.length) return null; const L=this.state.level; const w=p=>{ if(p==='flip-only') return (L<=4?8:5); if(p==='manual-only') return (L<=3?6:3); if(p==='grind-only') return (L<=4?3:6); if(p==='flip→grind') return (L>=5?(L-3):0); if(p==='flip→manual') return (L>=2?5:0); return 1; }; return this.weightedPick(pats,w); }
-  selectTrick(){ let tries=0; const why=[]; while(tries++<32){ const ob=this.obstaclePool(); const pat=this.patternPool(ob); if(!pat){ why.push(`No legal pattern for "${ob}"`); continue; } const stance=this.stancePool(); const t={ obstacle:ob, stance, pattern:pat }; if(pat.includes('flip')){ t.flip=this.pickFlip(ob); if(!t.flip){ why.push(`No flip on ${ob}`); continue; } } if(pat.includes('grind')){ t.grind=this.pickGrind(ob); if(!t.grind){ why.push(`No grind on ${ob}`); continue; } t.direction=Math.random()<.5?'FS':'BS'; } if(pat==='manual-only'||pat==='flip→manual'){ t.manual=this.pickManual(ob); if(!t.manual){ why.push(`No manual on ${ob}`); continue; } } const sp=this.pickSpin(); if(sp) t.spin=parseInt(sp,10)||sp;  t.signature=this.makeSignature(t); this.state.why=why.concat([`obstacle=${ob}`,`pattern=${pat}`,`stance=${stance}`,`flip=${t.flip||'-'}`,`grind=${t.grind||'-'}`,`manual=${t.manual||'-'}`,`spin=${t.spin||'-'}`,`direction=${t.direction||'-'}`]).join('\n'); return t; } const ob=[...this.state.obstacles][0]||'flat'; const stance='regular'; let t={ obstacle:ob, stance, pattern:'flip-only', flip:[...this.state.sub.flips][0]||null }; if(!t.flip && this.hasSubs('grinds')){ t={ obstacle:ob, stance, pattern:'grind-only', grind:[...this.state.sub.grinds][0]||'50-50', direction:'FS' }; } if(!t.flip && !t.grind && this.hasSubs('manuals')){ t={ obstacle:ob, stance, pattern:'manual-only', manual:[...this.state.sub.manuals][0]||'manual' }; } t.signature=this.makeSignature(t); this.state.why='fallback'; return t; }
+  selectTrick(){ let tries=0; const why=[]; while(tries++<32){ const ob=this.obstaclePool(); const pat=this.patternPool(ob); if(!pat){ why.push(`No legal pattern for "${ob}"`); continue; } const stance=this.stancePool(); const t={ obstacle:ob, stance, pattern:pat }; if(pat.includes('flip')){ t.flip=this.pickFlip(ob); if(!t.flip){ why.push(`No flip on ${ob}`); continue; } } if(pat.includes('grind')){ t.grind=this.pickGrind(ob); if(!t.grind){ why.push(`No grind on ${ob}`); continue; } t.direction=Math.random()<.5?'FS':'BS'; } if(pat==='manual-only'||pat==='flip→manual'){ t.manual=this.pickManual(ob); if(!t.manual){ why.push(`No manual on ${ob}`); continue; } } const sp=this.pickSpin(); if(sp) t.spin=parseInt(sp,10)||sp; t.signature=this.makeSignature(t); this.state.why=why.concat([`obstacle=${ob}`,`pattern=${pat}`,`stance=${stance}`,`flip=${t.flip||'-'}`,`grind=${t.grind||'-'}`,`manual=${t.manual||'-'}`,`spin=${t.spin||'-'}`,`direction=${t.direction||'-'}`]).join('\n'); return t; } const ob=[...this.state.obstacles][0]||'flat'; const stance='regular'; let t={ obstacle:ob, stance, pattern:'flip-only', flip:[...this.state.sub.flips][0]||null }; if(!t.flip && this.hasSubs('grinds')){ t={ obstacle:ob, stance, pattern:'grind-only', grind:[...this.state.sub.grinds][0]||'50-50', direction:'FS' }; } if(!t.flip && !t.grind && this.hasSubs('manuals')){ t={ obstacle:ob, stance, pattern:'manual-only', manual:[...this.state.sub.manuals][0]||'manual' }; } t.signature=this.makeSignature(t); this.state.why='fallback'; return t; }
   makeSignature(t){ return ['stance','spin','flip','grind','manual','direction'].map(k=>(t[k]||'').toString().toLowerCase()).join('|'); }
   trickText(t){ const p=[]; if(t.stance && t.stance!=='regular') p.push(t.stance); if(t.spin) p.push(t.spin+'°'); if(t.flip) p.push(t.flip); if(t.grind) p.push((t.direction||'FS')+' '+t.grind); if(t.manual){ p.push(t.flip?'to '+t.manual: t.manual); } p.push('on '+t.obstacle); return p.join(' ').replace('  ',' ').trim(); }
+  // -------- scoring (spec engine) --------
   stanceValue(s){ return (this.cfg?.scoring?.stance?.[s]||0); }
   spinValue(sp){ if(!sp) return 0; const k=String(sp); return (this.cfg?.scoring?.spin?.[k]||0); }
   flipValue(f){ return (this.cfg?.scoring?.flip?.[f]||0); }
