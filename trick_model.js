@@ -1,0 +1,1 @@
+export default class BrainlockModel{constructor(){this.cfg={};}}
