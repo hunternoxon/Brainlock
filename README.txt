@@ -1,0 +1,1 @@
+Brainlock PWA v4.6.0-nomodule-20250816050205 — stronger level gating + filters respected.
