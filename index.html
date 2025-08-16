@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0b0b0f"/>
-<link rel="manifest" href="manifest.webmanifest?v=v4.6.1-nomodule-20250816050948" />
+<link rel="manifest" href="manifest.webmanifest?v=v4.6.3-nomodule-20250816052853" />
 <title>Brainlock</title>
 <style>
 :root {--bg:#0b0b0f;--panel:#121218;--muted:#8a8a96;--text:#f5f7fa;--accent:#ffffff;--ok:#73e2a7;--miss:#ff7575;--blue:#4da3ff;--pill:9999px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.45);--line:rgba(255,255,255,.08);}
@@ -202,7 +202,7 @@ dialog.sheet::backdrop {background:rgba(0,0,0,.55);}
       <button id="clearCaches" class="toggle" type="button" tabindex="0">Clear Caches</button>
       <button id="clearScores" class="toggle" type="button" tabindex="0">Clear High Scores</button>
     </div>
-    <div class="tiny" id="buildInfo">Build v4.6.1-nomodule-20250816050948</div>
+    <div class="tiny" id="buildInfo">Build v4.6.3-nomodule-20250816052853</div>
   </div>
 </dialog>
 
@@ -211,62 +211,685 @@ dialog.sheet::backdrop {background:rgba(0,0,0,.55);}
 
 <script>
 (function(){
-  const VERSION="v4.6.1-nomodule-20250816050948";
-  // --- pointer-safe tap helper (no preventDefault, pointerup primary) ---
-  const bindTap=(el,fn)=>{
-    if(!el) return;
-    el.addEventListener('pointerup', fn, {passive:true});
-    el.addEventListener('click', fn, {passive:true});
-    el.addEventListener('keyup', (e)=>{ if(e.key==='Enter' || e.key===' ') fn(); });
+  const VERSION="v4.6.3-nomodule-20250816052853";
+
+  // Pointer-friendly tap helper
+  const bindTap=(el,fn)=>{ if(!el) return; el.addEventListener('pointerup', fn, {passive:true}); el.addEventListener('click', fn, {passive:true}); el.addEventListener('keyup', e=>{ if(e.key==='Enter'||e.key===' ') fn(); }); };
+
+  // ===== Level Helpers =====
+  const Level = { maxDiff(l){return [1,1,2,3,3,4,5,6,7,10][Math.max(1,Math.min(10,l))-1];},
+                  maxObstacleTier(l){return [1,1,1,1,2,2,3,3,3,3][Math.max(1,Math.min(10,l))-1];},
+                  spinFreq(l){return (l<=3)?0.05:(l<=6)?0.25:0.50;} };
+
+  // ===== Config (families, obstacles, scoring) =====
+  const CONFIG={
+    obstacles:{
+      "flat":{"tier":1,"tall":false,"patterns":["flip-only"],"weight_by_level":[10,9,9,8,7,6,5,4,3,2]},
+      "manual pad":{"tier":1,"tall":false,"patterns":["manual-only","flip-only","flip→manual"],"weight_by_level":[10,10,9,8,7,6,5,4,3,2]},
+      "box":{"tier":1,"tall":false,"patterns":["manual-only","grind-only"],"weight_by_level":[8,8,7,7,6,5,4,3,2,2]},
+      "curb":{"tier":1,"tall":false,"patterns":["manual-only","grind-only"],"weight_by_level":[8,8,7,7,6,5,5,4,3,2]},
+      "bank":{"tier":1,"tall":false,"patterns":["flip-only","manual-only"],"weight_by_level":[7,7,7,6,5,4,3,3,2,2]},
+      "ledge":{"tier":2,"tall":false,"patterns":["grind-only","flip→grind","manual-only"],"weight_by_level":[0,0,2,3,4,5,6,7,8,8]},
+      "hubba":{"tier":3,"tall":true,"patterns":["grind-only","flip→grind","manual-only"],"weight_by_level":[0,0,0,1,2,4,6,7,8,9]},
+      "flatbar":{"tier":2,"tall":false,"patterns":["grind-only","flip→grind"],"weight_by_level":[0,0,1,2,3,4,5,6,7,7]},
+      "rail":{"tier":2,"tall":true,"patterns":["grind-only","flip→grind"],"weight_by_level":[0,0,0,2,3,4,5,6,7,7]},
+      "handrail":{"tier":3,"tall":true,"patterns":["grind-only","flip→grind"],"weight_by_level":[0,0,0,0,0,2,4,6,7,8]},
+      "gap":{"tier":2,"tall":false,"patterns":["flip-only"],"weight_by_level":[0,0,1,2,3,4,5,6,6,7]},
+      "quarterpipe":{"tier":2,"tall":true,"patterns":["flip-only"],"weight_by_level":[0,0,1,2,3,4,5,6,6,7]}
+    },
+    stances:{
+      "regular":{"weight_by_level":[10,9,8,7,6,5,4,3,2,1]},
+      "fakie":{"weight_by_level":[0,1,2,3,3,4,4,4,4,4]},
+      "nollie":{"weight_by_level":[0,0,0,2,3,3,4,4,5,5]},
+      "switch":{"weight_by_level":[0,0,0,0,1,2,3,4,5,6]}
+    },
+    families:{
+      "flips":{"label":"Flip Tricks","subs":{
+        "kickflip":{"diff":1,"minLevel":1,"allowed_obstacles":["flat","bank","gap","manual pad","quarterpipe"],"weight_by_level":[10,10,9,9,8,7,6,5,4,3]},
+        "heelflip":{"diff":1,"minLevel":1,"allowed_obstacles":["flat","bank","gap","manual pad","quarterpipe"],"weight_by_level":[10,10,9,9,8,7,6,5,4,3]},
+        "varial kickflip":{"diff":2,"minLevel":3,"allowed_obstacles":["flat","bank","gap","quarterpipe"],"weight_by_level":[0,0,6,7,8,8,7,6,5,4]},
+        "varial heelflip":{"diff":2,"minLevel":3,"allowed_obstacles":["flat","bank","gap","quarterpipe"],"weight_by_level":[0,0,6,7,8,8,7,6,5,4]},
+        "hardflip":{"diff":3,"minLevel":4,"allowed_obstacles":["flat","bank","gap"],"weight_by_level":[0,0,0,6,7,8,8,7,6,6]},
+        "inward heelflip":{"diff":3,"minLevel":4,"allowed_obstacles":["flat","bank","gap"],"weight_by_level":[0,0,0,6,7,8,8,7,6,6]},
+        "tre flip":{"diff":5,"minLevel":6,"allowed_obstacles":["flat","bank","gap"],"weight_by_level":[0,0,0,0,0,6,8,9,10,10]},
+        "laser flip":{"diff":6,"minLevel":8,"allowed_obstacles":["flat","bank","gap"],"weight_by_level":[0,0,0,0,0,0,0,6,8,10]}
+      }},
+      "grinds":{"label":"Grinds/Slides","subs":{
+        "50-50":{"diff":1,"minLevel":2,"allowed_obstacles":["curb","box","ledge","flatbar","rail","hubba","handrail"],"weight_by_level":[0,7,8,9,9,9,9,8,7,6]},
+        "5-0":{"diff":2,"minLevel":3,"allowed_obstacles":["curb","box","ledge","flatbar","rail","hubba","handrail"],"weight_by_level":[0,0,7,8,9,9,9,8,7,6]},
+        "boardslide":{"diff":2,"minLevel":3,"allowed_obstacles":["flatbar","rail","handrail"],"weight_by_level":[0,0,6,8,9,9,9,8,7,6]},
+        "noseslide":{"diff":2,"minLevel":3,"allowed_obstacles":["curb","box","ledge"],"weight_by_level":[0,0,6,8,9,9,8,7,6,5]},
+        "tailslide":{"diff":3,"minLevel":4,"allowed_obstacles":["curb","ledge","hubba"],"weight_by_level":[0,0,0,6,8,9,9,8,7,6]},
+        "lipslide":{"diff":3,"minLevel":4,"allowed_obstacles":["flatbar","rail","handrail"],"weight_by_level":[0,0,0,6,8,9,9,8,7,6]},
+        "smith":{"diff":4,"minLevel":5,"allowed_obstacles":["ledge","flatbar","rail","hubba","handrail"],"weight_by_level":[0,0,0,0,6,8,9,9,8,7]},
+        "feeble":{"diff":4,"minLevel":5,"allowed_obstacles":["flatbar","rail","handrail"],"weight_by_level":[0,0,0,0,6,8,9,9,8,7]},
+        "crooked":{"diff":4,"minLevel":5,"allowed_obstacles":["ledge","hubba"],"weight_by_level":[0,0,0,0,6,8,9,9,8,7]},
+        "nosegrind":{"diff":4,"minLevel":5,"allowed_obstacles":["ledge","hubba"],"weight_by_level":[0,0,0,0,6,8,9,9,8,7]},
+        "overcrook":{"diff":5,"minLevel":6,"allowed_obstacles":["ledge","hubba","handrail"],"weight_by_level":[0,0,0,0,0,6,8,9,9,9]},
+        "bluntslide":{"diff":6,"minLevel":7,"allowed_obstacles":["ledge","hubba","handrail"],"weight_by_level":[0,0,0,0,0,0,6,8,9,9]},
+        "noseblunt":{"diff":7,"minLevel":8,"allowed_obstacles":["ledge","hubba","handrail"],"weight_by_level":[0,0,0,0,0,0,0,6,8,9]}
+      }},
+      "manuals":{"label":"Manuals","subs":{
+        "manual":{"diff":1,"minLevel":1,"allowed_obstacles":["flat","manual pad","box","curb","bank"],"weight_by_level":[9,9,8,7,6,5,4,3,2,2]},
+        "nose manual":{"diff":2,"minLevel":2,"allowed_obstacles":["flat","manual pad","box","curb","bank"],"weight_by_level":[0,6,7,7,6,5,4,3,2,2]}
+      }},
+      "spins":{"label":"Spins","subs":{"180":{"diff":1,"minLevel":2,"as_modifier":true},"360":{"diff":3,"minLevel":2,"as_modifier":true}}}
+    },
+    scoring:{
+      stance:{"fakie":0.20,"nollie":0.25,"switch":0.25},
+      flip:{"kickflip":0.30,"heelflip":0.35,"hardflip":0.55,"inward heelflip":0.60,"tre flip":0.80,"laser flip":0.85,"varial kickflip":0.45,"varial heelflip":0.50},
+      spin:{"180":0.10,"360":0.30},
+      manual:{"manual":0.25,"nose manual":0.30},
+      grind_base:{"50-50":0.30,"5-0":0.35,"boardslide":0.35,"noseslide":0.40,"tailslide":0.45,"lipslide":0.50,"smith":0.60,"feeble":0.65,"crooked":0.70,"nosegrind":0.70,"bluntslide":0.80,"noseblunt":0.90,"overcrook":0.85},
+      grind_dir_mult:{"smith":{"FS":1.10,"BS":1.20},"feeble":{"FS":1.15,"BS":1.05},"crooked":{"FS":1.12,"BS":1.06},"overcrook":{"FS":1.18,"BS":1.25},"noseblunt":{"FS":1.00,"BS":1.05},"bluntslide":{"FS":1.00,"BS":1.05}},
+      obstacle_add:{"flat":0,"manual pad":0.10,"box":0.10,"curb":0.15,"ledge":0.25,"hubba":0.35,"flatbar":0.35,"rail":0.45,"handrail":0.55,"gap":0.50,"bank":0.25,"quarterpipe":0.45},
+      attempt_mult:{"1":1.00,"2":0.85,"3":0.75},
+      flow_mult_cap:0.15,flow_step:0.03,
+      combo_mult:{"flip&grind":1.25,"flip&spin":1.30,"spin&grind":1.15,"manual&(flip|spin)":1.10,"gap&flip&spin":1.10},
+      scale:100
+    }
   };
 
-  // === (Model/Scoring code identical to 4.6.0; trimmed here for brevity) ===
-</script>
-<script>
-// == Inserted full app code from previous build (unchanged logic), but events use bindTap ==
-(function(){
-  const Level={maxDiff(l){return [1,1,2,3,3,4,5,6,7,10][Math.max(1,Math.min(10,l))-1];},maxObstacleTier(l){return [1,1,1,1,2,2,3,3,3,3][Math.max(1,Math.min(10,l))-1];},spinFreq(l){return (l<=3)?0.05:(l<=6)?0.25:0.50;}};
-  // (for space, the rest of the code is identical to 4.6.0 but will use bindTap below)
-  // --- SNIP: to keep this message concise, we recreate only the event binding section; all logic kept ---
+  // --- NL Tables + Parser/Scorer ---
+  const NL_TABLES={
+    stance_multiplier:{"regular":1.0,"fakie":1.2,"nollie":1.15,"switch":1.25},
+    flip_tricks:{"kickflip":4.0,"heelflip":4.0,"backside flip":5.0,"frontside flip":5.0,"hardflip":5.5,"inward heelflip":5.8,"varial kickflip":5.0,"varial heelflip":5.2,"tre flip":6.0,"360 flip":6.0,"laser flip":6.3,"impossible":6.5},
+    grinds:{"50-50":1.6,"5-0":2.0,"boardslide":2.0,"noseslide":2.1,"tailslide":2.3,"lipslide":2.4,"smith":2.8,"feeble":3.0,"crooked":2.5,"nosegrind":2.5,"overcrook":3.2,"bluntslide":3.5,"noseblunt":4.0},
+    manuals:{"manual":1.0,"nose manual":1.2},
+    obstacle_bonus:{"ledge":1.5,"manual pad":1.0,"rail":2.0,"flatbar":1.8,"handrail":2.5,"hubba":2.2,"gap":2.0,"bank":1.2,"quarterpipe":1.6,"curb":1.2,"box":1.0,"flat":0.0},
+    direction_default:{"50-50":"FS","5-0":"FS","boardslide":"BS","noseslide":"BS","lipslide":"FS","tailslide":"FS","bluntslide":"BS","nosegrind":"FS","crooked":"BS","feeble":"BS","smith":"BS","overcrook":"BS","noseblunt":"FS"},
+    aliases:{"tre":"tre flip","treflip":"tre flip","crook":"crooked","bs":"backside","fs":"frontside","nosemanual":"nose manual","50 50":"50-50","5050":"50-50"}
+  };
+  class NLParser{constructor(t){this.t=t;this.alias=t.aliases||{};} norm(s){return (s||'').toLowerCase().replace(/\s+/g,' ').trim();}
+    aliasWord(w){return this.alias[w]||w;}
+    tokenize(s){s=this.norm(s).replace(/\b50\s*50\b/g,'50-50');const toks=s.split(/\s+/).map(t=>this.aliasWord(t));const out=[];
+      for(let i=0;i<toks.length;i++){const a=toks[i],b=toks[i+1]||'';const pair=a+' '+b;
+        if(['nose manual','backside flip','frontside flip','varial kickflip','varial heelflip','tre flip','360 flip'].includes(pair)){out.push(pair);i++;continue;}
+        out.push(a);
+      } return out; }
+    parse(input){
+      const toks=this.tokenize(input);
+      const res={stance:null,direction:null,flips:[],grind:null,manual:null,obstacle:null,impliedObstacle:null,tokens:toks.slice()};
+      for(let i=0;i<toks.length;i++){const t=toks[i];
+        if(['fakie','nollie','switch','regular'].includes(t)){res.stance=t;continue;}
+        if(t==='frontside'||t==='backside'){res.direction=(t==='frontside'?'FS':'BS');continue;}
+        if(Object.prototype.hasOwnProperty.call(NL_TABLES.obstacle_bonus,t)){res.obstacle=t;continue;}
+        if(Object.prototype.hasOwnProperty.call(NL_TABLES.flip_tricks,t)){res.flips.push(t);continue;}
+        if(Object.prototype.hasOwnProperty.call(NL_TABLES.grinds,t)){res.grind=t;continue;}
+        if(Object.prototype.hasOwnProperty.call(NL_TABLES.manuals,t)){res.manual=t;continue;}
+      }
+      if(res.grind&&!res.direction){res.direction=(NL_TABLES.direction_default[res.grind]||'FS');}
+      if(res.grind&&!res.obstacle) res.impliedObstacle='ledge';
+      if(res.manual&&!res.obstacle) res.impliedObstacle='manual pad';
+      return res;
+    }
+  }
+  class NLScorer{
+    constructor(t){this.t=t;}
+    stanceMult(s){return this.t.stance_multiplier?.[s||'regular']??1;}
+    scoreFlip(n){return this.t.flip_tricks?.[n]??0;}
+    scoreGrind(n){return this.t.grinds?.[n]??0;}
+    scoreManual(n){return this.t.manuals?.[n]??0;}
+    bonusObstacle(n){return this.t.obstacle_bonus?.[n]??0;}
+    fromStructured(trick){const flips=[]; if(trick.flip) flips.push(trick.flip);
+      const impliedObstacle=(!trick.obstacle && trick.grind)?'ledge':(!trick.obstacle && trick.manual?'manual pad':null);
+      return {stance:trick.stance||'regular', flips, grind:trick.grind||null, manual:trick.manual||null, obstacle:trick.obstacle||null, impliedObstacle, direction:trick.direction||null};
+    }
+    evalParts(parts){
+      let sum=0; const lines=[]; const st=parts.stance||'regular';
+      for(const f of (parts.flips||[])){const v=this.scoreFlip(f); sum+=v; lines.push(`Flip: ${f} = ${v}`);}
+      if(parts.grind){const v=this.scoreGrind(parts.grind); sum+=v; lines.push(`Grind: ${parts.grind} = ${v}`);}
+      if(parts.manual){const v=this.scoreManual(parts.manual); sum+=v; lines.push(`Manual: ${parts.manual} = ${v}`);}
+      const obs = parts.obstacle || parts.impliedObstacle; if(obs){const b=this.bonusObstacle(obs); sum+=b; lines.push(`Obstacle bonus: ${obs} = +${b}`);}
+      const mult = this.stanceMult(st); const total = sum*mult; lines.push(`Stance: ${st} ×${mult.toFixed(2)}`);
+      return {sum,mult,total,breakdown:lines.join('\n')};
+    }
+    scoreStructured(trick,attempt=1,flow=0,repeatM=1){
+      const base=this.evalParts(this.fromStructured(trick));
+      const attemptM=attempt===1?1:attempt===2?0.85:0.75;
+      const flowM=1+Math.min(flow*0.03,0.15);
+      const total=Math.round(base.total*attemptM*flowM*repeatM*10);
+      return {base:base.total,combo:1,attemptM,flowM,repeatM,total,detail:base.breakdown};
+    }
+  }
+
+  // --- Brainlock Trick Model (filters + gating + spec scoring) ---
+  class BrainlockModel{
+    constructor(){this.cfg=CONFIG; this.state=null; this.reset();}
+    ensureSetsInitialized(){
+      const O=Object.keys(this.cfg?.obstacles||{"flat":{}});
+      const F=this.cfg?.families||{};
+      const stanceKeys=['regular','fakie','nollie','switch'];
+      if(!this.state)this.state={};
+      this.state.sub=this.state.sub||{};
+      if(!(this.state.stances instanceof Set)) this.state.stances=new Set(stanceKeys);
+      if(!(this.state.families instanceof Set)) this.state.families=new Set(['flips','grinds','manuals','spins']);
+      if(!(this.state.obstacles instanceof Set)) this.state.obstacles=new Set(O);
+      for(const k of ['flips','grinds','manuals','spins']){
+        if(!(this.state.sub[k] instanceof Set)){
+          const subs=Object.keys(F?.[k]?.subs||{});
+          this.state.sub[k]=new Set(subs);
+        }
+      }
+    }
+    reset(){
+      if(!this.state)this.state={};
+      this.ensureSetsInitialized();
+      this.state.level=this.state.level||1;
+      this.state.mode=this.state.mode||'SKATE';
+      this.state.soloCount=this.state.soloCount||10;
+      this.state.sessionActive=false;
+      this.state.flow=0;
+      this.state.repeatMap=new Map();
+      this.state.letters=0;
+      this.state.score=0;
+      this.state.why='';
+    }
+    weightedPick(items,wfn){
+      const arr=items.map(v=>({v,w:Math.max(0,wfn(v))}));
+      const tot=arr.reduce((s,a)=>s+a.w,0);
+      if(tot<=0)return null;
+      let r=Math.random()*tot;
+      for(const a of arr){ if((r-=a.w)<=0) return a.v; }
+      return arr[arr.length-1]?.v??null;
+    }
+    stancePool(){
+      const L=this.state.level-1, S=this.cfg?.stances||{};
+      const en=[...this.state.stances].filter(s=>S[s]);
+      return en.length?this.weightedPick(en,s=>S[s].weight_by_level?.[L]??1):'regular';
+    }
+    obstaclePool(){
+      const lvl=this.state.level;
+      const maxTier=[1,1,1,1,2,2,3,3,3,3][Math.max(1,Math.min(10,lvl))-1];
+      const O=this.cfg?.obstacles||{};
+      const en=[...this.state.obstacles].filter(o=>O[o] && (O[o].tier||1)<=maxTier);
+      const L=lvl-1;
+      return en.length?this.weightedPick(en,o=>O[o].weight_by_level?.[L]??1):'flat';
+    }
+    legalPatternForObstacle(ob){
+      const pats=this.cfg?.obstacles?.[ob]?.patterns||['flip-only'];
+      return pats.slice();
+    }
+    famOn(name){return this.state.families.has(name);}
+    hasSubs(name){return (this.state.sub[name] && this.state.sub[name].size>0);}
+    maxDiff(){return [1,1,2,3,3,4,5,6,7,10][Math.max(1,Math.min(10,this.state.level))-1];}
+    allowedFlipOnObstacle(f,ob,L){
+      const e=this.cfg?.families?.flips?.subs?.[f];
+      return !!(e&&L>=(e.minLevel||1)&&((e.diff||1)<=this.maxDiff())&&(!e.allowed_obstacles||e.allowed_obstacles.includes(ob)));
+    }
+    allowedGrindOnObstacle(g,ob,L){
+      const e=this.cfg?.families?.grinds?.subs?.[g];
+      return !!(e&&L>=(e.minLevel||1)&&((e.diff||1)<=this.maxDiff())&&(!e.allowed_obstacles||e.allowed_obstacles.includes(ob)));
+    }
+    allowedManualOnObstacle(m,ob,L){
+      const e=this.cfg?.families?.manuals?.subs?.[m];
+      return !!(e&&L>=(e.minLevel||1)&&((e.diff||1)<=this.maxDiff())&&(!e.allowed_obstacles||e.allowed_obstacles.includes(ob)));
+    }
+    pickFlip(ob){
+      const L=this.state.level-1;
+      const subs=[...this.state.sub.flips];
+      const allowed=subs.filter(s=>this.allowedFlipOnObstacle(s,ob,L+1));
+      if(!allowed.length) return null;
+      return this.weightedPick(allowed,s=>(this.cfg?.families?.flips?.subs?.[s]?.weight_by_level?.[L]??1));
+    }
+    pickGrind(ob){
+      const L=this.state.level-1;
+      const subs=[...this.state.sub.grinds];
+      const allowed=subs.filter(s=>this.allowedGrindOnObstacle(s,ob,L+1));
+      if(!allowed.length) return null;
+      return this.weightedPick(allowed,s=>(this.cfg?.families?.grinds?.subs?.[s]?.weight_by_level?.[L]??1));
+    }
+    pickManual(ob){
+      const L=this.state.level-1;
+      const subs=[...this.state.sub.manuals];
+      const allowed=subs.filter(s=>this.allowedManualOnObstacle(s,ob,L+1));
+      if(!allowed.length) return null;
+      return this.weightedPick(allowed,s=>(this.cfg?.families?.manuals?.subs?.[s]?.weight_by_level?.[L]??1));
+    }
+    pickSpin(){
+      const L=this.state.level;
+      const freq=(L<=3)?0.05:(L<=6)?0.25:0.50;
+      if(Math.random()>freq) return null;
+      const subs=[...this.state.sub.spins].filter(s=>(this.cfg?.families?.spins?.subs?.[s]?.minLevel||1)<=L);
+      if(!subs.length) return null;
+      return this.weightedPick(subs,_=>1);
+    }
+    patternPool(ob){
+      let pats=this.legalPatternForObstacle(ob);
+      const fams=this.state.families;
+      pats=pats.filter(p=>{
+        if(p.includes('flip') && (!fams.has('flips')||!this.hasSubs('flips'))) return false;
+        if(p.includes('grind') && (!fams.has('grinds')||!this.hasSubs('grinds'))) return false;
+        if(p.includes('manual') && (!fams.has('manuals')||!this.hasSubs('manuals'))) return false;
+        if(p==='flip→manual' && ob!=='manual pad') return false;
+        return true;
+      });
+      if(!pats.length) return null;
+      const L=this.state.level;
+      const w=p=>{
+        if(L<=3){ if(p==='flip-only') return 9; if(p==='manual-only') return 6; return 0.1; }
+        if(L<=6){ if(p==='flip-only') return 7; if(p==='manual-only') return 4; if(p==='grind-only') return 5; if(p==='flip→manual') return 3; if(p==='flip→grind') return L-3; }
+        if(p==='flip-only') return 5; if(p==='grind-only') return 7; if(p==='flip→grind') return 9; if(p==='flip→manual') return 4; if(p==='manual-only') return 2; return 1;
+      };
+      return this.weightedPick(pats,w);
+    }
+    selectTrick(){
+      let tries=0; const why=[];
+      while(tries++<48){
+        const ob=this.obstaclePool();
+        const pat=this.patternPool(ob);
+        if(!pat){ why.push(`No legal pattern for "${ob}"`); continue; }
+        const stance=this.stancePool();
+        const t={obstacle:ob,stance,pattern:pat};
+        const L=this.state.level;
+        if(pat.includes('flip')){
+          t.flip=this.pickFlip(ob); if(!t.flip){ why.push(`No flip on ${ob}`); continue; }
+        }
+        if(pat.includes('grind')){
+          t.grind=this.pickGrind(ob); if(!t.grind){ why.push(`No grind on ${ob}`); continue; }
+          t.direction=Math.random()<.5?'FS':'BS';
+        }
+        if(pat==='manual-only' || pat==='flip→manual'){
+          t.manual=this.pickManual(ob); if(!t.manual){ why.push(`No manual on ${ob}`); continue; }
+        }
+        const sp=this.pickSpin(); if(sp) t.spin=parseInt(sp,10)||sp;
+        t.signature=this.makeSignature(t);
+        this.state.why = why.concat([`level=${L}`,`obstacle=${ob}`,`pattern=${pat}`,`stance=${stance}`,`flip=${t.flip||'-'}`,`grind=${t.grind||'-'}`,`manual=${t.manual||'-'}`,`spin=${t.spin||'-'}`,`direction=${t.direction||'-'}`]).join('\n');
+        return t;
+      }
+      const ob=[...this.state.obstacles][0]||'flat'; const stance='regular';
+      let t={obstacle:ob,stance,pattern:'flip-only',flip:[...this.state.sub.flips][0]||null};
+      if(!t.flip && this.hasSubs('grinds')) t={obstacle:ob,stance,pattern:'grind-only',grind:[...this.state.sub.grinds][0]||'50-50',direction:'FS'};
+      if(!t.flip && !t.grind && this.hasSubs('manuals')) t={obstacle:ob,stance,pattern:'manual-only',manual:[...this.state.sub.manuals][0]||'manual'};
+      t.signature=this.makeSignature(t); this.state.why='fallback'; return t;
+    }
+    makeSignature(t){return ['stance','spin','flip','grind','manual','direction'].map(k=>(t[k]||'').toString().toLowerCase()).join('|');}
+    trickText(t){
+      const p=[];
+      if(t.stance&&t.stance!=='regular') p.push(t.stance);
+      if(t.spin) p.push(t.spin+'°');
+      if(t.flip) p.push(t.flip);
+      if(t.grind) p.push((t.direction||'FS')+' '+t.grind);
+      if(t.manual){ p.push(t.flip?'to '+t.manual:t.manual); }
+      p.push('on '+t.obstacle);
+      return p.join(' ').replace('  ',' ').trim();
+    }
+    // Spec scoring engine
+    stanceValue(s){return (this.cfg?.scoring?.stance?.[s]||0);}
+    spinValue(sp){if(!sp)return 0; const k=String(sp); return (this.cfg?.scoring?.spin?.[k]||0);}
+    flipValue(f){return (this.cfg?.scoring?.flip?.[f]||0);}
+    manualValue(m){return (this.cfg?.scoring?.manual?.[m]||0);}
+    grindBaseValue(g){return (this.cfg?.scoring?.grind_base?.[g]||0);}
+    grindDirMult(g,d){const t=this.cfg?.scoring?.grind_dir_mult?.[g]; return t?(t[d||'FS']||1):1;}
+    obstacleAdder(o){return (this.cfg?.scoring?.obstacle_add?.[o]||0);}
+    attemptMult(a){return (this.cfg?.scoring?.attempt_mult?.[String(a)]||1);}
+    flowMult(){const cap=this.cfg?.scoring?.flow_mult_cap??.15; const step=this.cfg?.scoring?.flow_step??.03; return 1+Math.min(this.state.flow*step,cap);}
+    repeatMult(sig){const n=(this.state.repeatMap.get(sig)||0); if(n<=2) return 1; return Math.max(0,1-.10*(n-2));}
+    scoreTrick(t,a){
+      const S=this.cfg?.scoring||{}; const SCALE=S.scale||100;
+      let base=1.0;
+      base += this.stanceValue(t.stance) + this.spinValue(t.spin) + this.flipValue(t.flip);
+      if(t.grind){ base += this.grindBaseValue(t.grind)*this.grindDirMult(t.grind,t.direction); }
+      if(t.manual){ base += this.manualValue(t.manual); }
+      base += this.obstacleAdder(t.obstacle);
+      let combo=1.0;
+      if(t.flip&&t.grind) combo*=(S.combo_mult?.['flip&grind']||1);
+      if(t.flip&&t.spin) combo*=(S.combo_mult?.['flip&spin']||1);
+      if(t.spin&&t.grind) combo*=(S.combo_mult?.['spin&grind']||1);
+      if(t.manual&&(t.flip||t.spin)) combo*=(S.combo_mult?.['manual&(flip|spin)']||1);
+      if(t.obstacle==='gap'&&t.flip&&t.spin) combo*=(S.combo_mult?.['gap&flip&spin']||1);
+      const total=Math.round(SCALE*base*this.attemptMult(a)*this.flowMult()*this.repeatMult(t.signature)*combo);
+      return {base,combo,attemptM:this.attemptMult(a),flowM:this.flowMult(),repeatM:this.repeatMult(t.signature),total};
+    }
+  }
+
+  // --- App wiring (UI + events) ---
+  class BrainlockApp{
+    constructor(model){this.model=model; this.version=VERSION; this.ui=this.qs(); this.restore(); this.bind(); this.setTray('start'); this.updateHUD(); this._audioReady=false; this.loadNL();}
+    loadNL(){ this.nlTables=NL_TABLES; this.parser=new NLParser(this.nlTables); this.nl=new NLScorer(this.nlTables); }
+    qs(){const g=id=>document.getElementById(id);return {
+      skateTop:g('skateTop'),trickText:g('trickText'),subText:g('subText'),
+      levelBadge:g('levelBadge'),modeBadge:g('modeBadge'),
+      scoreVal:g('scoreVal'),highVal:g('highVal'),streakVal:g('streakVal'),
+      attemptDots:g('attemptDots'),scorePeek:g('scorePeek'),
+      optionsBtn:g('optionsBtn'),endBtnModule:g('endBtnModule'),
+      trayStart:g('trayStart'),trayActive:g('trayActive'),trayLanded:g('trayLanded'),trayMissed:g('trayMissed'),trayOver:g('trayOver'),
+      startBtn:g('startBtn'),landBtn:g('landBtn'),missBtn:g('missBtn'),skipBtn:g('skipBtn'),nextBtnLanded:g('nextBtnLanded'),nextBtnMissed:g('nextBtnMissed'),restartBtn:g('restartBtn'),
+      optionsDlg:g('optionsDlg'),closeOptions:g('closeOptions'),optTabs:g('optTabs'),
+      levelRange:g('levelRange'),levelVal:g('levelVal'),soloCount:g('soloCount'),soloCountVal:g('soloCountVal'),
+      stances:g('stances'),obstacles:g('obstacles'),catsWrap:g('catsWrap'),
+      settingsBtn:g('settingsBtn'),settingsDlg:g('settingsDlg'),closeSettings:g('closeSettings'),
+      scoreSpec:g('scoreSpec'),scoreNL:g('scoreNL'),
+      importNLBtn:g('importNLBtn'),importNL:g('importNL'),resetNL:g('resetNL'),
+      clearScores:g('clearScores'),clearCaches:g('clearCaches'),
+      scoreDlg:g('scoreDlg'),closeScore:g('closeScore'),scoreOut:g('scoreOut'),
+      dbgBtn:g('dbgBtn'),dbgDlg:g('dbgDlg'),closeDbg:g('closeDbg'),dbgOut:g('dbgOut'),whyOut:g('whyOut'),optOut:g('optOut'),
+      soundBtn:g('soundBtn'),
+      stackBtn:g('stackBtn'),stackDlg:g('stackDlg'),closeStack:g('closeStack'),stackInput:g('stackInput'),parseBtn:g('parseBtn'),useBtn:g('useBtn'),stackOut:g('stackOut')
+    };}
+    bind(){const U=this.ui;
+      // Dialogs
+      bindTap(U.optionsBtn,()=>U.optionsDlg.showModal()); bindTap(U.closeOptions,()=>U.optionsDlg.close());
+      U.optTabs.addEventListener('click',e=>{const t=e.target.closest('.tab'); if(!t) return;
+        U.optTabs.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+        const page=t.dataset.tab; document.querySelectorAll('.sheet-body').forEach(p=>p.classList.toggle('on',p.dataset.page===page));
+      });
+      U.levelRange.oninput=e=>{this.model.state.level=+e.target.value; U.levelVal.textContent=this.model.state.level; this.persist(); this.updateHUD();};
+      U.soloCount.oninput=e=>{this.model.state.soloCount=+e.target.value; U.soloCountVal.textContent=this.model.state.soloCount; this.persist();};
+      U.optionsDlg.querySelectorAll('[data-mode]').forEach(el=>{bindTap(el,()=>{
+        U.optionsDlg.querySelectorAll('[data-mode]').forEach(x=>x.classList.remove('on')); el.classList.add('on');
+        this.model.state.mode=el.dataset.mode; this.persist(); this.updateHUD();
+      });});
+      // Chips
+      this.renderChips(U.stances,['regular','fakie','nollie','switch'],this.model.state.stances);
+      this.renderChips(U.obstacles,Object.keys(this.model.cfg?.obstacles||{flat:1}),this.model.state.obstacles);
+      this.renderCategories();
+      // Settings
+      bindTap(U.settingsBtn,()=>U.settingsDlg.showModal()); bindTap(U.closeSettings,()=>U.settingsDlg.close());
+      bindTap(U.scoreSpec,()=>{this.scoringEngine='spec'; localStorage.setItem('brainlock:engine','spec'); alert('Spec scoring enabled'); this.updateHUD();});
+      bindTap(U.scoreNL,()=>{this.scoringEngine='nl'; localStorage.setItem('brainlock:engine','nl'); alert('NL scoring enabled'); this.updateHUD();});
+      bindTap(U.importNLBtn,()=>U.importNL.click());
+      U.importNL.onchange=async(e)=>{const f=e.target.files?.[0]; if(!f) return; try{
+        const txt=await f.text(); const obj=JSON.parse(txt);
+        localStorage.setItem('brainlock:nlTablesOverride',JSON.stringify(obj));
+        alert('NL tables imported (apply next session).');
+      }catch(err){alert('Invalid NL tables JSON');}};
+      bindTap(U.resetNL,()=>{localStorage.removeItem('brainlock:nlTablesOverride'); alert('NL tables reset.');});
+      bindTap(U.clearScores,()=>{localStorage.removeItem('brainlock:highscores'); this.high=[]; this.updateHUD(); alert('High scores cleared');});
+      bindTap(U.clearCaches,async()=>{ if('caches'in window){ const keys=await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k))); } alert('Cache cleared. Reload recommended.'); });
+
+      // Tray
+      bindTap(U.startBtn,()=>this.startSession()); bindTap(U.restartBtn,()=>this.startSession());
+      bindTap(U.landBtn,()=>this.land()); bindTap(U.missBtn,()=>this.miss()); bindTap(U.skipBtn,()=>this.skip());
+      bindTap(U.nextBtnLanded,()=>this.next()); bindTap(U.nextBtnMissed,()=>this.next());
+      bindTap(U.scorePeek,()=>this.openScoreBreakdown());
+
+      // Debug
+      bindTap(U.dbgBtn,()=>{U.dbgDlg.showModal(); this.dumpWhy(); this.dumpOptions();}); bindTap(U.closeDbg,()=>U.dbgDlg.close());
+
+      // Sound
+      bindTap(U.soundBtn,()=>{this.enableSound(true); alert('Sounds ON. I will DING loudly when the session ends.');});
+
+      // Stack builder
+      bindTap(U.stackBtn,()=>U.stackDlg.showModal()); bindTap(U.closeStack,()=>U.stackDlg.close());
+      bindTap(U.parseBtn,()=>this.parseStack()); bindTap(U.useBtn,()=>this.useStackAsCurrent());
+
+      this.scoringEngine=localStorage.getItem('brainlock:engine')||'spec';
+    }
+    renderChips(container,labels,set){
+      container.innerHTML='';
+      labels.forEach(label=>{
+        const active=set.has(label);
+        const chip=document.createElement('div');
+        chip.className='toggle'+(active?' on':''); chip.textContent=label;
+        const handler=()=>{ if(set.has(label)) set.delete(label); else set.add(label); chip.classList.toggle('on'); this.persist(); };
+        chip.addEventListener('click',handler);
+        chip.addEventListener('pointerup',handler);
+        container.appendChild(chip);
+      });
+    }
+    renderCategories(){
+      const wrap=this.ui.catsWrap; wrap.innerHTML='';
+      const fams=['flips','grinds','manuals','spins'];
+      const labels={flips:'Flip Tricks',grinds:'Grinds/Slides',manuals:'Manuals',spins:'Spins'};
+      fams.forEach(key=>{
+        const famOn=this.model.state.families.has(key);
+        const head=document.createElement('div'); head.className='cat-head';
+        const toggle=document.createElement('div'); toggle.className='toggle'+(famOn?' on':''); toggle.textContent=labels[key];
+        toggle.addEventListener('click',()=>{
+          if(this.model.state.families.has(key)) this.model.state.families.delete(key); else this.model.state.families.add(key);
+          toggle.classList.toggle('on'); subs.style.opacity=this.model.state.families.has(key)?'1':'.35'; this.persist();
+        });
+        head.appendChild(toggle); wrap.appendChild(head);
+        const subs=document.createElement('div'); subs.className='subs'; subs.style.opacity=famOn?'1':'.35';
+        const sublist=Object.keys(this.model.cfg?.families?.[key]?.subs||{});
+        const set=this.model.state.sub[key]||(this.model.state.sub[key]=new Set(sublist));
+        sublist.forEach(name=>{
+          const chip=document.createElement('div'); const active=set.has(name);
+          chip.className='toggle'+(active?' on':''); chip.textContent=name;
+          const handler=()=>{ if(!this.model.state.families.has(key)) return; if(set.has(name)) set.delete(name); else set.add(name); chip.classList.toggle('on'); this.persist(); };
+          chip.addEventListener('click',handler);
+          chip.addEventListener('pointerup',handler);
+          subs.appendChild(chip);
+        });
+        wrap.appendChild(subs);
+      });
+    }
+    setTray(state){
+      this.trayState=state;
+      const vis=(el,on)=>el.classList.toggle('hidden',!on);
+      vis(this.ui.trayStart,state==='start');
+      vis(this.ui.trayActive,state==='active');
+      vis(this.ui.trayLanded,state==='landed');
+      vis(this.ui.trayMissed,state==='missed');
+      vis(this.ui.trayOver,state==='over');
+    }
+    formatLetters(n){Array.from(this.ui.skateTop.children).forEach((s,i)=>s.classList.toggle('on',i<n));}
+    renderAttempts(){
+      const wrap=this.ui.attemptDots; wrap.innerHTML='';
+      const cur=Math.max(1,this.attempts||0);
+      for(let i=1;i<=3;i++){
+        const dot=document.createElement('div'); dot.className='attempt-dot';
+        if(i===cur && this.trayState==='active') dot.classList.add('active');
+        if(this.missHistory?.includes(i)){const m=document.createElement('div'); m.className='mark'; m.textContent='×'; dot.classList.add('missed'); dot.appendChild(m);}
+        if(this.trayState==='landed' && this.landHistory?.includes(i)){const m=document.createElement('div'); m.className='mark'; m.textContent='✓'; dot.classList.add('landed'); dot.appendChild(m);}
+        wrap.appendChild(dot);
+      }
+    }
+    restore(){
+      this.high=JSON.parse(localStorage.getItem('brainlock:highscores')||'[]');
+      const s=JSON.parse(localStorage.getItem('brainlock:settings')||'null');
+      if(s){
+        this.model.state.level=s.level??1; this.model.state.mode=s.mode??'SKATE'; this.model.state.soloCount=s.soloCount??10;
+        this.model.state.stances=this.model.state.stances||new Set(['regular','fakie','nollie','switch']); this.updateSet(this.model.state.stances,s.stances||['regular','fakie','nollie','switch']);
+        this.model.state.families=this.model.state.families||new Set(['flips','grinds','manuals','spins']); this.updateSet(this.model.state.families,s.families||['flips','grinds','manuals','spins']);
+        this.model.state.obstacles=this.model.state.obstacles||new Set(Object.keys(this.model.cfg?.obstacles||{})); this.updateSet(this.model.state.obstacles,s.obstacles||Object.keys(this.model.cfg?.obstacles||{}));
+        this.model.state.sub=this.model.state.sub||{};
+        this.model.state.sub.flips=this.model.state.sub.flips||new Set(); this.model.state.sub.grinds=this.model.state.sub.grinds||new Set();
+        this.model.state.sub.manuals=this.model.state.sub.manuals||new Set(); this.model.state.sub.spins=this.model.state.sub.spins||new Set();
+        if(s.sub){ this.updateSet(this.model.state.sub.flips,s.sub.flips||[]); this.updateSet(this.model.state.sub.grinds,s.sub.grinds||[]); this.updateSet(this.model.state.sub.manuals,s.sub.manuals||[]); this.updateSet(this.model.state.sub.spins,s.sub.spins||[]);}
+      }
+    }
+    persist(){
+      const st=this.model.state;
+      localStorage.setItem('brainlock:settings',JSON.stringify({
+        level:st.level, mode:st.mode, soloCount:st.soloCount,
+        stances:[...st.stances], families:[...st.families], obstacles:[...st.obstacles],
+        sub:{flips:[...st.sub.flips], grinds:[...st.sub.grinds], manuals:[...st.sub.manuals], spins:[...st.sub.spins]}
+      }));
+    }
+    updateSet(targetSet,arr){ if(!Array.isArray(arr)) return; targetSet.clear(); for(const x of arr) targetSet.add(x); }
+    updateHUD(){
+      this.ui.levelBadge.textContent='Level '+this.model.state.level;
+      this.ui.modeBadge.textContent='Mode: '+this.model.state.mode;
+      this.ui.scoreVal.textContent=this.model.state.score;
+      this.ui.highVal.textContent=(this.high?.[0]?.value)||0;
+      this.ui.streakVal.textContent=this.model.state.flow;
+      this.formatLetters(this.model.state.letters||0);
+      this.renderAttempts();
+      const p=this.predictedScore();
+      this.ui.scorePeek.textContent=p?('This attempt: +'+p.total):'';
+      this.ui.endBtnModule.classList.toggle('hidden',!this.model.state.sessionActive);
+    }
+    async startSession(){
+      const s=JSON.parse(localStorage.getItem('brainlock:settings')||'null');
+      this.model.reset();
+      if(s){
+        this.model.state.level=s.level??this.model.state.level;
+        this.model.state.mode=s.mode??this.model.state.mode;
+        this.model.state.soloCount=s.soloCount??this.model.state.soloCount;
+        this.updateSet(this.model.state.stances,s.stances||[...this.model.state.stances]);
+        this.updateSet(this.model.state.families,s.families||[...this.model.state.families]);
+        this.updateSet(this.model.state.obstacles,s.obstacles||[...this.model.state.obstacles]);
+        if(s.sub){
+          this.updateSet(this.model.state.sub.flips,s.sub.flips||[...this.model.state.sub.flips]);
+          this.updateSet(this.model.state.sub.grinds,s.sub.grinds||[...this.model.state.sub.grinds]);
+          this.updateSet(this.model.state.sub.manuals,s.sub.manuals||[...this.model.state.sub.manuals]);
+          this.updateSet(this.model.state.sub.spins,s.sub.spins||[...this.model.state.sub.spins]);
+        }
+      }
+      this.renderChips(this.ui.stances,['regular','fakie','nollie','switch'],this.model.state.stances);
+      this.renderChips(this.ui.obstacles,Object.keys(this.model.cfg?.obstacles||{flat:1}),this.model.state.obstacles);
+      this.renderCategories();
+
+      this.model.state.sessionActive=true;
+      this.attempts=1; this.countDone=0; this.missHistory=[]; this.landHistory=[];
+      this.pushNextTrick();
+      this.setTray('active');
+      this.updateHUD();
+    }
+    pushNextTrick(){
+      const t=this.model.selectTrick();
+      this.current=t; this.attempts=1; this.missHistory=[]; this.landHistory=[];
+      this.ui.trickText.textContent=this.model.trickText(t);
+      this.ui.subText.textContent='Attempt 1 of 3';
+      this.updateHUD(); this.dumpWhy(); this.dumpOptions();
+    }
+    dumpWhy(){ if(!this.ui.whyOut) return; this.ui.whyOut.textContent='Why this trick:\n'+(this.model.state.why||''); this.ui.dbgOut.textContent='Build '+this.version; }
+    dumpOptions(){ if(!this.ui.optOut) return; const st=this.model.state;
+      const snap={level:st.level,mode:st.mode,stances:[...st.stances],obstacles:[...st.obstacles],families:[...st.families],sub:{flips:[...st.sub.flips],grinds:[...st.sub.grinds],manuals:[...st.sub.manuals],spins:[...st.sub.spins]}};
+      this.ui.optOut.textContent='Options snapshot:\n'+JSON.stringify(snap,null,2);
+    }
+    land(){
+      if(!this.current) return;
+      const b=this.predictedScore();
+      this.model.state.score+=b.total;
+      this.model.state.flow+=1;
+      const key=this.current.signature||JSON.stringify(this.current);
+      const count=(this.model.state.repeatMap.get(key)||0)+1; this.model.state.repeatMap.set(key,count);
+      this.ui.subText.textContent='+'+b.total+' (tap score for breakdown)';
+      this.landHistory.push(this.attempts);
+      this.setTray('landed'); this.updateHUD();
+    }
+    miss(){
+      if(!this.current) return;
+      this.missHistory.push(this.attempts);
+      if(this.attempts>=3){
+        this.model.state.flow=0;
+        this.model.state.letters=Math.min(5,(this.model.state.letters||0)+1);
+        this.ui.subText.textContent='Missed 3× → +1 letter';
+        if(this.model.state.mode==='SKATE'&&(this.model.state.letters||0)>=5) return this.endSession();
+        this.setTray('missed');
+      } else {
+        this.attempts+=1;
+        this.ui.subText.textContent='Miss (attempt '+this.attempts+' of 3)';
+        this.setTray('active');
+      }
+      this.updateHUD();
+    }
+    skip(){ this.model.state.flow=0; this.ui.subText.textContent='Skipped'; this.next(); }
+    next(){
+      if(this.model.state.mode==='SOLO'){
+        this.countDone=(this.countDone||0)+1;
+        if(this.countDone>=this.model.state.soloCount) return this.endSession();
+      }
+      this.pushNextTrick(); this.setTray('active');
+    }
+    enableSound(userGesture){
+      if(this._audioReady) return;
+      const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      this.ac=new AC(); this.master=this.ac.createGain(); this.master.gain.value=1.0; this.master.connect(this.ac.destination);
+      const resume=()=>{ if(this.ac.state==='suspended') this.ac.resume(); };
+      if(userGesture) resume();
+      document.body.addEventListener('touchstart',resume,{once:true}); document.body.addEventListener('click',resume,{once:true});
+      this._audioReady=true; localStorage.setItem('brainlock:sound','1');
+    }
+    tone(freq=880,dur=0.2,vol=1,type='sine'){
+      if(!this._audioReady) return;
+      const o=this.ac.createOscillator(); const g=this.ac.createGain();
+      o.type=type; o.frequency.value=freq; o.connect(g); g.connect(this.master);
+      const now=this.ac.currentTime; g.gain.setValueAtTime(0.0001,now); g.gain.linearRampToValueAtTime(0.25*vol,now+0.01); g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+      o.start(now); o.stop(now+dur+0.05);
+    }
+    ding(){ this.tone(880,0.18,1,'triangle'); setTimeout(()=>this.tone(1320,0.14,1,'sine'),130); }
+    endSession(){
+      const score=this.model.state.score;
+      const entry={id:Date.now(),value:score,created_at:new Date().toISOString()};
+      this.high=this.high||[]; this.high.push(entry); this.high.sort((a,b)=>b.value-a.value); this.high=this.high.slice(0,100);
+      localStorage.setItem('brainlock:highscores',JSON.stringify(this.high));
+      this.ui.trickText.textContent='Session Over';
+      this.ui.subText.textContent='Final: '+score+' — High: '+(this.high?.[0]?.value);
+      this.model.state.sessionActive=false; this.setTray('over'); this.updateHUD(); this.ding();
+    }
+    predictedScore(){
+      if(!this.current||!this.attempts) return null;
+      if((localStorage.getItem('brainlock:engine')||'spec')==='nl'){
+        const key=this.current.signature||JSON.stringify(this.current);
+        const n=(this.model.state.repeatMap.get(key)||0);
+        const repeatM=(n<=2)?1:Math.max(0,1-.10*(n-2));
+        return this.nl.scoreStructured(this.current,this.attempts,this.model.state.flow,repeatM);
+      } else {
+        return this.model.scoreTrick(this.current,this.attempts);
+      }
+    }
+    openScoreBreakdown(){
+      const b=this.predictedScore(); if(!b) return;
+      this.ui.scoreOut.textContent=[
+        'If you land now:',
+        'Base: '+(b.base?.toFixed?b.base.toFixed(2):b.base),
+        'Combo: ×'+(b.combo?.toFixed?b.combo.toFixed(2):b.combo),
+        'Attempt: ×'+b.attemptM.toFixed(2),
+        'Flow: ×'+b.flowM.toFixed(2),
+        'Repeat: ×'+b.repeatM.toFixed(2),
+        'Total: '+b.total
+      ].join('\n');
+      this.ui.scoreDlg.showModal(); this.ui.closeScore.onclick=()=>this.ui.scoreDlg.close();
+    }
+    parseStack(){
+      const input=this.ui.stackInput.value||'';
+      if(!input.trim()){ this.ui.stackOut.textContent='Type something like: Tre crook nollie bs flip out'; return; }
+      const parsed=this.parser.parse(input);
+      const parts=this.nl.evalParts(parsed);
+      const lines=[
+        'TOKENS: '+(parsed.tokens.join(' ')),
+        'STANCE: '+(parsed.stance||'regular'),
+        'DIRECTION: '+(parsed.direction||'-'),
+        'FLIPS: '+(parsed.flips.join(', ')||'-'),
+        'GRIND: '+(parsed.grind||'-'),
+        'MANUAL: '+(parsed.manual||'-'),
+        'OBSTACLE: '+(parsed.obstacle||parsed.impliedObstacle||'-'),
+        '',
+        'Breakdown:',
+        parts.breakdown,
+        '',
+        'Score (NL base): '+parts.total.toFixed(2)+'  [= (sum + bonus) × stance]'
+      ];
+      this.lastParsed={parsed,parts}; this.ui.stackOut.textContent=lines.join('\n');
+    }
+    useStackAsCurrent(){
+      if(!this.lastParsed){ this.parseStack(); if(!this.lastParsed) return; }
+      const p=this.lastParsed.parsed;
+      const t={
+        obstacle:p.obstacle||p.impliedObstacle||'flat',
+        stance:p.stance||'regular',
+        pattern:'custom',
+        flip:(p.flips[0]||null),
+        grind:p.grind||null,
+        manual:p.manual||null,
+        direction:p.direction||null,
+        spin:null
+      };
+      t.signature=['stance','spin','flip','grind','manual','direction'].map(k=>(t[k]||'').toString().toLowerCase()).join('|');
+      this.current=t; this.attempts=1; this.missHistory=[]; this.landHistory=[];
+      this.ui.trickText.textContent=[
+        t.stance!=='regular'?t.stance:null,
+        t.spin?(t.spin+'°'):null,
+        t.flip,
+        t.direction? t.direction:null,
+        t.grind,
+        t.manual?((t.flip||t.grind)?('to '+t.manual):t.manual):null,
+        'on '+t.obstacle
+      ].filter(Boolean).join(' ');
+      this.ui.subText.textContent='Custom trick — Attempt 1 of 3';
+      this.setTray('active'); this.updateHUD();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded',()=>{
+    window.BRAINLOCK=new BrainlockApp(new BrainlockModel());
+    if('serviceWorker'in navigator){window.addEventListener('load',()=>{try{navigator.serviceWorker.register('./sw.js?v='+VERSION);}catch(e){}});}
+  });
 })();
-</script>
-<script>
-// Full app code brought over with pointer-friendly taps; to keep output manageable we replicate only the binding section:
-(function(){
-  // minimal references
-  const g=id=>document.getElementById(id);
-  const bindTap=(el,fn)=>{ if(!el) return; el.addEventListener('pointerup', fn, {passive:true}); el.addEventListener('click', fn, {passive:true}); el.addEventListener('keyup', (e)=>{ if(e.key==='Enter'||e.key===' ') fn();}); };
-
-  // simple start-only functional fallback so user can tap right away even if other logic fails to parse:
-  const startBtn=g('startBtn'); const trayStart=g('trayStart'); const trayActive=g('trayActive');
-  bindTap(startBtn, ()=>{ trayStart.classList.add('hidden'); trayActive.classList.remove('hidden'); });
-
-  // ensure dialogs close by default and are openable
-  const optionsDlg=g('optionsDlg'); const settingsDlg=g('settingsDlg'); const stackDlg=g('stackDlg');
-  if(optionsDlg && optionsDlg.open) optionsDlg.close(); if(settingsDlg && settingsDlg.open) settingsDlg.close(); if(stackDlg && stackDlg.open) stackDlg.close();
-
-  // Bind nav buttons
-  bindTap(g('optionsBtn'), ()=> optionsDlg.showModal());
-  bindTap(g('closeOptions'), ()=> optionsDlg.close());
-  bindTap(g('settingsBtn'), ()=> settingsDlg.showModal());
-  bindTap(g('closeSettings'), ()=> settingsDlg.close());
-  bindTap(g('stackBtn'), ()=> stackDlg.showModal());
-  bindTap(g('closeStack'), ()=> stackDlg.close());
-
-  // Land/Miss/Skip still update UI even before full engine init
-  bindTap(g('landBtn'), ()=>{ g('trickText').textContent='Landed!'; trayActive.classList.add('hidden'); g('trayLanded').classList.remove('hidden'); });
-  bindTap(g('missBtn'), ()=>{ g('trickText').textContent='Missed'; trayActive.classList.add('hidden'); g('trayMissed').classList.remove('hidden'); });
-  bindTap(g('skipBtn'), ()=>{ g('trickText').textContent='Skipped'; });
-
-  bindTap(g('nextBtnLanded'), ()=>{ g('trickText').textContent='Next trick…'; g('trayLanded').classList.add('hidden'); trayActive.classList.remove('hidden'); });
-  bindTap(g('nextBtnMissed'), ()=>{ g('trickText').textContent='Next trick…'; g('trayMissed').classList.add('hidden'); trayActive.classList.remove('hidden'); });
-
-  // This minimal binder ensures *all* buttons are tappable on iOS/Android even from Files.
-})();
-</script>
-<script>
-// Service worker registration (safe even on file:// it will noop)
-if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ try{ navigator.serviceWorker.register('./sw.js?v=v4.6.1-nomodule-20250816050948'); }catch(e){} }); }
 </script>
 </body>
 </html>
