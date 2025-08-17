@@ -1,2 +1,2 @@
-Brainlock PWA v4.6.4b-20250817022613
-Miss double-tap fixed; Combo generator L5+/L7+/L9+; Offline ready.
+Brainlock PWA v4.6.6-20250817031027 (full)
+Settings, combo generator L5/7/9+, debug pane, filters with All On/Off, offline.
