@@ -1,7 +1,0 @@
-const VERSION='v4.6.6-20250817031027';const CACHE='brainlock-'+VERSION;
-const ASSETS=['./','./index.html?v=v4.6.6-20250817031027','./manifest.webmanifest?v=v4.6.6-20250817031027','./assets/icons/icon-192.png','./assets/icons/icon-512.png'];
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));});
-self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys()) if(k!==CACHE) await caches.delete(k); await self.clients.claim();})());});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith((async()=>{const c=await caches.open(CACHE);const hit=await c.match(e.request);
-const net=fetch(e.request).then(r=>{if(r.ok&&e.request.url.startsWith(self.location.origin)) c.put(e.request,r.clone()); return r;}).catch(()=>hit);
-return hit||net;})());});
