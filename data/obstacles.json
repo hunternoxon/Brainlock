@@ -1,0 +1,41 @@
+{
+  "Flatground": [
+    "Flip",
+    "Freestyle",
+    "Mount"
+  ],
+  "Manual Pad": [
+    "Manual",
+    "Manual,Freestyle",
+    "Manual,Combo"
+  ],
+  "Rail": [
+    "Grind",
+    "Grind,Combo"
+  ],
+  "Ledge/Curb": [
+    "Grind",
+    "Grind,Combo"
+  ],
+  "Hubba": [
+    "Grind",
+    "Grind,Combo"
+  ],
+  "Quarter/Bowl": [
+    "Stall",
+    "Stall,Combo",
+    "Air",
+    "Freestyle,Air"
+  ],
+  "Bank/Hip": [
+    "Air",
+    "Flip,Air"
+  ],
+  "Gap/Stairs": [
+    "Air"
+  ],
+  "Mini/Vert": [
+    "Stall",
+    "Air"
+  ]
+}
