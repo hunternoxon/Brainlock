@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { DevPanel } from './DevPanel'
+import { Field } from './Field'
 import { Home } from './Home'
 import { Play, type PlayCtl } from './Play'
 import { Scores } from './Scores'
@@ -43,6 +44,8 @@ export function App() {
   }, [b.session])
 
   return (
+    <>
+    {view === 'home' && <Field pulse={JSON.stringify(b.settings)} />}
     <div className="app" data-view={view === 'play' ? 'play' : view}>
       {view === 'home' && <Home b={b} go={go} />}
       {view === 'play' && ctl && <Play b={b} go={go} ctl={ctl} />}
@@ -50,5 +53,6 @@ export function App() {
       {view === 'scores' && <Scores b={b} onClose={() => setView('home')} />}
       {view === 'dev' && DEV_PANEL && <DevPanel b={b} onClose={() => setView('home')} />}
     </div>
+    </>
   )
 }

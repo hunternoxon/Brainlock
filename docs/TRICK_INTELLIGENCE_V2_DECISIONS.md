@@ -124,4 +124,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 - **Hardflip / Inward Heelflip + 180 body spin → rare tier.** Varial + 180 stays uncommon.
 - **Difficulty staggering:** `rating = max(raw, gate + lift, gateOther + lift + 0.35 × core)`. When a stance, obstacle or pattern gate sets the floor, the trick's own difficulty still spreads ratings above it: switch Kickflip 5.9 < Varial 6.3 < Hardflip 6.7 < Tre 7.4; nollie 4.8 → 6.4. Quarterpipe lip tricks get individual difficulties (Tail Stall 1.5 … BS Noseblunt Stall 6.5), and BS lip tricks rate +0.2.
 - **Naming:** a nollie ollie displays as "Nollie"; multiplayer copy uses "Your turn" / "Pass back to you" for the default "You" player.
-- **Visuals:** KISS × Partiful sticker wordmark (SVG, lightning-bolt I, chrome horizon line, die-cut outline, sparkle); bolt-on-blob favicon; crackle-paint home background (WebGL Voronoi, about 20 fps at rest, surges for about 1 s on any setting change, static frame under reduced motion); TV-static "Finger ⇄ Skate" subtitle; red melting tunnel on the third-miss result; mobile title/description pairs at 1.05 rem / 0.95 rem.
+- **Visuals (revised):**
+  - Minimal Interpol-style wordmark: heavy uppercase BRAINLOCK over a red rule. Semicircle-in-square favicon.
+  - Home sits on a solid dark card. Behind it (page level, never on the card) is a fine grid of semicircle-in-square tiles, white hairlines on near-black. At rest they flicker and occasionally twitch to new orientations like static (~15 fps). On any selection change, a plasma-ball 'touch' sends tendrils and brightening rings toward the tap, then releases over about 1 s. Reduced motion shows a still frame.
+  - The KISS/Partiful logo and the crackle background were replaced at the user's request.
+  - Also: TV-static "Finger ⇄ Skate" subtitle; red melting tunnel on the third-miss result; mobile title/description pairs at 1.05 rem / 0.95 rem.

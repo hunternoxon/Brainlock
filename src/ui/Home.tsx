@@ -4,7 +4,6 @@ import { boardKey } from '../engine/persist'
 import { FAMILIES, OBSTACLES, STANCES } from '../engine/types'
 import { DEV_PANEL, type Go } from './App'
 import { fmt } from './copy'
-import { Crackle } from './Crackle'
 import { Logo } from './Logo'
 import { modeLabel, turnLabel } from './Match'
 import { Switch } from './SetupSheet'
@@ -29,7 +28,6 @@ export function Home({ b, go }: { b: Brainlock; go: Go }) {
 
   return (
     <main className="screen home">
-      <Crackle pulse={JSON.stringify(st)} />
       <header className="home__head">
         <h1 className="wordmark">
           <Logo />

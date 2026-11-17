@@ -1,4 +1,4 @@
-catalog: 16470 legal tricks, built in 216 ms (first call; cached after). Tiers {"core":4674,"rare":1136,"very-rare":6528,"uncommon":1924,"experimental":2208}
+catalog: 16470 legal tricks, built in 136 ms (first call; cached after). Tiers {"core":4674,"rare":1136,"very-rare":6528,"uncommon":1924,"experimental":2208}
 
 L1: avg rating 1.45 · families {"flips":560,"stalls":179,"manuals":261} · rarity {"core":1000} · immediate repeats 0
 
