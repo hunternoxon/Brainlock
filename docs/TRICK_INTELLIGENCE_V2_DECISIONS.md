@@ -153,3 +153,11 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 
 - **Two-step Home.** The landing shows only the logo, the description and two mode cards (SKATE / Marathon), plus resume cards when something is in progress. Tapping a mode opens step two: mode header with "Change mode", Marathon length, players, level, setup, Start, Scores/Sound. The step persists while navigating Setup/Scores and resets to the landing on reload. Desktop step one is a narrow centered card.
 - **Background: emergency-broadcast TV layer** (about 33% of the look; still greyscale, no text) over the trippy tile tunnel. It has curved CRT glass with edge falloff, phosphor glow, scanlines, a rolling hum bar, VHS tracking tears, faint horizontal jitter, a vertical-hold slip every ~9 s, a snow burst every ~11 s, warning-beacon rings pulsing from the centre every 3.5 s and a slow alarm throb. Land rush and Miss drip on selection changes are kept.
+
+## v2.7 (2026-11-17)
+
+- **Home is a Typeform-style flow.** One question per screen on a compact glass card centred both ways: Choose a mode (with the logo and description) → Marathon length (Marathon only) → Who's playing? → your level, or names/levels/shared tricks for multiplayer → Ready (setup, Start, Scores, Sound).
+  - Choices flash and auto-advance; letter keys A–D pick, Enter continues, ↑/Esc goes back, ↓ goes forward. A progress bar and ↑/↓ arrows sit on the card.
+  - Questions slide up into place (down when going back). The previous answer stays checked.
+  - In-progress sessions or matches show as a slim resume strip on the first question.
+  - The card is ~10% white glass with a 40 px backdrop blur and a hairline border.

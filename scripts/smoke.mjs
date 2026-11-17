@@ -34,10 +34,32 @@ const shot = (n) => page.screenshot({ path: `${OUT}/${n}.png` })
 const btn = (name) => page.getByRole('button', { name, exact: true })
 const text = async (sel) => (await page.locator(sel).first().textContent())?.trim() ?? ''
 const visible = (name) => btn(name).isVisible()
-/** Pick a mode from either home step */
-const chooseMode = async (name) => {
-  if (!(await page.locator('.mode-card').first().isVisible())) await btn('Change mode').click()
-  await page.getByRole('button', { name: new RegExp('^' + name) }).click()
+const wait = (ms) => page.waitForTimeout(ms)
+const choose = async (re) => {
+  await page.getByRole('radio', { name: re }).click()
+  await wait(450)
+}
+/**
+ * Walk the Typeform-style home survey from question 1 to the Ready step.
+ * Returns the level shown on the level question (single player).
+ */
+const survey = async ({ mode = 'SKATE', length = 10, players = 1, level } = {}) => {
+  while (await btn('Previous question').isVisible()) {
+    await btn('Previous question').click()
+    await wait(120)
+  }
+  await choose(new RegExp('^' + mode))
+  if (mode === 'Marathon') await choose(new RegExp('^' + length + ' challenges'))
+  await choose(players === 1 ? /^Just me/ : new RegExp('^' + players + ' players'))
+  if (players > 1) return null
+  const shown = await text('.stepper__val')
+  if (level !== undefined) {
+    for (let i = 0; i < 10 && Number(await text('.stepper__val')) !== level; i++)
+      await btn(Number(await text('.stepper__val')) < level ? 'Raise level' : 'Lower level').click()
+  }
+  await btn('OK').click()
+  await wait(450)
+  return shown
 }
 
 try {
@@ -45,21 +67,25 @@ try {
   await page.evaluate(() => localStorage.clear())
   await page.reload()
   check('home loads with wordmark', await page.getByRole('heading', { name: 'Brainlock' }).isVisible())
-  check('landing shows only logo, description and mode choice', (await page.locator('.mode-card').count()) === 2 && (await page.locator('.setup-summary').count()) === 0 && (await page.locator('.home__foot').count()) === 0)
+  check('landing shows only logo, description and mode choice', (await page.locator('.choice').count()) === 2 && (await page.locator('.setup-summary').count()) === 0 && (await page.locator('.home__foot').count()) === 0)
+  const card = await page.$eval('.survey', (el) => { const r = el.getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, h: r.height, bg: getComputedStyle(el).backgroundColor, blur: getComputedStyle(el).backdropFilter } })
+  check('landing card is compact, centered and glassy', Math.abs(card.cx - 195) < 4 && Math.abs(card.cy - 422) < 30 && card.h < 600 && card.bg.includes('0.1') && card.blur.includes('blur'), JSON.stringify(card))
   await shot('00-landing')
-  await page.getByRole('button', { name: /^SKATE/ }).click()
-  check('choosing a mode opens step two', (await page.locator('.setup-summary').count()) === 1 && (await visible('Change mode')))
+  await page.getByRole('radio', { name: /^SKATE/ }).click()
+  await wait(450)
+  check('choosing a mode auto-advances to the next question', (await text('.q__title')) === 'Who’s playing?' && (await text('.q__num')).startsWith('2'))
+  await survey({ level: 4 })
+  check('survey ends at Ready with setup + Start', (await page.locator('.setup-summary').count()) === 1 && (await visible('Start session')))
   check('all 12 obstacles by default', (await text('.setup-summary')).includes('All 12 obstacles'))
   await shot('01-home')
 
   // Setup persists
-  await page.getByRole('button', { name: 'Raise level' }).click() // raise to level 4
   await page.locator('.setup-summary').click()
   await page.getByRole('button', { name: 'quarterpipe', exact: true }).click()
   await btn('Done').click()
   await page.reload()
-  await page.getByRole('button', { name: /^SKATE/ }).click()
-  check('settings persist across reload', (await text('.stepper__val')) === '4' && (await text('.setup-summary')).includes('11 obstacles'))
+  const lvl = await survey({})
+  check('settings persist across reload', lvl === '4' && (await text('.setup-summary')).includes('11 obstacles'))
 
   // SKATE
   await btn('Start session').click()
@@ -125,8 +151,7 @@ try {
   await btn('Home').click()
 
   // Solo 10
-  await chooseMode('Marathon')
-  await page.getByRole('radio', { name: '10' }).click()
+  await survey({ mode: 'Marathon', length: 10 })
   await btn('Start session').click()
   check('Marathon shows progress, not SKATE letters', (await page.locator('.letters').count()) === 0 && (await text('.progress')).startsWith('1'))
   let n = 0
@@ -168,7 +193,7 @@ try {
   await btn('Done').click()
 
   // Empty pool guidance + no-obstacles guidance
-  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Lower level' }).click()
+  await survey({ mode: 'Marathon', length: 10, level: 1 })
   await page.locator('.setup-summary').click()
   await btn('None').click()
   check('no obstacles → clear guidance', (await page.locator('.notice--warn').textContent()).includes('No obstacles selected'))
@@ -214,9 +239,10 @@ try {
   await btn('Home').click()
 
   // Local multiplayer: 2-player SKATE to the end
-  await chooseMode('SKATE')
-  await page.getByRole('radio', { name: '2', exact: true }).click()
+  await survey({ mode: 'SKATE', players: 2 })
   await page.getByRole('textbox', { name: 'Player 2 name' }).fill('Sam')
+  await btn('OK').click()
+  await wait(450)
   await btn('Start 2-player match').click()
   check('match shows both players and whose turn', (await page.locator('.matchbar__p').count()) === 2 && (await text('.turn')) === 'Your turn')
   const sharedTrick = await text('.trick__name')
@@ -236,12 +262,13 @@ try {
   check('2-player SKATE ends when Sam spells SKATE; You win', (await text('.summary__title')) === 'You win' && (await page.locator('.standings li').count()) === 2)
   await shot('18-match-summary')
   await btn('Home').click()
-  await page.getByRole('radio', { name: 'Just me' }).click()
+  await survey({})
 
   // Desktop width
   await page.setViewportSize({ width: 1440, height: 900 })
-  const cols = await page.$eval('.home__cols', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
-  check('desktop home uses two columns', cols === 2)
+  await wait(200)
+  const dc = await page.$eval('.survey', (el) => { const r = el.getBoundingClientRect(); return { cx: r.left + r.width / 2, w: r.width } })
+  check('desktop survey card is centered and compact', Math.abs(dc.cx - 720) < 4 && dc.w <= 540, JSON.stringify(dc))
   await shot('13-home-desktop')
   await page.locator('.setup-summary').click()
   const famCols = await page.$eval('.setup__families', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)

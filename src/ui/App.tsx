@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DevPanel } from './DevPanel'
 import { Field } from './Field'
-import { Home } from './Home'
+import { Home, type HomeStep } from './Home'
 import { Play, type PlayCtl } from './Play'
 import { Scores } from './Scores'
 import { SetupSheet } from './SetupSheet'
@@ -16,8 +16,8 @@ export function App() {
   const b = useBrainlock()
   // Never auto-enter a restored session: Home offers Resume / Start over first
   const [view, setView] = useState<View>('home')
-  // Home is two steps: 1 = logo + description + mode; 2 = everything else
-  const [homeStep, setHomeStep] = useState<1 | 2>(1)
+  // Home is a Typeform-style flow; remembered while visiting Setup/Scores
+  const [homeStep, setHomeStep] = useState<HomeStep>('mode')
 
   const [playing, setPlaying] = useState<'single' | 'match'>('single')
   const go = (v: View, which?: 'single' | 'match') => {
