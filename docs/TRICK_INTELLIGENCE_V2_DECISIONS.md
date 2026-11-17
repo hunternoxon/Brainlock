@@ -175,3 +175,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 - No OK buttons on the level or names questions; Next handles them.
 - The last question's Next position becomes the **single** Start session / Start N-player match button; there is no other Start button.
 - Mode and level descriptions show one sentence per line, avoiding awkward wraps on phones.
+
+## v2.10 (2026-11-17)
+
+- Returning Home from a game (recap after completing, ending early, or the in-game menu) resets the flow to the first question, Choose a mode.
+- Every question card has the same fixed height (min(620 px, viewport − 32 px)). The question area flexes between the header and the anchored Back/Next bar, so only the content slides between questions. It's verified at 390×844, 375×667 and 1440×900 with nothing scrolling.

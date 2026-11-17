@@ -82,7 +82,10 @@ try {
   await btn('Get started').click()
   await wait(450)
   check('Get started moves to the next question with Back / Next', (await text('.q__title')) === 'Who’s playing?' && (await visible('Back')) && (await visible('Next')))
+  const h1 = await page.$eval('.survey', (el) => Math.round(el.getBoundingClientRect().height))
   await survey({ level: 4 })
+  const h2 = await page.$eval('.survey', (el) => Math.round(el.getBoundingClientRect().height))
+  check('every question card is the same height', h1 === h2, `${h1} vs ${h2}`)
   check('survey ends at Ready with setup + a single Start in the Next position', (await page.locator('.setup-summary').count()) === 1 && (await btn('Start session').count()) === 1 && (await page.locator('.survey__next').textContent()) === 'Start session' && !(await visible('Next')))
   check('level question has no OK button', okSeenOnLevel === false)
   check('all 12 obstacles by default', (await text('.setup-summary')).includes('All 12 obstacles'))
@@ -176,6 +179,7 @@ try {
   check('Marathon 10 ends after exactly 10', n === 10 && (await text('.summary__title')) === 'Run complete.', `resolved ${n}`)
   await shot('09-solo-summary')
   await btn('Home').click()
+  check('after the recap, Home starts at the first question', (await text('.q__title')) === 'Choose a mode')
 
   // Manual end
   await btn('Start session').click()
@@ -184,6 +188,7 @@ try {
   await btn('Tap again to end session').click()
   check('manual end → "Session ended." and not a high score', (await text('.summary__title')) === 'Session ended.' && (await text('.summary__score')).includes('not high scores'))
   await btn('Home').click()
+  check('after ending early, Home starts at the first question', (await text('.q__title')) === 'Choose a mode')
 
   await btn('Scores & history').click()
   const board = await page.locator('.board').count()

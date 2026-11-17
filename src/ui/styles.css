@@ -1985,3 +1985,22 @@ h3 {
 .q__desc .line {
   display: block;
 }
+
+/* ---------- Home v6: one card height for every question ---------- */
+.survey {
+  height: min(620px, calc(100dvh - 32px));
+}
+.survey .q {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* room for the cut-out shadows and tilts */
+  padding: 4px 4px 10px;
+  margin: -4px -4px 0;
+}
+.survey .home__head,
+.survey .resume-strip,
+.survey__nav,
+.survey__start {
+  flex: none;
+}

@@ -22,6 +22,8 @@ export function App() {
   const [playing, setPlaying] = useState<'single' | 'match'>('single')
   const go = (v: View, which?: 'single' | 'match') => {
     if (which) setPlaying(which)
+    // Coming home from a game (recap, ended early, or the in-game menu): start the questions from the top
+    if (v === 'home' && view === 'play') setHomeStep('mode')
     setView(v)
   }
 
