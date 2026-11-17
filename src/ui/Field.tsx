@@ -17,23 +17,58 @@ uniform float uSpike;
 uniform float uRest;
 
 float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+vec2 h2(vec2 p) {
+  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+  return fract(sin(p) * 43758.5453);
+}
+
+// Crackle network (bike-frame paint): border distance + id of the paint chip
+vec3 crack(vec2 x) {
+  vec2 n = floor(x), f = fract(x), mg, mr;
+  float md = 8.0;
+  for (int j = -1; j <= 1; j++)
+  for (int i = -1; i <= 1; i++) {
+    vec2 g = vec2(float(i), float(j));
+    vec2 r = g + 0.15 + 0.7 * h2(n + g) - f;
+    float d = dot(r, r);
+    if (d < md) { md = d; mr = r; mg = g; }
+  }
+  md = 8.0;
+  for (int j = -2; j <= 2; j++)
+  for (int i = -2; i <= 2; i++) {
+    vec2 g = mg + vec2(float(i), float(j));
+    vec2 r = g + 0.15 + 0.7 * h2(n + g) - f;
+    if (dot(mr - r, mr - r) > 0.00001) md = min(md, dot(0.5 * (mr + r), normalize(r - mr)));
+  }
+  return vec3(md, n + mg);
+}
 
 void main() {
-  vec2 px = gl_FragCoord.xy;
+  vec2 frag = gl_FragCoord.xy;
+  float m = min(uRes.x, uRes.y);
+
+  // Paint chips: jagged crack lines; each chip shifts the pattern slightly (shattered look)
+  vec2 cu = frag / (uTile * 7.0);
+  cu += 0.03 * vec2(sin(cu.y * 23.0 + cu.x * 7.0), cos(cu.x * 19.0 - cu.y * 5.0));
+  cu += 0.008 * vec2(sin(cu.y * 97.0 + cu.x * 31.0), cos(cu.x * 89.0 - cu.y * 41.0));
+  vec3 cr = crack(cu);
+  vec2 chipShift = (h2(cr.yz) - 0.5) * uTile * 0.35;
+  vec2 px = frag + chipShift;
+
   vec2 cell = floor(px / uTile);
   vec2 p = fract(px / uTile);
   float r = h(cell);
 
-  // Plasma touch: distance / angle from the touch point
-  vec2 tp = px - uTouch;
-  float dist = length(tp) / min(uRes.x, uRes.y);
+  // Plasma touch
+  vec2 tp = frag - uTouch;
+  float dist = length(tp) / m;
   float ang = atan(tp.y, tp.x);
   float reach = 0.08 + uSpike * 0.75;
   float near = smoothstep(reach, reach * 0.15, dist) * uSpike;
   float tendrils = pow(abs(sin(ang * 4.0 + sin(uTime * 9.0 + ang * 3.0) * 1.3 + dist * 14.0 - uTime * 5.0)), 22.0);
   tendrils = max(tendrils, pow(abs(sin(ang * 7.0 - uTime * 3.0 + dist * 9.0)), 40.0));
 
-  // Static: each tile occasionally snaps to a new orientation (faster when charged)
+  // Static: tiles snap to new orientations
   float epoch = floor(uTime * (0.3 + near * 6.0) + r * 9.0);
   float o = floor(h(cell + epoch * 1.37) * 4.0);
   vec2 q = p - 0.5;
@@ -42,22 +77,41 @@ void main() {
   else if (o == 3.0) q = vec2(q.y, -q.x);
   q += 0.5;
 
-  // Concentric semicircles centred on one edge of the square
   float d = length(q - vec2(0.5, 0.0));
   float rings = 4.0;
   float f = d * rings * 2.0 - near * uTime * 2.0;
   float lineD = abs(fract(f) - 0.5) / (rings * 2.0);
-  float lw = 0.55 / uTile;
-  float aa = 1.0 / uTile;
+  float lw = 0.6 / uTile;
+  float aa = 1.2 / uTile;
   float line = (1.0 - smoothstep(lw, lw + aa, lineD)) * step(d, 0.5);
 
-  // Static flicker + rare sparks
+  // Crack lines: gaps in the pattern with a pale chipped edge
+  // Thin, sharp main cracks + fine hairline sub-cracks inside each chip
+  float cw = 0.009;
+  float crackLine = 1.0 - smoothstep(cw, cw + 0.008, cr.x);
+  float fineC = crack(cu * 3.1 + 11.0).x;
+  float hair = (1.0 - smoothstep(0.012, 0.022, fineC)) * (1.0 - crackLine);
+  float edge = 0.0;
+  line *= 1.0 - crackLine;
+
   float flick = h(cell + floor(uTime * 14.0));
   float spark = step(0.994, flick) * 0.35;
   float base = uRest * (0.7 + 0.3 * flick) + spark * uRest * 3.0;
   float energy = near * (0.25 + 0.75 * tendrils);
-  float a = clamp(line * (base + energy), 0.0, 1.0);
-  gl_FragColor = vec4(mix(vec3(0.02, 0.02, 0.025), vec3(1.0), a), 1.0);
+  float a = clamp(line * (base + energy) + edge * (0.05 + energy * 0.5), 0.0, 1.0);
+  // Faint white crack veins (charged cracks glow a little when touched)
+  a = max(a, crackLine * (0.34 + near * 0.5));
+  a = max(a, hair * (0.07 + near * 0.2));
+
+  // Photo: uneven soft exposure, vignette, lifted blacks, grain (greyscale)
+  vec2 sp = frag / uRes;
+  float light = 0.95 + 0.4 * smoothstep(0.9, 0.0, length(sp - vec2(0.3 + 0.1 * sin(uTime * 0.05), 0.75)));
+  float vig = 1.0 - 0.35 * smoothstep(0.45, 1.1, length(sp - 0.5) * 1.3);
+  float g = 0.025 + a * light;
+  g *= vig;
+  float grain = h(frag + fract(uTime * 7.0) * 113.0) - 0.5;
+  g += grain * 0.09;
+  gl_FragColor = vec4(vec3(clamp(g, 0.0, 1.0)), 1.0);
 }
 `
 const VERT = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }'
@@ -108,7 +162,7 @@ export function Field({ pulse }: { pulse: unknown }) {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
     const U = (n: string) => gl.getUniformLocation(prog, n)
     const uRes = U('uRes'), uTime = U('uTime'), uTile = U('uTile'), uTouch = U('uTouch'), uSpike = U('uSpike'), uRest = U('uRest')
-    gl.uniform1f(uRest, 0.1)
+    gl.uniform1f(uRest, 0.12)
 
     let scale = 1
     const resize = () => {

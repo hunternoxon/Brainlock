@@ -35,16 +35,16 @@ export interface BoardMove {
 }
 
 const FLAT3: Obstacle[] = ['flat', 'bank', 'gap']
-const FLAT4: Obstacle[] = ['flat', 'bank', 'gap', 'manual pad']
+const FLAT4: Obstacle[] = ['flat', 'bank', 'gap']
 
 export const BOARD_MOVES: Record<string, BoardMove> = Object.fromEntries(
   (
     [
-      { key: 'ollie', label: 'Ollie', gate: 1, diff: 0.5, rarity: 'core', air: ['flat', 'gap', 'manual pad'] },
+      { key: 'ollie', label: 'Ollie', gate: 1, diff: 0.5, rarity: 'core', air: ['flat', 'gap'] },
       { key: 'bs pop shuvit', label: 'BS Pop Shuvit', board: { deg: 180, dir: 'BS' }, gate: 1, diff: 1, rarity: 'core', air: FLAT4, grindEntry: 5, manualEntry: 2, aliases: ['pop shuvit', 'shuvit', 'pop shove-it', 'shove-it', 'backside pop shuvit'] },
       { key: 'fs pop shuvit', label: 'FS Pop Shuvit', board: { deg: 180, dir: 'FS' }, gate: 2, diff: 1.3, rarity: 'core', air: FLAT4, grindEntry: 6, manualEntry: 3, aliases: ['frontside pop shuvit', 'fs shuvit', 'frontside shove-it'] },
-      { key: 'kickflip', label: 'Kickflip', flip: 'kick', gate: 1, diff: 1, rarity: 'core', air: ['flat', 'bank', 'gap', 'manual pad', 'quarterpipe'], grindEntry: 5, manualEntry: 2, maxFlips: 3, aliases: ['flip'] },
-      { key: 'heelflip', label: 'Heelflip', flip: 'heel', gate: 1, diff: 1, rarity: 'core', air: ['flat', 'bank', 'gap', 'manual pad', 'quarterpipe'], grindEntry: 5, manualEntry: 2, maxFlips: 3, aliases: ['heel'] },
+      { key: 'kickflip', label: 'Kickflip', flip: 'kick', gate: 1, diff: 1, rarity: 'core', air: ['flat', 'bank', 'gap', 'quarterpipe'], grindEntry: 5, manualEntry: 2, maxFlips: 3, aliases: ['flip'] },
+      { key: 'heelflip', label: 'Heelflip', flip: 'heel', gate: 1, diff: 1, rarity: 'core', air: ['flat', 'bank', 'gap', 'quarterpipe'], grindEntry: 5, manualEntry: 2, maxFlips: 3, aliases: ['heel'] },
       { key: 'bs 360 shuvit', label: 'BS 360 Shuvit', board: { deg: 360, dir: 'BS' }, gate: 3, diff: 2.5, rarity: 'core', air: FLAT3, grindEntry: 8, aliases: ['360 shuvit', '360 shove-it', 'backside 360 shuvit'] },
       { key: 'fs 360 shuvit', label: 'FS 360 Shuvit', board: { deg: 360, dir: 'FS' }, gate: 4, diff: 3, rarity: 'core', air: FLAT3, aliases: ['frontside 360 shuvit'] },
       { key: 'varial kickflip', label: 'Varial Kickflip', flip: 'kick', board: { deg: 180, dir: 'BS' }, gate: 3, diff: 2, rarity: 'core', air: ['flat', 'bank', 'gap', 'quarterpipe'], grindEntry: 7, manualEntry: 4, maxFlips: 2, aliases: ['varial flip'] },
@@ -219,16 +219,15 @@ export const SEQUENCE = { gate: 8, diff: 1, rarity: 'very-rare' as Rarity }
 export const REVERT = { gate: 5, diff: 1, value: 0.1, rarity: 'rare' as Rarity, airObstacles: ['flat', 'bank'] as Obstacle[], manualObstacles: ['manual pad', 'box'] as Obstacle[] }
 
 // ---- Transfers ----
+// Manual pad transfers removed: every manual pad trick must include a manual
 export const TRANSFER_PAIRS: [Obstacle, Obstacle][] = [
-  ['manual pad', 'box'],
-  ['box', 'manual pad'],
   ['bank', 'quarterpipe'],
   ['quarterpipe', 'bank'],
 ]
 export const TRANSFER = { gate: 5, diff: 1.5, value: 0.2, rarity: 'rare' as Rarity, moves: ['ollie', 'kickflip', 'heelflip', 'bs pop shuvit'] }
 
 // ---- Body spin compatibility for standalone airs ----
-export const SPIN_AIR_OBSTACLES: Record<number, Obstacle[]> = { 180: ['flat', 'gap', 'bank', 'manual pad'], 360: ['flat', 'gap', 'bank'] }
+export const SPIN_AIR_OBSTACLES: Record<number, Obstacle[]> = { 180: ['flat', 'gap', 'bank'], 360: ['flat', 'gap', 'bank'] }
 
 /** Rarity for doubles/triples */
 export const MULTI_FLIP = { 2: { gate: 7, rarity: 'rare' as Rarity }, 3: { gate: 9, rarity: 'very-rare' as Rarity } }

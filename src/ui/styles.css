@@ -322,6 +322,8 @@ h2 {
   z-index: 0;
   display: block;
   background: #050506;
+  /* slight lens softness for the photographic feel */
+  filter: blur(0.35px) contrast(1.05);
 }
 .field-bg[data-fallback] {
   background:

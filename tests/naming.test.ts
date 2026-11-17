@@ -50,12 +50,12 @@ describe('conventional names from canonical components', () => {
     [{ obstacle: 'quarterpipe', stance: 'regular', pattern: 'coping', lip: 'axle stall', lipDir: 'BS' }, 'BS Axle Stall'],
     [{ obstacle: 'quarterpipe', stance: 'regular', pattern: 'coping', lip: 'disaster', lipDir: 'FS', revert: 'FS' }, 'FS Disaster Revert'],
     [{ obstacle: 'quarterpipe', stance: 'regular', pattern: 'flip-only', flip: 'kickflip' }, 'Kickflip Fakie'],
-    [{ obstacle: 'box', stance: 'regular', pattern: 'transfer', flip: 'kickflip', transferTo: 'manual pad' }, 'Kickflip Transfer'],
+    [{ obstacle: 'bank', stance: 'regular', pattern: 'transfer', flip: 'kickflip', transferTo: 'quarterpipe' }, 'Kickflip Transfer'],
   ]
   for (const [t, name] of cases) test(name, () => expect(trickName(t)).toBe(name))
 
   test('transfer phrase names both obstacles', () => {
-    expect(displayText({ obstacle: 'box', stance: 'regular', pattern: 'transfer', flip: 'ollie', transferTo: 'manual pad' })).toBe('Ollie Transfer from the box to the manual pad')
+    expect(displayText({ obstacle: 'bank', stance: 'regular', pattern: 'transfer', flip: 'ollie', transferTo: 'quarterpipe' })).toBe('Ollie Transfer from the bank to the quarterpipe')
   })
   test('no implied-ollie prefixes and no "Regular" anywhere in the catalog', () => {
     for (const c of fullCatalog()) {

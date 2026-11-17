@@ -9,6 +9,12 @@ const filtersWith = (p: Partial<Filters>): Filters => ({ ...defaultFilters(), ..
 const names = (ps: RatedTrick[]) => ps.map((p) => displayText(p.trick))
 
 describe('fundamentals', () => {
+  test('every manual pad trick includes a manual (catalog + seeded picks)', () => {
+    for (const c of fullCatalog()) if (c.trick.obstacle === 'manual pad' || c.trick.transferTo === 'manual pad') expect(c.trick.manual, displayText(c.trick)).toBeTruthy()
+    const picks = run(filtersWith({ obstacles: ['manual pad'], rarity: 'normal', transfers: true }), 5, 500)
+    expect(picks.every((p) => p.trick.manual)).toBe(true)
+    expect(new Set(picks.map((p) => p.trick.pattern)).size).toBeGreaterThanOrEqual(2)
+  })
   test('Ollie is a valid beginner prompt', () => {
     const ollie = fullCatalog().find((c) => c.trick.flip === 'ollie' && !c.trick.spin && c.trick.obstacle === 'flat' && c.trick.stance === 'regular')
     expect(ollie!.rating).toBeLessThanOrEqual(1.2)
@@ -80,7 +86,7 @@ describe('flags and rarity', () => {
     expect(run(filtersWith({ rarity: 'normal' }), 7, 1500).some((p) => p.trick.transferTo)).toBe(false)
     const on = run(filtersWith({ transfers: true, rarity: 'normal', obstacles: ['box', 'manual pad', 'bank', 'quarterpipe'] }), 7, 2000)
     const t = on.filter((p) => p.trick.transferTo)
-    for (const p of t) expect([['manual pad', 'box'], ['box', 'manual pad'], ['bank', 'quarterpipe'], ['quarterpipe', 'bank']]).toContainEqual([p.trick.obstacle, p.trick.transferTo])
+    for (const p of t) expect([['bank', 'quarterpipe'], ['quarterpipe', 'bank']]).toContainEqual([p.trick.obstacle, p.trick.transferTo])
     expect(t.length / on.length).toBeLessThan(0.15)
   })
   test('Rare = Off: no rare/very-rare tricks, core vocabulary intact', () => {

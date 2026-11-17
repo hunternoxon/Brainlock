@@ -64,7 +64,7 @@ export const PATTERN_GATE: Record<Pattern, number> = {
 
 /**
  * Patterns per obstacle: legacy lists plus v2 extensions —
- * flat/gap/bank/manual pad airs now include ollies + shuvits (still 'flip-only'),
+ * flat/gap/bank airs now include ollies + shuvits (still 'flip-only'); manual pad is manuals-only,
  * box/curb gain flip-in grinds, quarterpipe gains coping grinds + stalls.
  */
 export const OBSTACLE_PATTERNS: Record<Obstacle, Pattern[]> = Object.fromEntries(

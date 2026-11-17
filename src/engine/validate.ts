@@ -78,6 +78,8 @@ export function validateTrick(t: Trick, opts: ValidateOptions = {}): ValidationR
 
   if (t.pattern !== 'transfer' && !OBSTACLE_PATTERNS[t.obstacle]?.includes(t.pattern)) no(`Pattern ${t.pattern} not available on ${t.obstacle}`)
   if (t.pattern === 'flip→manual' && t.obstacle !== 'manual pad') no('Flip to manual only on a manual pad')
+  // A manual pad is for manuals: every trick there includes one
+  if ((t.obstacle === 'manual pad' || t.transferTo === 'manual pad') && !t.manual) no('Tricks on the manual pad must include a manual')
 
   // Exactly the components the pattern requires
   if (parts.flip === 'yes' && !t.flip) no('Missing board move')

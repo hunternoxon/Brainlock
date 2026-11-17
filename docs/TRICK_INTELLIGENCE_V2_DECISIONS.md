@@ -129,3 +129,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
   - Home sits on a solid dark card. Behind it (page level, never on the card) is a fine grid of semicircle-in-square tiles, white hairlines on near-black. At rest they flicker and occasionally twitch to new orientations like static (~15 fps). On any selection change, a plasma-ball 'touch' sends tendrils and brightening rings toward the tap, then releases over about 1 s. Reduced motion shows a still frame.
   - The KISS/Partiful logo and the crackle background were replaced at the user's request.
   - Also: TV-static "Finger ⇄ Skate" subtitle; red melting tunnel on the third-miss result; mobile title/description pairs at 1.05 rem / 0.95 rem.
+
+## v2.2 (2026-11-17)
+
+- **Manual pad = manuals only.** Hard legality rule: every manual pad trick includes a manual (manual, nose manual, flip/shuvit-into-manual, 180 to manual, manual exits/reverts). Plain airs onto the pad and the manual pad ↔ box transfers are removed; transfers are bank ↔ quarterpipe only. This is test-enforced across the catalog and in seeded play.
+- **Home background:** about 20% more bike-frame crackle. Sharp branching crack lines plus faint hairline sub-cracks run through the semicircle grid, and tiles shift slightly at each crack like shattered paint. A greyscale photographic finish adds soft uneven exposure, a mild vignette, lifted blacks, animated film grain and slight lens softness.
