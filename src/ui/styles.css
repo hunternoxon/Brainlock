@@ -2004,3 +2004,91 @@ h3 {
 .survey__start {
   flex: none;
 }
+
+/* ---------- Level picker: fills the card ---------- */
+.level-picker {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 4px 0 6px;
+}
+.level-picker__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.level-picker__btn {
+  width: 72px;
+  min-height: 72px;
+  font-size: 2rem;
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--ink-strong);
+}
+.level-picker__num {
+  font-size: clamp(6.5rem, 34vw, 9.5rem);
+  font-weight: 850;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+  animation: rise 0.35s var(--ease-snap) both;
+}
+.level-picker__name {
+  padding: 0.12em 0.45em;
+  background: #fff;
+  color: #111;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+  box-shadow: var(--lift-shadow);
+  transform: rotate(-1.2deg);
+  animation: rise 0.35s var(--ease-snap) both;
+}
+.level-picker__meter {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+.level-picker__meter span {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.15);
+  transition: background-color 0.2s;
+}
+.level-picker__meter span[data-on] {
+  background: var(--ink-strong);
+}
+
+/* More breathing room between the description and "Choose a mode" */
+.survey .home__head {
+  padding-bottom: 16px;
+}
+
+/* ---------- Setup: stacked full-width sections on desktop too ---------- */
+@media (min-width: 900px) {
+  .setup__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .setup__side {
+    position: static;
+    gap: 28px;
+  }
+  .setup__families {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .setup__grid {
+    align-items: stretch;
+  }
+}

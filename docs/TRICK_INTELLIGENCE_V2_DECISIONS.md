@@ -180,3 +180,9 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 
 - Returning Home from a game (recap after completing, ending early, or the in-game menu) resets the flow to the first question, Choose a mode.
 - Every question card has the same fixed height (min(620 px, viewport − 32 px)). The question area flexes between the header and the anchored Back/Next bar, so only the content slides between questions. It's verified at 390×844, 375×667 and 1440×900 with nothing scrolling.
+
+## v2.11 (2026-11-17)
+
+- **Level question:** a large picker fills the card: a huge number, 72 px −/+ buttons, a playful level name as a white cut-out label, and a 10-step meter. Names (vibe, never a dig at skill): 1 Fresh Grip Tape · 2 Tiny Wheels, Big Dreams · 3 Kitchen Table Ripper · 4 Desk Drawer Daredevil · 5 Knuckle Cruiser · 6 Rail Whisperer · 7 Pocket Pro · 8 Coping Wizard · 9 Trucks of Fury · 10 Fully Brainlocked. A note reads "First time? We recommend level 1."
+- **Landing description:** "Skate⇄Finger-board game that you can play alone or with the homies" (TV-static swap kept). There's more space between it and "Choose a mode".
+- **Setup on desktop:** stacked full-width sections like mobile (no side column, no family grid).

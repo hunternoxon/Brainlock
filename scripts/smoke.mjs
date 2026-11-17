@@ -291,7 +291,13 @@ try {
   const famCols = await page.$eval('.setup__families', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
   const gridCols = await page.$eval('.setup__grid', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
   const appW = await page.$eval('.app', (el) => el.getBoundingClientRect().width)
-  check('desktop setup: side column + multi-column families, wide container', gridCols === 2 && famCols >= 2 && appW > 1000, `grid ${gridCols}, families ${famCols}, width ${appW}`)
+  const stacked = await page.evaluate(() => {
+    const fams = [...document.querySelectorAll('.setup__families .family')].map((f) => f.getBoundingClientRect())
+    const panels = [...document.querySelectorAll('.setup__side .panel')].map((f) => f.getBoundingClientRect())
+    const all = [...panels, ...fams]
+    return { sameLeft: all.every((r) => Math.abs(r.left - all[0].left) < 2), sameWidth: all.every((r) => Math.abs(r.width - all[0].width) < 2), n: all.length }
+  })
+  check('desktop setup stacks full-width sections like mobile', stacked.sameLeft && stacked.sameWidth && stacked.n === 8 && appW > 1000, JSON.stringify({ ...stacked, appW, gridCols, famCols }))
   const headVsChip = await page.evaluate(() => {
     const h = document.querySelector('.family__head h3')
     const c = document.querySelector('.chips--sub .chip')

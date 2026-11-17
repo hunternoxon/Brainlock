@@ -112,8 +112,8 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
               <Logo />
             </h1>
             <p className="tagline">
-              <StaticWord words={['Finger', 'Skate']} />
-              board challenges that match your level.
+              <StaticWord words={['Skate', 'Finger']} />
+              board game that you can play alone or with the homies.
             </p>
           </header>
         )}
@@ -197,8 +197,8 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
                   </>
                 ) : (
                   <>
-                    <span className="line">1 = just starting, 10 = pro.</span>
-                    <span className="line">It adjusts slowly as you complete sessions.</span>
+                    <span className="line">First time? We recommend level 1.</span>
+                    <span className="line">It adjusts slowly as you play.</span>
                   </>
                 )}
               </p>
@@ -247,11 +247,7 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
             </div>
           )}
 
-          {current === 'level' && (
-            <div className="q__body">
-              <Stepper label="Level" value={st.level} onChange={(v) => b.setSettings({ level: v })} />
-            </div>
-          )}
+          {current === 'level' && <LevelPicker value={st.level} onChange={(v) => b.setSettings({ level: v })} />}
 
           {current === 'names' && (
             <div className="q__body players">
@@ -362,6 +358,46 @@ function Stepper({ label, value, onChange, small }: { label: string; value: numb
       <button className="pill pill--icon" aria-label={small ? `Raise ${label.toLowerCase()}` : 'Raise level'} disabled={value >= 10} onClick={() => onChange(value + 1)}>
         +
       </button>
+    </div>
+  )
+}
+
+/** Playful level names: about the vibe, never a dig at anyone's skill. */
+export const LEVEL_NAMES = [
+  'Fresh Grip Tape',
+  'Tiny Wheels, Big Dreams',
+  'Kitchen Table Ripper',
+  'Desk Drawer Daredevil',
+  'Knuckle Cruiser',
+  'Rail Whisperer',
+  'Pocket Pro',
+  'Coping Wizard',
+  'Trucks of Fury',
+  'Fully Brainlocked',
+]
+
+function LevelPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="level-picker" role="group" aria-label="Level">
+      <div className="level-picker__row">
+        <button className="pill pill--icon level-picker__btn" aria-label="Lower level" disabled={value <= 1} onClick={() => onChange(value - 1)}>
+          −
+        </button>
+        <output className="level-picker__num stepper__val" aria-live="polite" key={value}>
+          {value}
+        </output>
+        <button className="pill pill--icon level-picker__btn" aria-label="Raise level" disabled={value >= 10} onClick={() => onChange(value + 1)}>
+          +
+        </button>
+      </div>
+      <p className="level-picker__name" key={`n${value}`}>
+        {LEVEL_NAMES[value - 1]}
+      </p>
+      <div className="level-picker__meter" aria-hidden="true">
+        {LEVEL_NAMES.map((_, i) => (
+          <span key={i} data-on={i < value || undefined} />
+        ))}
+      </div>
     </div>
   )
 }
