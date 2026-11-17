@@ -59,7 +59,7 @@ export interface MatchRecord {
 }
 
 export function defaultMulti(): MultiSettings {
-  return { count: 1, names: ['You', 'Player 2', 'Player 3', 'Player 4'], levels: [3, 3, 3, 3], shared: true }
+  return { count: 1, names: ['You', 'Player 2', 'Player 3', 'Player 4'], levels: [1, 1, 1, 1], shared: true }
 }
 
 /** Long-term profile metadata. The skill itself is recomputed from history (learning.ts). */
@@ -103,7 +103,7 @@ export interface HistoryEntry {
 }
 
 export function defaultSettings(): Settings {
-  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: true, debug: false, multi: defaultMulti(), initials: '' }
+  return { mode: 'skate', soloLength: 10, level: 1, filters: sanitizeFilters(undefined), sound: true, debug: false, multi: defaultMulti(), initials: '' }
 }
 
 export const boardKey = (mode: Mode, soloLength?: SoloLength) => (mode === 'skate' ? 'skate' : `solo-${soloLength}`)

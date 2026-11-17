@@ -200,3 +200,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 - **Pool copy:** "**N possible tricks to start.** Keep landing tricks to level up and expand your trick pool."
 - **Sound is on by default.** Settings saved before this change switch to on once; settings are now saved with `soundV: 2`, so later choices stick.
 - **Level names:** 1 First Day · 2 Getting There · 3 Sketchy Counts · 4 Local Hero · 5 Shop Flow · 6 Actually Pretty Good · 7 Film This · 8 Tuff · 9 Shred Maxing · 10 Fully Brainlocked.
+
+## v2.14 (2026-11-17)
+
+- The default level is 1 for new players, and for players 2–4 in multiplayer. Saved settings keep their level.
+- The GitHub repo's About caption matches the landing description.

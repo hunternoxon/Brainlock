@@ -28,7 +28,7 @@ describe('persistence', () => {
     expect(store.issues[0].key).toBe(KEYS.session)
     expect(mem.getItem(`${KEYS.session}:corrupt:123`)).toBe('{not json')
     const settings = store.loadSettings()
-    expect(settings.level).toBe(3)
+    expect(settings.level).toBe(1)
     expect(settings.mode).toBe('skate')
     expect(settings.filters.obstacles).toEqual(['flat'])
   })
