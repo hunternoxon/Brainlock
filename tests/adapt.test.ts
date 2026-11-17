@@ -19,7 +19,8 @@ describe('adaptive skill', () => {
   test('many first-try lands → gradual rise (not a jump)', () => {
     const { s, path } = run(anchorSkill(4), Array(10).fill(L1))
     expect(s.effective).toBeGreaterThan(4.3)
-    expect(s.effective).toBeLessThan(5.0)
+    // hot-streak acceleration is slight: still about one level over 10 perfect lands
+    expect(s.effective).toBeLessThan(5.1)
     for (let i = 1; i < path.length; i++) expect(path[i] - path[i - 1]).toBeLessThanOrEqual(T.adaptationStepLimit + 1e-9)
   })
   test('many failed challenges → gradual fall', () => {

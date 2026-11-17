@@ -1,129 +1,93 @@
-catalog: 7952 legal tricks (4864 experimental-lane only)
+catalog: 16470 legal tricks, built in 173 ms (first call; cached after). Tiers {"core":4674,"rare":1088,"very-rare":6528,"uncommon":1972,"experimental":2208}
 
-L1: avg rating 1.10 (min 1, max 1.3), spins 0%, immediate repeats 0
-  patterns {"flip-only":575,"manual-only":425}
-  obstacles {"flat":190,"curb":109,"bank":320,"manual pad":283,"box":98}
-  · Kickflip on flat  [1]
-  · Manual on the curb  [1]
-  · Heelflip on flat  [1]
-  · Manual on the bank  [1.3]
+L1: avg rating 1.17 · families {"flips":632,"stalls":97,"manuals":271} · rarity {"core":1000} · immediate repeats 0
+
+L2: avg rating 1.99 · families {"manuals":324,"flips":345,"grinds":103,"stalls":223,"spins":5} · rarity {"core":1000} · immediate repeats 0
+  · Fakie Manual on the manual pad  [2.2]
+  · FS Pop Shuvit on the manual pad  [2]
+  · BS 50-50 on the curb  [2]
+  · Kickflip on the manual pad  [1]
+  · FS 180 to Manual on the box  [2.5]
   · Heelflip on the bank  [1.3]
+  · Nose Manual on the curb  [2]
   · Manual on the manual pad  [1]
-  · Kickflip on the bank  [1.3]
-  · Manual on the box  [1]
+  · Fakie Nose Manual on the box  [2.5]
+  · BS 50-50 on the box  [2]
+  · Fakie Manual on the curb  [2.2]
+  · Nose Stall on the quarterpipe coping  [2.3]
 
-L2: avg rating 2.04 (min 1, max 3), spins 6%, immediate repeats 0
-  patterns {"flip→manual":127,"flip-only":402,"manual-only":323,"grind-only":138,"spin-only":10}
-  obstacles {"manual pad":344,"bank":180,"flat":157,"curb":164,"box":155}
-  · Heelflip to manual on the manual pad  [2.5]
-  · Fakie kickflip on the bank  [2.3]
-  · Fakie heelflip on the manual pad  [2.2]
-  · Fakie kickflip on flat  [2.2]
-  · Fakie manual on the curb  [2.2]
-  · Fakie kickflip on the manual pad  [2.2]
-  · Nose manual on the curb  [2]
-  · Kickflip to manual on the manual pad  [2.5]
+L3: avg rating 2.97 · families {"stalls":257,"flips":288,"manuals":288,"grinds":164,"spins":3} · rarity {"core":991,"uncommon":9} · immediate repeats 0
 
-L3: avg rating 2.93 (min 2, max 4), spins 8%, immediate repeats 0
-  patterns {"grind-only":143,"flip-only":402,"flip→manual":215,"manual-only":224,"spin-only":16}
-  obstacles {"flatbar":9,"flat":182,"manual pad":289,"bank":189,"box":122,"quarterpipe":32,"curb":115,"ledge":14,"gap":48}
-  · BS 5-0 on the flatbar  [3.3]
-  · FS 50-50 on the flatbar  [3.3]
-  · Fakie varial heelflip on flat  [3.2]
-  · Kickflip to nose manual on the manual pad  [3.5]
-  · Fakie varial heelflip on the bank  [3.3]
-  · Heelflip to manual on the manual pad  [2.5]
-  · Fakie nose manual on the box  [2.5]
-  · Fakie varial kickflip on flat  [3.2]
+L4: avg rating 4.04 · families {"grinds":167,"manuals":333,"flips":415,"stalls":72,"spins":13} · rarity {"core":925,"uncommon":75} · immediate repeats 0
 
-L4: avg rating 4.01 (min 2.8, max 5), spins 27%, immediate repeats 0
-  patterns {"flip-only":438,"grind-only":119,"spin-only":57,"flip→manual":200,"manual-only":186}
-  obstacles {"manual pad":327,"curb":81,"flat":194,"bank":190,"box":91,"ledge":15,"flatbar":10,"gap":60,"quarterpipe":19,"rail":8,"hubba":5}
-  · Fakie BS 180 kickflip on the manual pad  [3]
-  · Fakie BS 5-0 on the curb  [3.2]
-  · Nollie varial kickflip on flat  [4.4]
-  · FS 360 on the bank  [3.3]
-  · Nollie heelflip to manual on the manual pad  [4.5]
-  · Nollie manual on the curb  [4.4]
-  · Nollie FS 180 kickflip on the manual pad  [4.5]
-  · Fakie BS 180 heelflip on flat  [3]
+L5: avg rating 4.97 · families {"grinds":203,"flips":294,"manuals":300,"stalls":190,"spins":13} · rarity {"uncommon":127,"core":852,"rare":21} · immediate repeats 0
+  · FS Nosegrind Shuvit Out on the ledge  [5.5, uncommon]
+  · Nollie FS 180 Varial Heelflip on flat  [4.5, uncommon]
+  · Fakie Varial Heelflip to Nose Manual on the manual pad  [5]
+  · Nollie Varial Heelflip to Nose Manual on the manual pad  [5.5]
+  · FS Smith Stall on the quarterpipe coping  [5.3]
+  · Fakie FS 180 Inward Heelflip on flat  [5, uncommon]
+  · FS Lipslide Shuvit Out on the flatbar  [5.3, uncommon]
+  · BS Disaster on the quarterpipe coping  [5.3]
+  · Nollie BS Heelflip over the gap  [4.8]
+  · Nollie FS 180 to Manual on the box  [4.5]
+  · BS 180 Inward Heelflip on the bank  [4.8, uncommon]
+  · Switch Varial Heelflip to Manual on the manual pad  [5.7]
 
-L5: avg rating 4.92 (min 3.8, max 6.1), spins 28%, immediate repeats 0
-  patterns {"flip→manual":168,"flip-only":316,"manual-only":184,"grind-only":204,"spin-only":58,"flip→grind":70}
-  obstacles {"manual pad":285,"gap":51,"box":106,"flat":128,"curb":109,"bank":120,"ledge":69,"flatbar":41,"hubba":29,"quarterpipe":29,"rail":33}
-  · Switch heelflip to manual on the manual pad  [5.7]
-  · BS 180 inward heelflip over the gap  [5.3]
-  · Nollie BS 180 to nose manual on the box  [4.5]
-  · Nollie BS 180 kickflip on the manual pad  [4.5]
-  · BS 360 heelflip on flat  [5]
-  · Nollie manual on the curb  [4.4]
-  · Nollie FS 50-50 on the curb  [4.4]
-  · Nollie varial heelflip on flat  [4.4]
+L6: avg rating 5.91 · families {"stalls":217,"manuals":246,"grinds":233,"flips":296,"spins":8} · rarity {"core":782,"uncommon":188,"rare":30} · immediate repeats 0
 
-L6: avg rating 5.89 (min 4.7, max 7.1), spins 28%, immediate repeats 0
-  patterns {"flip-only":335,"spin-only":49,"flip→manual":121,"manual-only":149,"grind-only":241,"flip→grind":105}
-  obstacles {"gap":102,"flat":139,"manual pad":199,"bank":112,"ledge":89,"box":63,"curb":79,"rail":46,"flatbar":74,"hubba":58,"quarterpipe":20,"handrail":19}
-  · Switch BS 180 varial kickflip over the gap  [6]
-  · Switch BS 180 on flat  [5.6]
-  · Nollie tre flip over the gap  [6.8]
-  · Switch BS 360 on flat  [5.6]
-  · Switch kickflip to manual on the manual pad  [5.7]
-  · Fakie BS 360 heelflip over the gap  [6.3]
-  · Switch BS 180 to nose manual on the manual pad  [5.7]
-  · Switch BS 180 to nose manual on the bank  [5.8]
+L7: avg rating 6.89 · families {"flips":498,"manuals":160,"stalls":128,"grinds":214} · rarity {"uncommon":450,"core":504,"rare":46} · immediate repeats 0
 
-L7: avg rating 6.75 (min 5.7, max 8.2), spins 52%, immediate repeats 0
-  patterns {"flip-only":562,"manual-only":56,"spin-only":27,"grind-only":190,"flip→grind":137,"flip→manual":28}
-  obstacles {"flat":178,"manual pad":53,"gap":342,"flatbar":55,"ledge":83,"handrail":51,"hubba":91,"bank":73,"box":9,"rail":47,"curb":10,"quarterpipe":8}
-  · Switch FS 360 kickflip on flat  [6.5]
-  · Switch BS 180 to nose manual on the manual pad  [5.7]
-  · Switch FS 360 over the gap  [5.9]
-  · Switch BS feeble on the flatbar  [6.4]
-  · Switch heelflip FS 50-50 on the flatbar  [6.1]
-  · Switch FS smith on the ledge  [6.2]
-  · Switch FS 180 hardflip over the gap  [6.8]
-  · Switch FS 180 over the gap  [5.9]
+L8: avg rating 7.89 · families {"stalls":76,"flips":549,"grinds":229,"manuals":146} · rarity {"uncommon":561,"core":403,"rare":29,"very-rare":7} · immediate repeats 0
+  · Switch FS Noseblunt Stall on the quarterpipe coping  [7.9, uncommon]
+  · Nollie BS Bigflip on the bank  [7.8, uncommon]
+  · Fakie BS Overcrook on the handrail  [8]
+  · Fakie Laser Flip over the gap  [8.5]
+  · Switch BS Bluntslide on the hubba  [8.6]
+  · Switch BS 180 Inward Heelflip over the gap  [6.8, uncommon]
+  · Fakie BS Bigflip on the bank  [7.4, uncommon]
+  · Switch Tre Flip to Nose Manual on the manual pad  [9]
+  · BS 360 Kickflip over the gap  [8.5, rare]
+  · Fakie Hardflip FS 5-0 on the ledge  [8.6]
+  · Laser Flip over the gap  [8.3]
+  · Fakie Kickflip FS Overcrook on the ledge  [8.4]
 
-L8: avg rating 7.99 (min 6.7, max 9.2), spins 10%, immediate repeats 0
-  patterns {"flip→grind":283,"grind-only":329,"flip-only":388}
-  obstacles {"flatbar":75,"ledge":169,"gap":216,"hubba":154,"flat":93,"handrail":162,"rail":52,"bank":79}
-  · Switch varial kickflip FS 5-0 on the flatbar  [8.1]
-  · Nollie FS bluntslide on the ledge  [7.6]
-  · Fakie laser flip over the gap  [8.5]
-  · Switch laser flip over the gap  [8.9]
-  · Nollie BS bluntslide on the hubba  [8.1]
-  · Switch tre flip over the gap  [7.3]
-  · Fakie laser flip on flat  [8.2]
-  · Nollie inward heelflip FS 5-0 on the flatbar  [8.9]
+L9: avg rating 8.87 · families {"flips":281,"grinds":501,"manuals":196,"stalls":22} · rarity {"uncommon":271,"core":694,"rare":31,"very-rare":4} · immediate repeats 0
 
-L9: avg rating 8.89 (min 7.6, max 10), spins 0%, immediate repeats 0
-  patterns {"flip→grind":417,"flip-only":211,"grind-only":372}
-  obstacles {"hubba":210,"gap":105,"handrail":189,"flat":60,"rail":88,"ledge":211,"flatbar":91,"bank":46}
-  · Fakie inward heelflip FS nosegrind on the hubba  [9.5]
-  · Nollie laser flip over the gap  [8.7]
-  · Fakie BS overcrook on the handrail  [8]
-  · Switch laser flip on flat  [8.6]
-  · Switch varial heelflip BS lipslide on the rail  [8.5]
-  · Nollie FS noseblunt on the hubba  [9]
-  · Nollie BS bluntslide on the handrail  [9.1]
-  · Switch varial heelflip BS tailslide on the hubba  [8.5]
+L10: avg rating 9.71 · families {"grinds":830,"flips":119,"manuals":51} · rarity {"core":788,"uncommon":178,"rare":28,"very-rare":6} · immediate repeats 0
+  · Switch Heelflip BS Bluntslide on the handrail  [10]
+  · Nollie Inward Heelflip FS Smith Grind on the hubba  [10]
+  · Switch FS Noseblunt Slide on the ledge  [9]
+  · Nollie Tre Flip BS Tailslide on the curb  [10]
+  · Switch Inward Heelflip BS 5-0 on the handrail  [9.6]
+  · Switch BS Noseblunt Slide Shuvit Out on the ledge  [10, uncommon]
+  · Nollie Laser Flip over the gap  [8.7]
+  · Switch Tre Flip to Nose Manual on the manual pad  [9]
+  · Switch Tre Flip BS Smith Grind on the rail  [10]
+  · Switch BS Bigflip over the gap  [8.8, uncommon]
+  · Fakie Tre Flip FS Boardslide on the handrail  [10]
+  · Switch Tre Flip BS 5-0 on the box  [9.8]
 
-L10: avg rating 9.68 (min 8.6, max 10), spins 0%, immediate repeats 0
-  patterns {"grind-only":407,"flip→grind":510,"flip-only":83}
-  obstacles {"handrail":348,"ledge":133,"hubba":221,"rail":109,"gap":54,"flat":16,"flatbar":106,"bank":13}
-  · Nollie BS noseblunt on the handrail  [10]
-  · Switch tre flip BS overcrook on the ledge  [10]
-  · Switch BS noseblunt on the hubba  [9.6]
-  · Switch hardflip BS boardslide on the rail  [9.2]
-  · Fakie inward heelflip BS bluntslide on the hubba  [10]
-  · Nollie FS noseblunt on the handrail  [10]
-  · Nollie varial heelflip BS bluntslide on the hubba  [10]
-  · Switch FS noseblunt on the handrail  [10]
+invalid samples: 0
+
+== Quarterpipe only (default families, rarity very low) ==
+L1: 4 distinct, flip-air share 0.0%: Tail Stall on the quarterpipe coping · FS Axle Stall on the quarterpipe coping · Rock to Fakie on the quarterpipe coping · BS Axle Stall on the quarterpipe coping
+L3: 23 distinct, flip-air share 33.5%: FS 50-50 on the quarterpipe coping · BS 5-0 Stall on the quarterpipe coping · FS Axle Stall on the quarterpipe coping · Fakie Kickflip Fakie on the quarterpipe · Nosepick on the quarterpipe coping · Rock and Roll on the quarterpipe coping · BS 50-50 on the quarterpipe coping · FS 5-0 Stall on the quarterpipe coping · FS 5-0 on the quarterpipe coping · Nose Stall on the quarterpipe coping · Rock to Fakie on the quarterpipe coping · BS Slash Grind on the quarterpipe coping
+L5: 40 distinct, flip-air share 21.0%: Switch Varial Heelflip Fakie on the quarterpipe · FS Feeble Grind on the quarterpipe coping · BS Feeble Stall on the quarterpipe coping · BS Tailslide on the quarterpipe coping · Switch Heelflip Fakie on the quarterpipe · FS Smith Grind on the quarterpipe coping · FS Lipslide on the quarterpipe coping · Nollie Kickflip Fakie on the quarterpipe · FS Smith Stall on the quarterpipe coping · FS Tailslide on the quarterpipe coping · FS Feeble Stall on the quarterpipe coping · Nollie Varial Heelflip Fakie on the quarterpipe
+L7: 38 distinct, flip-air share 3.5%: BS Noseblunt Stall on the quarterpipe coping · Switch FS Feeble Grind on the quarterpipe coping · FS Noseblunt Stall on the quarterpipe coping · Switch BS Noseblunt Stall on the quarterpipe coping · Switch FS Noseblunt Stall on the quarterpipe coping · Switch FS Smith Grind on the quarterpipe coping · Switch BS Blunt to Fakie on the quarterpipe coping · Switch BS Smith Grind on the quarterpipe coping · Switch FS Blunt to Fakie on the quarterpipe coping · Switch BS Feeble Grind on the quarterpipe coping · FS Blunt to Fakie on the quarterpipe coping · Switch BS 5-0 on the quarterpipe coping
+
+== Rarity (share of picks, 3000 per row, all obstacles) ==
+very low (default) L5: rare 3.0%, very-rare 0.0%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 6.3%, reverts 3.0%
+very low (default) L8: rare 3.2%, very-rare 0.2%, experimental 0.0%, doubles 0.4%, triples 0.0%, transfers 0.0%, exits 6.6%, reverts 0.0%
+very low (default) L10: rare 3.0%, very-rare 0.6%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 10.7%, reverts 0.0%
+off L8: rare 0.0%, very-rare 0.0%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 4.8%, reverts 0.0%
+low L8: rare 8.1%, very-rare 0.8%, experimental 0.0%, doubles 1.0%, triples 0.0%, transfers 0.0%, exits 8.0%, reverts 0.2%
+normal L8: rare 15.4%, very-rare 1.0%, experimental 1.8%, doubles 1.7%, triples 0.0%, transfers 0.0%, exits 10.2%, reverts 0.3%
+normal + triples + transfers L10: rare 15.3%, very-rare 1.6%, experimental 0.7%, doubles 0.7%, triples 0.4%, transfers 0.0%, exits 9.6%, reverts 0.0%
 
 == Adaptation convergence: simulated player, effective level after N challenges ==
-"true" = rating where the player lands 50% of single attempts. With default evidence weights the
-equilibrium sits ~1 level ABOVE that (≈60% of challenges cleared within 3 tries, ≈26% first try).
-start 3, true 6: after 10 → 3.60, 25 → 4.91, 50 → 6.40, 100 → 6.70  (max single step 0.098)
-start 8, true 4: after 10 → 7.39, 25 → 6.25, 50 → 5.38, 100 → 4.82  (max single step 0.086)
-start 5, true 5: after 10 → 5.14, 25 → 5.72, 50 → 5.56, 100 → 5.80  (max single step 0.072)
-start 1, true 3: after 10 → 1.67, 25 → 2.91, 50 → 3.50, 100 → 3.54  (max single step 0.097)
+"true" = rating where the player lands 50% of single attempts; equilibrium sits ~1 level above that.
+start 3, true 6: 10 → 3.80, 25 → 5.54, 50 → 6.54, 100 → 6.54 (max step 0.150)
+start 8, true 4: 10 → 7.30, 25 → 6.23, 50 → 5.46, 100 → 4.96 (max step 0.086)
+start 5, true 5: 10 → 5.34, 25 → 5.59, 50 → 5.59, 100 → 5.81 (max step 0.065)
+start 1, true 3: 10 → 1.86, 25 → 3.19, 50 → 3.70, 100 → 3.65 (max step 0.141)

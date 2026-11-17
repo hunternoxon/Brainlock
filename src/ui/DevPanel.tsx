@@ -7,7 +7,11 @@ type BoolKey = { [K in keyof Tunables]: Tunables[K] extends boolean ? K : never 
 
 const NUMS: [NumKey, string, number][] = [
   ['skipPenaltyPoints', 'Skip penalty (points)', 5],
-  ['repeatCooldown', 'Exact-repeat cooldown (prompts)', 1],
+  ['repeatCooldown', 'Exact-challenge cooldown (prompts)', 1],
+  ['signatureCooldown', 'Same-skill cooldown (prompts)', 1],
+  ['signatureRecentPenalty', 'Same-skill weight inside cooldown', 0.05],
+  ['noveltyBoost', 'New-skill preference ×', 0.05],
+  ['familyBalanceStrength', 'Family balance strength', 0.1],
   ['adaptationRate', 'Adaptation rate', 0.01],
   ['adaptationWindow', 'Evidence window', 1],
   ['adaptationWarmup', 'Warm-up challenges', 1],
@@ -18,19 +22,35 @@ const NUMS: [NumKey, string, number][] = [
   ['evidenceFail', 'Evidence: 3 misses', 0.05],
   ['evidenceSkip', 'Evidence: skip', 0.05],
   ['evidenceDifficultyWeight', 'Evidence × (rating − skill) weight', 0.05],
+  ['hotStreakStart', 'Hot streak: first-try lands', 1],
+  ['hotStreakMultiplier', 'Hot streak adaptation ×', 0.1],
+  ['boostStartStreak', 'Temp boost starts after N first-try', 1],
+  ['boostStep', 'Temp boost step', 0.05],
+  ['maxBoost', 'Temp boost max (levels)', 0.05],
+  ['recoveryAfterFails', 'Recovery after N fails (last 3)', 1],
+  ['recoveryOffset', 'Recovery target offset', 0.1],
+  ['recoveryCooldown', 'Recovery cooldown (challenges)', 1],
+  ['feedbackCooldown', 'Too easy/hard cooldown', 1],
+  ['feedbackSkillStep', 'Too easy/hard skill nudge', 0.01],
+  ['feedbackBoost', 'Too easy/hard temp boost', 0.05],
+  ['familySkillRate', 'Per-family learning rate', 0.01],
+  ['familySkillCap', 'Per-family offset cap', 0.05],
   ['difficultyBand', 'Selection band ±', 0.1],
   ['maxStretch', 'Max rating above skill', 0.05],
   ['mixEasy', 'Mix: easy share', 0.05],
   ['mixStretch', 'Mix: stretch share', 0.05],
   ['easyOffset', 'Easy offset', 0.1],
   ['stretchOffset', 'Stretch offset', 0.1],
+  ['rareRate', 'Rare tier rate at Very low', 0.005],
+  ['veryRareRate', 'Very-rare tier rate at Very low', 0.001],
+  ['uncommonWeight', 'Uncommon weight ×', 0.05],
 ]
 const BOOLS: [BoolKey, string][] = [
   ['skipPenaltyEnabled', 'Skip penalty enabled'],
   ['scoreFloorZero', 'Score floor at 0'],
-  ['repeatPenaltyEnabled', 'Repeat penalty (legacy −10%)'],
+  ['repeatPenaltyEnabled', 'Repeat penalty (player-chosen tricks only; none exist yet)'],
   ['adaptiveDifficultyEnabled', 'Adaptive difficulty'],
-  ['experimentalEnabled', 'Experimental combos lane'],
+  ['familySkillEnabled', 'Per-family skill learning (experimental)'],
 ]
 
 /** Local-only developer controls (only bundled in `vite dev`). */
@@ -106,6 +126,19 @@ export function DevPanel({ b, onClose }: { b: Brainlock; onClose: () => void }) 
         <button className="pill" onClick={exportTrace}>
           Export session trace (JSON)
         </button>
+      </section>
+
+      <section className="field">
+        <p className="label">Long-term learning</p>
+        <p className="hint">
+          Level {b.settings.level} → {b.longTerm.skill.effective.toFixed(2)} from {b.longTerm.used.length} completed session(s).
+          {b.longTerm.excluded.length > 0 && ` Excluded: ${b.longTerm.excluded.map((e) => e.why).join(', ')}.`}
+        </p>
+        {s && (
+          <p className="hint">
+            This session: skill {s.skill.effective.toFixed(2)} · temp boost {s.boost} · family offsets {JSON.stringify(s.skill.family ?? {})}
+          </p>
+        )}
       </section>
 
       {s && (

@@ -49,12 +49,14 @@ describe('score formula', () => {
     expect([0, 1, 2, 5, 6, 20].map(flowMult).map((x) => Math.round(x * 100) / 100)).toEqual([1, 1.03, 1.06, 1.15, 1.15, 1.15])
   })
 
-  test('repeat penalty is off by default and explains itself', () => {
+  test('repeat penalty never hits game-assigned tricks, even when enabled', () => {
     const t: Trick = { obstacle: 'flat', stance: 'regular', pattern: 'flip-only', flip: 'kickflip' }
     expect(scoreLanding(t, 1, 0, { priorLands: 5 }).repeatM).toBe(1)
-    expect(scoreLanding(t, 1, 0, { priorLands: 5 }).repeatNote).toMatch(/off/)
-    expect(scoreLanding(t, 1, 0, { priorLands: 2, repeatPenaltyEnabled: true }).repeatM).toBe(1)
-    expect(scoreLanding(t, 1, 0, { priorLands: 4, repeatPenaltyEnabled: true }).repeatM).toBeCloseTo(0.8)
+    expect(scoreLanding(t, 1, 0, { priorLands: 5, repeatPenaltyEnabled: true }).repeatM).toBe(1)
+    expect(scoreLanding(t, 1, 0, { priorLands: 5, repeatPenaltyEnabled: true }).repeatNote).toMatch(/game-assigned/)
+    // Legacy semantics kept for future player-chosen tricks
+    expect(scoreLanding(t, 1, 0, { priorLands: 2, repeatPenaltyEnabled: true, playerChosen: true }).repeatM).toBe(1)
+    expect(scoreLanding(t, 1, 0, { priorLands: 4, repeatPenaltyEnabled: true, playerChosen: true }).repeatM).toBeCloseTo(0.8)
   })
 
   test('skip penalty: configurable, floored at 0, disable-able', () => {

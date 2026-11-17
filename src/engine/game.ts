@@ -1,13 +1,13 @@
-import { anchorSkill, gateLevelOf, updateSkill, type Resolution, type SkillState, type SkillUpdate } from './adapt'
+import { anchorSkill, applyFeedback, gateLevelOf, updateSkill, type Resolution, type SkillState, type SkillUpdate } from './adapt'
 import type { PoolDiagnosis } from './catalog'
-import { displayText, obstaclePhrase, trickName } from './format'
+import { displayText, trickName, wherePhrase } from './canonical'
 import { Rng } from './rng'
 import { scoreLanding, skipReceipt, FORMULA_VERSION, type Receipt } from './score'
-import { mainComponent, selectChallenge, type RecentPick, type SelectionTrace } from './select'
+import { recentOf, selectChallenge, type RecentPick, type SelectionTrace } from './select'
 import type { Tunables } from './tunables'
-import type { Filters, Outcome, Trick } from './types'
+import type { Family, Filters, Outcome, Rarity, Trick } from './types'
 
-export const SESSION_SCHEMA = 1
+export const SESSION_SCHEMA = 2
 export const LETTERS = ['S', 'K', 'A', 'T', 'E'] as const
 export const SOLO_LENGTHS = [10, 25, 50] as const
 export type SoloLength = (typeof SOLO_LENGTHS)[number]
@@ -23,6 +23,8 @@ export interface Challenge {
   where: string
   display: string
   rating: number
+  rarity: Rarity
+  family: Family
   experimental: boolean
   /** Effective skill when generated */
   skillAtStart: number
@@ -37,6 +39,8 @@ export interface Challenge {
   delta?: number
   letter?: string
   skill?: SkillUpdate
+  /** Optional "too easy / too hard" signal */
+  feedback?: { value: 'too-easy' | 'too-hard'; accepted: boolean; note: string }
   createdAt: number
   resolvedAt?: number
 }
@@ -44,7 +48,7 @@ export interface Challenge {
 export interface GameEvent {
   seq: number
   at: number
-  type: 'start' | 'generate' | 'land' | 'miss' | 'skip' | 'next' | 'end' | 'blocked' | 'tune' | 'stretch'
+  type: 'start' | 'generate' | 'land' | 'miss' | 'skip' | 'next' | 'end' | 'blocked' | 'tune' | 'stretch' | 'feedback'
   challengeId?: string
   attempt?: number
   note?: string
@@ -77,6 +81,14 @@ export interface GameState {
   history: Challenge[]
   recent: RecentPick[]
   landedSignatures: Record<string, number>
+  /** Skills seen this session (canonical signatures) */
+  seen: string[]
+  /** Temporary in-session challenge boost (hot streak / feedback) */
+  boost: number
+  /** Challenges since the last recovery pick */
+  sinceRecovery: number
+  /** Resolved count at the last accepted feedback */
+  lastFeedbackAt: number | null
   events: GameEvent[]
   blocked?: PoolDiagnosis
   allowStretch: boolean
@@ -94,6 +106,7 @@ export type Action =
   | { type: 'abandon'; at: number }
   | { type: 'allowStretch'; at: number }
   | { type: 'tune'; tunables: Tunables; at: number }
+  | { type: 'feedback'; challengeId: string; value: 'too-easy' | 'too-hard'; at: number }
 
 export interface StartOptions {
   mode: Mode
@@ -135,6 +148,10 @@ export function startSession(o: StartOptions): GameState {
     history: [],
     recent: [],
     landedSignatures: {},
+    seen: [],
+    boost: 0,
+    sinceRecovery: 99,
+    lastFeedbackAt: null,
     events: [],
     allowStretch: false,
     startedAt: o.at,
@@ -146,7 +163,21 @@ export function startSession(o: StartOptions): GameState {
 
 function generate(s: GameState, at: number): GameState {
   const rng = new Rng(s.rng)
-  const res = selectChallenge({ filters: s.filters, skill: s.skill.effective, recent: s.recent, rng, tun: s.tunables, allowStretchBeyondCap: s.allowStretch })
+  const t = s.tunables
+  const last3 = s.history.slice(-3)
+  const recovery = s.sinceRecovery >= t.recoveryCooldown && last3.filter((c) => c.outcome === 'failed').length >= t.recoveryAfterFails
+  const res = selectChallenge({
+    filters: s.filters,
+    skill: s.skill.effective,
+    recent: s.recent,
+    rng,
+    tun: t,
+    allowStretchBeyondCap: s.allowStretch,
+    boost: s.boost,
+    recovery,
+    seen: new Set(s.seen),
+    familySkill: s.skill.family,
+  })
   if (!res.ok) {
     return { ...s, rng: rng.state, status: 'blocked', current: null, blocked: res.diagnosis, updatedAt: at, events: event(s, { at, type: 'blocked', note: res.diagnosis.messages.join(' ') }) }
   }
@@ -159,10 +190,12 @@ function generate(s: GameState, at: number): GameState {
     key: pick.key,
     signature: pick.signature,
     name: trickName(pick.trick),
-    where: obstaclePhrase(pick.trick.obstacle),
+    where: wherePhrase(pick.trick),
     display: displayText(pick.trick),
     rating: pick.rating,
-    experimental: pick.experimental,
+    rarity: pick.rarity,
+    family: pick.family,
+    experimental: pick.rarity === 'experimental',
     skillAtStart: s.skill.effective,
     startLevel: s.startLevel,
     selection: trace,
@@ -170,23 +203,32 @@ function generate(s: GameState, at: number): GameState {
     attempts: [],
     createdAt: at,
   }
-  const recent = [...s.recent, { key: pick.key, pattern: pick.trick.pattern, obstacle: pick.trick.obstacle, main: mainComponent(pick) }].slice(-50)
+  const recent = [...s.recent, recentOf(pick)].slice(-50)
   return {
     ...s,
     rng: rng.state,
+    seen: s.seen.includes(pick.signature) ? s.seen : [...s.seen, pick.signature],
+    sinceRecovery: recovery ? 0 : s.sinceRecovery + 1,
     status: 'playing',
     blocked: undefined,
     current: c,
     recent,
     updatedAt: at,
-    events: event(s, { at, type: 'generate', challengeId: c.id, note: `${c.display} [${c.rating}] target ${trace.target} (${trace.mix})` }),
+    events: event(s, { at, type: 'generate', challengeId: c.id, note: `${c.display} [${c.rating}] target ${trace.target} (${trace.mix}${trace.boost ? `, boost ${trace.boost}` : ''}) ${trace.rarityRoll}` }),
   }
 }
 
 function resolve(s: GameState, c: Challenge, r: Resolution, at: number, patch: Partial<Challenge>, statePatch: Partial<GameState>): GameState {
-  const { skill, update } = updateSkill(s.skill, r, c.rating, s.tunables)
+  const t = s.tunables
+  const { skill, update } = updateSkill(s.skill, r, c.rating, t, c.family)
+  let boost = s.boost
+  if (r.outcome === 'landed' && r.attempt === 1) {
+    if ((skill.firstTryStreak ?? 0) >= t.boostStartStreak) boost = Math.min(t.maxBoost, boost + t.boostStep)
+  } else if (r.outcome === 'failed') boost = Math.min(0, boost)
+  else boost = boost > 0 ? boost / 2 : boost
+  boost = Math.round(boost * 1000) / 1000
   const done: Challenge = { ...c, ...patch, outcome: r.outcome, skill: update, resolvedAt: at }
-  const next: GameState = { ...s, ...statePatch, skill, current: done, resolved: s.resolved + 1, status: 'result', updatedAt: at }
+  const next: GameState = { ...s, ...statePatch, skill, boost, current: done, resolved: s.resolved + 1, status: 'result', updatedAt: at }
   if (s.mode === 'skate' && next.letters >= LETTERS.length) {
     return { ...next, status: 'over', endReason: 'skate', endedAt: at, history: [...s.history, done] }
   }
@@ -199,7 +241,7 @@ export function reduce(s: GameState, a: Action): GameState {
     case 'land': {
       if (s.status !== 'playing' || !c || c.id !== a.challengeId) return s
       const prior = s.landedSignatures[c.signature] ?? 0
-      const receipt = scoreLanding(c.trick, c.attempt, s.flow, { priorLands: prior, repeatPenaltyEnabled: s.tunables.repeatPenaltyEnabled })
+      const receipt = scoreLanding(c.trick, c.attempt, s.flow, { priorLands: prior, repeatPenaltyEnabled: s.tunables.repeatPenaltyEnabled, playerChosen: false })
       const flow = s.flow + 1
       const ev = event(s, { at: a.at, type: 'land', challengeId: c.id, attempt: c.attempt, note: `+${receipt.total}` })
       return resolve(
@@ -266,6 +308,27 @@ export function reduce(s: GameState, a: Action): GameState {
     }
     case 'tune':
       return { ...s, tunables: a.tunables, events: event(s, { at: a.at, type: 'tune' }) }
+    case 'feedback': {
+      if (s.status !== 'result' || !c || c.id !== a.challengeId || c.feedback) return s
+      const t = s.tunables
+      const cooling = s.lastFeedbackAt !== null && s.resolved - s.lastFeedbackAt < t.feedbackCooldown
+      if (cooling) {
+        const fb = { value: a.value, accepted: false, note: `Noted; level unchanged (one nudge per ${t.feedbackCooldown} tricks)` }
+        return { ...s, current: { ...c, feedback: fb }, events: event(s, { at: a.at, type: 'feedback', challengeId: c.id, note: `${a.value} ignored (cooldown)` }) }
+      }
+      const sign = a.value === 'too-easy' ? 1 : -1
+      const boost = Math.max(-t.maxBoost, Math.min(t.maxBoost, s.boost + sign * t.feedbackBoost))
+      const skill = applyFeedback(s.skill, a.value, t)
+      const fb = { value: a.value, accepted: true, note: a.value === 'too-easy' ? 'Got it: a bit harder next.' : 'Got it: a bit easier next.' }
+      return {
+        ...s,
+        skill,
+        boost,
+        lastFeedbackAt: s.resolved,
+        current: { ...c, feedback: fb },
+        events: event(s, { at: a.at, type: 'feedback', challengeId: c.id, note: `${a.value}: skill ${s.skill.effective.toFixed(2)}→${skill.effective.toFixed(2)}, boost ${s.boost}→${boost}` }),
+      }
+    }
   }
 }
 

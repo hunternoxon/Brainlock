@@ -1,4 +1,3 @@
-import type { SkillState } from './adapt'
 import { sanitizeFilters } from './catalog'
 import { SESSION_SCHEMA, SOLO_LENGTHS, sessionStats, type GameState, type Mode, type SoloLength } from './game'
 import { sanitizeTunables, type Tunables } from './tunables'
@@ -31,8 +30,10 @@ export interface Settings {
   debug: boolean
 }
 
+/** Long-term profile metadata. The skill itself is recomputed from history (learning.ts). */
 export interface Profile {
-  skill: SkillState | null
+  /** Per starting level: ignore sessions before this time ("Reset to N") */
+  resets: Record<string, number>
 }
 
 export interface ScoreEntry {
@@ -63,6 +64,8 @@ export interface HistoryEntry {
   stats: ReturnType<typeof sessionStats>
   /** Full session snapshot: every challenge, receipt and event */
   session: GameState
+  /** Excluded from skill learning by the player */
+  forgotten?: { reason: string; note?: string; at: number }
 }
 
 export function defaultSettings(): Settings {
@@ -132,10 +135,10 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
       return (
         read(KEYS.profile, (x) => {
           if (!isObj(x)) throw new Error('profile not an object')
-          const sk = x.skill as SkillState | null
-          if (sk && (typeof sk.effective !== 'number' || typeof sk.anchor !== 'number' || !Array.isArray(sk.window))) throw new Error('bad skill')
-          return { skill: sk ?? null }
-        }) ?? { skill: null }
+          // v1 profiles cached a skill; v2 recomputes it from history, so only resets are kept
+          const resets = isObj(x.resets) ? (x.resets as Record<string, number>) : {}
+          return { resets }
+        }) ?? { resets: {} }
       )
     },
     saveProfile(p: Profile) {
@@ -227,6 +230,32 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
       scores.sort((a, b) => b.value - a.value)
       write(KEYS.scores, scores.slice(0, SCORES_CAP))
       return { isNewBest, previousBest }
+    },
+    /**
+     * Exclude a session from skill learning (reason required). History and score
+     * stay unless the player explicitly asks to delete them too.
+     */
+    forgetSession(id: string, reason: string, note: string | undefined, alsoDelete: boolean): boolean {
+      if (!reason) throw new Error('A reason is required')
+      const history = this.loadHistory()
+      const h = history.find((x) => x.id === id)
+      if (!h) return false
+      if (alsoDelete) {
+        write(KEYS.history, history.filter((x) => x.id !== id))
+        write(KEYS.scores, this.loadScores().filter((e) => e.sessionId !== id))
+      } else {
+        h.forgotten = { reason, note: note?.trim() || undefined, at: now() }
+        write(KEYS.history, history)
+      }
+      return true
+    },
+    unforgetSession(id: string) {
+      const history = this.loadHistory()
+      const h = history.find((x) => x.id === id)
+      if (h) {
+        delete h.forgotten
+        write(KEYS.history, history)
+      }
     },
     clearScoresAndHistory() {
       storage.removeItem(KEYS.scores)

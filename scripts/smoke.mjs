@@ -142,22 +142,53 @@ try {
 
   await btn('Scores & history').click()
   const board = await page.locator('.board').count()
-  check('scores page has SKATE + Solo 10 boards and history', board === 2 && (await page.locator('.history li').count()) === 3)
+  check('scores page has SKATE + Solo 10 boards and history', board === 2 && (await page.locator('.history > li').count()) === 3)
   await shot('10-scores')
   await btn('Done').click()
 
-  // Empty pool guidance
-  await page.getByRole('button', { name: 'Lower level' }).click()
-  await page.getByRole('button', { name: 'Lower level' }).click()
-  await page.getByRole('button', { name: 'Lower level' }).click()
+  // Forget a completed session for learning (reason required), history kept
+  await btn('Scores & history').click()
+  await page.getByRole('button', { name: 'Forget this session for skill learning' }).first().click()
+  const forgetBtn = page.getByRole('button', { name: 'Forget for learning' })
+  check('forget requires a reason', await forgetBtn.isDisabled())
+  await page.locator('.forget select').selectOption('Device issue')
+  await forgetBtn.click()
+  check('forgotten session stays in history, marked not used', (await page.locator('.history > li').count()) === 3 && (await page.locator('.history__learn', { hasText: 'Not used for learning (Device issue)' }).count()) === 1)
+  await btn('Done').click()
+
+  // Empty pool guidance + no-obstacles guidance
+  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Lower level' }).click()
   await page.locator('.setup-summary').click()
-  if (await visible('All')) await btn('All').click()
-  await btn('Just flat').click()
-  await page.getByRole('button', { name: 'flat', exact: true }).click()
+  await btn('None').click()
+  check('no obstacles → clear guidance', (await page.locator('.notice--warn').textContent()).includes('No obstacles selected'))
   await page.getByRole('button', { name: 'handrail', exact: true }).click()
   check('handrail-only at L1 explains why and blocks Start', (await page.locator('.notice--warn').textContent()).includes('level 6'))
   await shot('11-empty-pool')
-  await btn('Reset to everything on').click()
+  // Quarterpipe only → real coping tricks
+  await page.getByRole('button', { name: 'handrail', exact: true }).click()
+  await page.getByRole('button', { name: 'quarterpipe', exact: true }).click()
+  check('quarterpipe-only pool available at L1', (await text('.pool-status')).includes('possible tricks'))
+  await shot('12-setup-mobile')
+  await btn('Done').click()
+  check('home blocks nothing for quarterpipe-only', !(await btn('Start session').isDisabled()))
+  await btn('Start session').click()
+  const qp = []
+  for (let i = 0; i < 4; i++) {
+    qp.push((await text('.trick__name')) + ' ' + (await text('.trick__where')))
+    await btn('Land').click()
+    if (i === 0) {
+      await page.getByRole('button', { name: 'too easy' }).click()
+      check('too easy acknowledged', (await text('.feedback')).includes('harder next'))
+    }
+    await btn('Next').click()
+  }
+  check('quarterpipe-only session gives coping tricks', qp.every((x) => x.includes('quarterpipe')) && qp.some((x) => /Stall|Rock|50-50|5-0|Disaster|Blunt/.test(x)), qp.join(' | '))
+  await btn('Menu').click()
+  await btn('End session').click()
+  await btn('Tap again to end session').click()
+  await btn('Home').click()
+  await page.locator('.setup-summary').click()
+  await btn('Reset setup to defaults').click()
   await btn('Done').click()
 
   // Tap target audit on play screen
@@ -166,6 +197,32 @@ try {
     bs.filter((b) => b.offsetParent && (b.getBoundingClientRect().height < 44 || b.getBoundingClientRect().width < 44)).map((b) => b.textContent),
   )
   check('all visible play buttons ≥ 44px', small.length === 0, small.join(', '))
+  await btn('Menu').click()
+  await btn('End session').click()
+  await btn('Tap again to end session').click()
+  await btn('Home').click()
+
+  // Desktop width
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const cols = await page.$eval('.home__cols', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
+  check('desktop home uses two columns', cols === 2)
+  await shot('13-home-desktop')
+  await page.locator('.setup-summary').click()
+  const famCols = await page.$eval('.setup__families', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
+  const gridCols = await page.$eval('.setup__grid', (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
+  const appW = await page.$eval('.app', (el) => el.getBoundingClientRect().width)
+  check('desktop setup: side column + multi-column families, wide container', gridCols === 2 && famCols >= 2 && appW > 1000, `grid ${gridCols}, families ${famCols}, width ${appW}`)
+  const headVsChip = await page.evaluate(() => {
+    const h = document.querySelector('.family__head h3')
+    const c = document.querySelector('.chips--sub .chip')
+    return { headFont: parseFloat(getComputedStyle(h).fontSize), chipFont: parseFloat(getComputedStyle(c).fontSize), headIsHeading: h.tagName, switches: document.querySelectorAll('.family [role=switch]').length }
+  })
+  check('category headers are headings with switches, distinct from trick chips', headVsChip.headIsHeading === 'H3' && headVsChip.switches === 5 && headVsChip.headFont > headVsChip.chipFont, JSON.stringify(headVsChip))
+  await shot('14-setup-desktop')
+  await btn('Done').click()
+  await btn('Start session').click()
+  await shot('15-play-desktop')
+  await page.setViewportSize({ width: 390, height: 844 })
 } catch (e) {
   check('smoke run completed without exceptions', false, String(e).split('\n')[0])
   await shot('99-error').catch(() => {})

@@ -29,7 +29,7 @@ export function App() {
   }, [b.session])
 
   return (
-    <div className="app">
+    <div className="app" data-view={view === 'play' ? 'play' : view}>
       {view === 'home' && <Home b={b} go={setView} />}
       {view === 'play' && b.session && <Play b={b} go={setView} />}
       {view === 'setup' && <SetupSheet b={b} onClose={() => setView('home')} />}

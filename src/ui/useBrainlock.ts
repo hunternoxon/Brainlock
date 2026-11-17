@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { anchorSkill } from '../engine/adapt'
 import { diagnosePool } from '../engine/catalog'
 import { reduce, startSession, type Action, type GameState } from '../engine/game'
+import { computeLongTermSkill } from '../engine/learning'
 import { createStore, memoryStorage, type Settings } from '../engine/persist'
 import { DEFAULT_TUNABLES, type Tunables } from '../engine/tunables'
 import { sfx } from './sound'
@@ -42,6 +42,8 @@ export function useBrainlock() {
     return s
   })
   const [finish, setFinish] = useState<FinishInfo | null>(null)
+  /** Bumped whenever history changes so the long-term skill recomputes */
+  const [historyRev, setHistoryRev] = useState(0)
   const [issues] = useState(() => [...store.issues])
   const nextSeed = useRef<number | null>(null)
 
@@ -51,14 +53,11 @@ export function useBrainlock() {
       if (next.status === 'over') {
         store.clearSession()
         setFinish(store.finalize(next))
+        setHistoryRev((r) => r + 1)
       } else {
         store.saveSession(next)
       }
-      if (prev && next.resolved !== prev.resolved) {
-        const p = { skill: next.skill }
-        store.saveProfile(p)
-        setProfile(p)
-      }
+      void prev
       setSessionState(next)
     },
     [store],
@@ -101,9 +100,15 @@ export function useBrainlock() {
     [commit, store],
   )
 
+  const longTerm = useMemo(() => {
+    void historyRev
+    return computeLongTermSkill(store.loadHistory(), settings.level, profile.resets[String(settings.level)] ?? 0, tunables)
+  }, [historyRev, profile.resets, settings.level, store, tunables])
+
   const start = useCallback(() => {
     const prev = sessionRef.current
     if (prev && prev.status !== 'over') store.finalize(reduce(prev, { type: 'abandon', at: Date.now() }))
+    setHistoryRev((r) => r + 1)
     setFinish(null)
     const seed = nextSeed.current ?? randomSeed()
     nextSeed.current = null
@@ -112,7 +117,7 @@ export function useBrainlock() {
       soloLength: settings.soloLength,
       filters: settings.filters,
       startLevel: settings.level,
-      skill: profile.skill ?? undefined,
+      skill: longTerm.skill,
       tunables,
       seed,
       at: Date.now(),
@@ -120,7 +125,7 @@ export function useBrainlock() {
     sessionRef.current = s
     store.saveSession(s)
     setSessionState(s)
-  }, [profile.skill, settings, store, tunables])
+  }, [longTerm.skill, settings, store, tunables])
 
   /** Leave the summary / blocked screen and go home. Unfinished sessions stay resumable. */
   const leave = useCallback(() => {
@@ -139,25 +144,45 @@ export function useBrainlock() {
     sessionRef.current = null
     setSessionState(null)
     setFinish(null)
+    setHistoryRev((r) => r + 1)
   }, [store])
 
   const resetSkill = useCallback(() => {
-    const p = { skill: anchorSkill(settings.level) }
+    const p = { resets: { ...profile.resets, [String(settings.level)]: Date.now() } }
     store.saveProfile(p)
     setProfile(p)
-  }, [settings.level, store])
+  }, [profile.resets, settings.level, store])
+
+  const forget = useCallback(
+    (id: string, reason: string, note: string | undefined, alsoDelete: boolean) => {
+      store.forgetSession(id, reason, note, alsoDelete)
+      setHistoryRev((r) => r + 1)
+    },
+    [store],
+  )
+  const unforget = useCallback(
+    (id: string) => {
+      store.unforgetSession(id)
+      setHistoryRev((r) => r + 1)
+    },
+    [store],
+  )
 
   const pool = useMemo(() => {
-    const skill = profile.skill && profile.skill.anchor === settings.level ? profile.skill.effective : settings.level
-    return { skill, ...diagnosePool(settings.filters, Math.min(10, Math.max(1, Math.round(skill))), skill + tunables.maxStretch, tunables.experimentalEnabled) }
-  }, [profile.skill, settings.filters, settings.level, tunables.maxStretch, tunables.experimentalEnabled])
+    const skill = longTerm.skill.effective
+    return { skill, ...diagnosePool(settings.filters, Math.min(10, Math.max(1, Math.round(skill))), skill + tunables.maxStretch) }
+  }, [longTerm.skill.effective, settings.filters, tunables.maxStretch])
 
   return {
     store,
     settings,
     setSettings,
     profile,
+    longTerm,
+    historyRev,
     resetSkill,
+    forget,
+    unforget,
     tunables,
     setTunables,
     resetTunables: () => {

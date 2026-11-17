@@ -2,7 +2,7 @@
 
 A personal fingerboarding challenge game. One trick at a time, matched to your level; tap **Land**, **Miss** or **Skip**; three attempts per challenge. Two modes: **SKATE** (three misses = a letter, S-K-A-T-E ends it) and **Solo** (exactly 10, 25 or 50 challenges). Runs entirely in the browser: offline, no accounts, no AI calls, no API keys.
 
-Status: **first playable build, awaiting real playtest.** See `output/WORK_LOG.md` for what was done, what was tested and what's provisional.
+Status: **Trick Intelligence v2, awaiting real playtest.** See `output/TRICK_INTELLIGENCE_V2_REPORT.md` (latest pass), `docs/TRICK_INTELLIGENCE_V2_DECISIONS.md` (rules and flags) and `output/WORK_LOG.md` (history). The previous build is tagged `v1-first-playable`.
 
 ## Run it
 
@@ -24,10 +24,10 @@ npm run build && npm run preview   # http://localhost:5281
 ## Test it
 
 ```bash
-npm test                 # 73 unit/integration/property tests (Vitest)
+npm test                 # 168 unit/integration/property tests (Vitest)
 npm run typecheck        # TypeScript strict
 npm run build            # typecheck + production bundle
-npm run smoke            # browser smoke at 390×844 in your installed Google Chrome (needs a build first)
+npm run smoke            # 41-check browser smoke at 390×844 and 1440×900 in your installed Google Chrome (needs a build first)
 npm run sim              # seeded distribution + adaptation report → output/distribution-report.txt
 npm run legacy:baseline  # measures the original v4.5.2 generator's defects → output/legacy-baseline.json
 npm run verify:import    # confirms import/ (source archive + legacy) is byte-for-byte unchanged
@@ -45,6 +45,9 @@ Keyboard (desktop): `L` land, `M` miss, `S` skip, `N`/`Enter` next.
 src/engine/        pure game logic, no DOM: unit-tested
   data/legacy-model-config.json   exact copy of the v4.5.2 config (weights preserved)
   rules.ts         repairs + extensions layered on the config (documented)
+  vocab.ts         v2 component tables: board moves, grinds, stalls, exits, reverts, transfers
+  canonical.ts     canonical identity + skater-convention naming + strict alias parsing
+  learning.ts      long-term level recomputed from completed, non-forgotten sessions
   validate.ts      the single legality check every trick must pass
   catalog.ts       enumerates every legal trick; filters; empty-pool diagnosis
   difficulty.ts    1–10 rating per trick (separate from points)

@@ -127,3 +127,14 @@ Not tested: a real phone (only emulated viewport), iOS Safari, offline/PWA insta
 ## Next: hands-on playtest
 
 Use `prompts/02_ITERATION_PROMPT.md`. Play a SKATE run and a Solo 25 at your real level with **Level details** on (≡ menu) so each pick's reasoning is visible. Note answers to docs/06 §5 questions; change one dev-panel variable per round.
+
+## 2026-11-17 · Pass 2: Trick Intelligence v2
+
+Full report: `output/TRICK_INTELLIGENCE_V2_REPORT.md`. Rules: `docs/TRICK_INTELLIGENCE_V2_DECISIONS.md`. Checkpoint: `git tag v1-first-playable`.
+
+- The canonical component model replaces string-ish flip names. Names are derived (FS Flip, Half Cab, Bigflip…); aliases collapse to one identity and score.
+- New vocabulary: ollie, shuvits, bigspins, cabs, quarterpipe stalls / lip tricks / coping grinds, exits, reverts, grind-to-grind, transfers and rare flips, all with rarity tiers and the user flags Rare & experimental / Double / Triple / Transfers.
+- Adaptation: hot streak, temporary boost (≤ +0.75), recovery, Too easy/Too hard. Long-term level is recomputed from completed sessions only; Forget-for-learning with a reason.
+- Selection is now a single weighted pick (variety penalties can act across groups; legacy flavor weights normalised per group). This fixed L10 monotony and stall starvation found in the seeded report.
+- Setup hierarchy + desktop layouts. Layout width uses a `data-view` attribute, because Chrome left `:has()` widths stale after screen swaps.
+- Tests: 168/168 Vitest, 41/41 browser smoke (mobile + desktop), 0 console errors, `import/` unchanged.

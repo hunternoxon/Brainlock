@@ -53,9 +53,9 @@ export function Play({ b, go }: { b: Brainlock; go: (v: View) => void }) {
               <span className="trick__name">{c.name}</span>
               <span className="trick__where">{c.where}</span>
             </h2>
-            {c.experimental && <p className="tag">Experimental combo</p>}
-            {b.settings.debug && <Debug s={s} c={c} />}
-            {s.status === 'result' && <ResultCard s={s} c={c} />}
+            {c.experimental ? <p className="tag">Experimental combo</p> : (c.rarity === 'rare' || c.rarity === 'very-rare') && <p className="tag">Rare one</p>}
+            {b.settings.debug && <Debug b={b} s={s} c={c} />}
+            {s.status === 'result' && <ResultCard b={b} s={s} c={c} />}
           </>
         )}
       </section>
@@ -141,7 +141,7 @@ function Attempts({ c, resolved }: { c: Challenge; resolved: boolean }) {
   )
 }
 
-function ResultCard({ s, c }: { s: GameState; c: Challenge }) {
+function ResultCard({ b, s, c }: { b: Brainlock; s: GameState; c: Challenge }) {
   const [open, setOpen] = useState(false)
   const r = c.receipt
   return (
@@ -175,16 +175,40 @@ function ResultCard({ s, c }: { s: GameState; c: Challenge }) {
           {open && <Receipt r={r} />}
         </>
       )}
+      <div className="feedback" aria-label="How did that feel?">
+        {c.feedback ? (
+          <p className="hint small" role="status">
+            {c.feedback.note}
+          </p>
+        ) : (
+          <>
+            <span className="hint small">Felt</span>
+            <button className="link small" onClick={() => b.dispatch({ type: 'feedback', challengeId: c.id, value: 'too-easy' })}>
+              too easy
+            </button>
+            <button className="link small" onClick={() => b.dispatch({ type: 'feedback', challengeId: c.id, value: 'too-hard' })}>
+              too hard
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }
 
-function Debug({ s, c }: { s: GameState; c: Challenge }) {
+function Debug({ b, s, c }: { b: Brainlock; s: GameState; c: Challenge }) {
   const t = c.selection
   return (
     <div className="debug">
       <p>
-        rated {c.rating} · target {t.target} ({t.mix}) · skill {c.skillAtStart.toFixed(2)} · gate L{t.gateLevel} · pool {t.poolSize} / band {t.bandSize} ±{t.band.toFixed(1)}
+        rated {c.rating} ({c.rarity}, {c.family}) · target {t.target} ({t.mix}) · max {t.maxRating}
+      </p>
+      <p>
+        session skill {c.skillAtStart.toFixed(2)} · temp boost {t.boost >= 0 ? '+' : ''}
+        {t.boost} · long-term {b.longTerm.skill.effective.toFixed(2)} ({b.longTerm.used.length} sessions) · gate L{t.gateLevel}
+      </p>
+      <p>
+        pool {t.poolSize} / band {t.bandSize} ±{t.band.toFixed(1)} · rarity roll {t.rarityRoll}
       </p>
       <p>
         {t.pattern} · {t.spinRoll}

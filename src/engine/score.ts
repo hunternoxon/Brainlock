@@ -1,7 +1,8 @@
 import { CONFIG } from './rules'
+import { BOARD_MOVES, EXITS, EXTRA_FLIP_VALUE, GRINDS, LIPS, REVERT, TRANSFER, TRANSITION, boardMoveValue } from './vocab'
 import type { Trick } from './types'
 
-export const FORMULA_VERSION = 'spec-2025-08-13/v4.5.2-weights/1'
+export const FORMULA_VERSION = 'spec-2025-08-13/v4.5.2-weights/2'
 
 export interface ScorePart {
   label: string
@@ -33,7 +34,6 @@ export interface SkipReceipt {
   kind: 'skipped'
   formulaVersion: string
   requestedPenalty: number
-  /** Signed delta actually applied (after floor) */
   skipDelta: number
   provisional: true
 }
@@ -58,73 +58,93 @@ export function repeatMult(priorLands: number): number {
   return priorLands <= 2 ? 1 : Math.max(0, 1 - 0.1 * (priorLands - 2))
 }
 
-const r2 = (n: number) => Math.round(n * 1000) / 1000
+const r3 = (n: number) => Math.round(n * 1000) / 1000
+
+/**
+ * Additive base components, from canonical components only (never names).
+ * Each mechanical component is counted exactly once.
+ */
+export function baseParts(t: Trick): ScorePart[] {
+  const sc = S()
+  const parts: ScorePart[] = [{ label: 'Base', value: 1 }]
+  const stance = sc.stance[t.stance] ?? 0
+  if (stance) parts.push({ label: `Stance: ${t.stance}`, value: stance })
+  if (t.spin) parts.push({ label: `Body spin: ${t.spin.dir} ${t.spin.deg}`, value: sc.spin[String(t.spin.deg)] ?? 0 })
+  const m = t.flip ? BOARD_MOVES[t.flip] : undefined
+  if (m) {
+    const prefix = t.pattern === 'flip→grind' || t.pattern === 'flip→manual' ? 'Entry ' : ''
+    for (const p of boardMoveValue(m)) parts.push({ label: prefix + p.label, value: p.value })
+    if (t.flips) parts.push({ label: `Extra flip rotation ×${t.flips - 1}`, value: r3(EXTRA_FLIP_VALUE * (t.flips - 1)) })
+  }
+  if (t.grind) {
+    const g = GRINDS[t.grind]
+    const dm = t.direction && g?.dirMult ? g.dirMult[t.direction] : 1
+    parts.push({
+      label: dm !== 1 ? `Grind: ${t.direction} ${g?.label} (${g?.value} × ${dm})` : `Grind: ${t.direction ?? ''} ${g?.label ?? t.grind}`.replace('  ', ' '),
+      value: r3((g?.value ?? 0) * dm),
+    })
+  }
+  if (t.grind2) parts.push({ label: `Transition to ${GRINDS[t.grind2]?.label}`, value: r3((GRINDS[t.grind2]?.value ?? 0) * TRANSITION.valueShare) })
+  if (t.manual) parts.push({ label: `Manual: ${t.manual}`, value: sc.manual[t.manual] ?? 0 })
+  if (t.lip) parts.push({ label: `Lip trick: ${LIPS[t.lip]?.label}`, value: LIPS[t.lip]?.value ?? 0 })
+  if (t.exit) parts.push({ label: `Exit: ${EXITS[t.exit]?.label}`, value: EXITS[t.exit]?.value ?? 0 })
+  if (t.revert) parts.push({ label: 'Revert', value: REVERT.value })
+  if (t.transferTo) parts.push({ label: 'Transfer', value: TRANSFER.value })
+  const oa = Math.max(sc.obstacle_add[t.obstacle] ?? 0, t.transferTo ? (sc.obstacle_add[t.transferTo] ?? 0) : 0)
+  parts.push({ label: `Obstacle: ${t.transferTo ? `${t.obstacle} → ${t.transferTo}` : t.obstacle}`, value: oa })
+  return parts
+}
+
+export function comboMultipliers(t: Trick): Multiplier[] {
+  const cm = S().combo_mult
+  const m = t.flip ? BOARD_MOVES[t.flip] : undefined
+  const isFlip = !!m?.flip
+  const entry = (t.pattern === 'flip→grind' || t.pattern === 'flip→manual') && !!m
+  const out: Multiplier[] = []
+  if (entry && t.grind) out.push({ label: isFlip ? 'Flip into grind' : 'Shuvit into grind', mult: cm['flip&grind'] ?? 1 })
+  if (isFlip && t.spin) out.push({ label: 'Spin + flip', mult: cm['flip&spin'] ?? 1 })
+  if (t.spin && t.grind) out.push({ label: 'Spin into grind', mult: cm['spin&grind'] ?? 1 })
+  if (t.manual && (entry || t.spin)) out.push({ label: 'Into manual', mult: cm['manual&(flip|spin)'] ?? 1 })
+  if (t.obstacle === 'gap' && isFlip && t.spin) out.push({ label: 'Gap spin + flip', mult: cm['gap&flip&spin'] ?? 1 })
+  return out
+}
 
 /**
  * points = round(SCALE × BaseSum × ComboM × AttemptM × FlowM × RepeatM)
- * Ported from legacy BrainlockModel.scoreTrick with identical weights, plus a receipt.
+ * Legacy formula and weights; receipts list every component once.
  */
 export function scoreLanding(
   t: Trick,
   attempt: number,
   flowCount: number,
-  opts: { priorLands?: number; repeatPenaltyEnabled?: boolean } = {},
+  opts: { priorLands?: number; repeatPenaltyEnabled?: boolean; playerChosen?: boolean } = {},
 ): LandReceipt {
   const sc = S()
-  const parts: ScorePart[] = [{ label: 'Base', value: 1 }]
-  const stance = sc.stance[t.stance] ?? 0
-  if (stance) parts.push({ label: `Stance: ${t.stance}`, value: stance })
-  if (t.spin) parts.push({ label: `Spin: ${t.spin.dir} ${t.spin.deg}`, value: sc.spin[String(t.spin.deg)] ?? 0 })
-  if (t.flip) parts.push({ label: `Flip: ${t.flip}`, value: sc.flip[t.flip] ?? 0 })
-  if (t.grind) {
-    const base = sc.grind_base[t.grind] ?? 0
-    const dm = sc.grind_dir_mult[t.grind]?.[t.direction ?? 'FS'] ?? 1
-    parts.push({
-      label: dm !== 1 ? `Grind: ${t.direction} ${t.grind} (${base} × ${dm} ${t.direction})` : `Grind: ${t.direction} ${t.grind}`,
-      value: r2(base * dm),
-    })
-  }
-  if (t.manual) parts.push({ label: `Manual: ${t.manual}`, value: sc.manual[t.manual] ?? 0 })
-  parts.push({ label: `Obstacle: ${t.obstacle}`, value: sc.obstacle_add[t.obstacle] ?? 0 })
-
-  // Sum unrounded components exactly like the legacy scorer
-  let baseSum = 1 + stance + (t.spin ? (sc.spin[String(t.spin.deg)] ?? 0) : 0) + (t.flip ? (sc.flip[t.flip] ?? 0) : 0)
-  if (t.grind) baseSum += (sc.grind_base[t.grind] ?? 0) * (sc.grind_dir_mult[t.grind]?.[t.direction ?? 'FS'] ?? 1)
-  if (t.manual) baseSum += sc.manual[t.manual] ?? 0
-  baseSum += sc.obstacle_add[t.obstacle] ?? 0
-
-  const combos: Multiplier[] = []
-  const cm = sc.combo_mult
-  if (t.flip && t.grind) combos.push({ label: 'Flip into grind', mult: cm['flip&grind'] ?? 1 })
-  if (t.flip && t.spin) combos.push({ label: 'Spin + flip', mult: cm['flip&spin'] ?? 1 })
-  if (t.spin && t.grind) combos.push({ label: 'Spin into grind', mult: cm['spin&grind'] ?? 1 })
-  if (t.manual && (t.flip || t.spin)) combos.push({ label: 'Into manual', mult: cm['manual&(flip|spin)'] ?? 1 })
-  if (t.obstacle === 'gap' && t.flip && t.spin) combos.push({ label: 'Gap spin + flip', mult: cm['gap&flip&spin'] ?? 1 })
+  const parts = baseParts(t)
+  const baseSum = parts.reduce((a, p) => a + p.value, 0)
+  const combos = comboMultipliers(t)
   const comboM = combos.reduce((m, c) => m * c.mult, 1)
-
   const attemptM = attemptMult(attempt)
   const flowM = flowMult(flowCount)
   const priorLands = opts.priorLands ?? 0
-  const repeatM = opts.repeatPenaltyEnabled ? repeatMult(priorLands) : 1
-  const repeatNote = opts.repeatPenaltyEnabled
-    ? repeatM < 1
-      ? `Landed this ${priorLands}× already this session`
-      : 'No repeat penalty'
-    : 'Repeat penalty off (fairness-first)'
+  // Fairness: the generator assigns every prompt in v1, so a repeat is never the player's choice.
+  // The legacy penalty only applies to player-chosen tricks (none exist yet).
+  const applies = !!opts.repeatPenaltyEnabled && !!opts.playerChosen
+  const repeatM = applies ? repeatMult(priorLands) : 1
+  const repeatNote = applies ? (repeatM < 1 ? `Landed this ${priorLands}× already this session` : 'No repeat penalty') : 'No repeat penalty (game-assigned trick)'
   const total = Math.round(sc.scale * baseSum * attemptM * flowM * repeatM * comboM)
-
   return {
     kind: 'landed',
     formulaVersion: FORMULA_VERSION,
     scale: sc.scale,
     baseParts: parts,
-    baseSum: r2(baseSum),
+    baseSum: r3(baseSum),
     combos,
-    comboM: r2(comboM),
+    comboM,
     attempt,
     attemptM,
     flowCount,
-    flowM: r2(flowM),
+    flowM,
     repeatCount: priorLands,
     repeatM,
     repeatNote,

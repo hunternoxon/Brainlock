@@ -1,7 +1,9 @@
 import { defaultFilters } from '../src/engine/catalog'
 import { reduce, startSession, type GameState, type Mode, type SoloLength } from '../src/engine/game'
+import { Rng } from '../src/engine/rng'
+import { recentOf, selectChallenge, type RecentPick } from '../src/engine/select'
 import { DEFAULT_TUNABLES, type Tunables } from '../src/engine/tunables'
-import type { Filters } from '../src/engine/types'
+import type { Filters, RatedTrick } from '../src/engine/types'
 
 export function newGame(o: Partial<{ mode: Mode; soloLength: SoloLength; level: number; seed: number; filters: Filters; tunables: Partial<Tunables> }> = {}): GameState {
   return startSession({
@@ -27,3 +29,17 @@ export const failChallenge = (s: GameState) => miss(miss(miss(s)))
 
 /** JSON round-trip, as a reload through localStorage would do */
 export const reload = (s: GameState): GameState => JSON.parse(JSON.stringify(s))
+
+/** Seeded selector run (no game state), for distribution/property tests */
+export function run(filters: Filters, level: number, n: number, seed = 7, tun = DEFAULT_TUNABLES): RatedTrick[] {
+  const rng = new Rng(seed)
+  const recent: RecentPick[] = []
+  const out: RatedTrick[] = []
+  for (let i = 0; i < n; i++) {
+    const r = selectChallenge({ filters, skill: level, recent, rng, tun })
+    if (!r.ok) throw new Error('empty pool: ' + r.diagnosis.messages.join(' '))
+    out.push(r.pick)
+    recent.push(recentOf(r.pick))
+  }
+  return out
+}

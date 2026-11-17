@@ -8,7 +8,8 @@ import type { Brainlock } from './useBrainlock'
 export function Home({ b, go }: { b: Brainlock; go: (v: View) => void }) {
   const { settings: st, session: s, pool } = b
   const resumable = s && s.status !== 'over' ? s : null
-  const adapted = b.profile.skill && b.profile.skill.anchor === st.level ? b.profile.skill : null
+  const lt = b.longTerm
+  const adapted = lt.used.length ? lt.skill : null
   const f = st.filters
   const best = b.store
     .loadScores()
@@ -56,6 +57,8 @@ export function Home({ b, go }: { b: Brainlock; go: (v: View) => void }) {
         </section>
       )}
 
+      <div className="home__cols">
+      <div className="home__col">
       <section className="field" aria-label="Mode">
         <p className="label">Mode</p>
         <div className="seg" role="radiogroup">
@@ -93,23 +96,26 @@ export function Home({ b, go }: { b: Brainlock; go: (v: View) => void }) {
         <p className="hint">
           {adapted && Math.abs(adapted.effective - st.level) >= 0.05 ? (
             <>
-              Adapted to {adapted.effective.toFixed(1)} from your play.{' '}
+              Adapted to {adapted.effective.toFixed(1)} from {lt.used.length} completed session{lt.used.length === 1 ? '' : 's'}.{' '}
               <button className="link" onClick={b.resetSkill}>
                 Reset to {st.level}
               </button>
             </>
           ) : (
-            '1 = just starting, 10 = pro. It adjusts slowly as you play.'
+            '1 = just starting, 10 = pro. It adjusts slowly as you complete sessions.'
           )}
         </p>
       </section>
 
+      </div>
+      <div className="home__col">
       <section className="field" aria-label="Setup">
         <p className="label">Setup</p>
         <button className="setup-summary" onClick={() => go('setup')}>
           <span>
-            {f.obstacles.length === OBSTACLES.length ? 'All 12 obstacles' : `${f.obstacles.length} obstacles`} · {f.families.length}/{FAMILIES.length} trick types ·{' '}
-            {f.stances.length === STANCES.length ? 'all stances' : f.stances.join(', ')}
+            {f.obstacles.length === OBSTACLES.length ? 'All 12 obstacles' : f.obstacles.length === 0 ? 'No obstacles' : f.obstacles.length <= 3 ? f.obstacles.join(', ') : `${f.obstacles.length} obstacles`} ·{' '}
+            {f.families.length}/{FAMILIES.length} trick types · {f.stances.length === STANCES.length ? 'all stances' : f.stances.join(', ')}
+            {f.rarity !== 'very-low' && ` · rare: ${f.rarity}`}
           </span>
           <span className="setup-summary__edit">Edit</span>
         </button>
@@ -133,6 +139,9 @@ export function Home({ b, go }: { b: Brainlock; go: (v: View) => void }) {
             Best {st.mode === 'skate' ? 'SKATE' : `Solo ${st.soloLength}`}: {fmt(best.value)}
           </p>
         )}
+      </div>
+
+      </div>
       </div>
 
       <footer className="home__foot">
