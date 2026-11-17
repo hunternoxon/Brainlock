@@ -295,22 +295,23 @@ h2 {
 }
 .logo {
   display: inline-flex;
-  flex-direction: column;
-  gap: 10px;
   width: fit-content;
 }
 .logo__word {
-  font-size: clamp(2.5rem, 12.5vw, 3.6rem);
-  font-weight: 800;
-  letter-spacing: -0.015em;
-  line-height: 0.88;
+  display: inline-flex;
+  font-family: 'Marcellus', 'Albertus', 'Optima', serif;
+  font-size: clamp(2.6rem, 13vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 0.95;
   color: var(--ink-strong);
+  /* a touch heavier, like a stamped / cut badge, with slightly rough edges */
+  -webkit-text-stroke: 0.035em currentColor;
+  paint-order: stroke fill;
+  filter: url(#logo-rough);
 }
-.logo__rule {
-  display: block;
-  height: 6px;
-  width: 100%;
-  background: var(--laser);
+.logo__word > span {
+  display: inline-block;
 }
 
 /* Page background behind the home card */

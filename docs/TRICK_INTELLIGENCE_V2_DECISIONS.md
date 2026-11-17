@@ -134,3 +134,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 
 - **Manual pad = manuals only.** Hard legality rule: every manual pad trick includes a manual (manual, nose manual, flip/shuvit-into-manual, 180 to manual, manual exits/reverts). Plain airs onto the pad and the manual pad ↔ box transfers are removed; transfers are bank ↔ quarterpipe only. This is test-enforced across the catalog and in seeded play.
 - **Home background:** about 20% more bike-frame crackle. Sharp branching crack lines plus faint hairline sub-cracks run through the semicircle grid, and tiles shift slightly at each crack like shattered paint. A greyscale photographic finish adds soft uneven exposure, a mild vignette, lifted blacks, animated film grain and slight lens softness.
+
+## v2.3 (2026-11-17)
+
+- **Logo:** flared glyphic capitals after the vintage Humber badge (Marcellus, bundled via @fontsource for offline use). It's slightly heavier, with low-frequency edge roughening and per-letter baseline/angle jitter so it feels hand-cut. The red rule is dropped.
+- **Home background:** rebuilt in the Land/Miss visual language. It's a slow greyscale tunnel (same geometry family as the Land screen) whose walls are lined with semicircle-in-square tiles, finished with fog, a pale core, vignette and film grain. A selection change triggers a Land-style rush forward, then a small Miss-style drip/melt that recovers. The thick crack lines are removed. Reduced motion shows a still frame.
