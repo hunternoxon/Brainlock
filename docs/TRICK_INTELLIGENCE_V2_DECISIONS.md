@@ -186,3 +186,10 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 - **Level question:** a large picker fills the card: a huge number, 72 px −/+ buttons, a playful level name as a white cut-out label, and a 10-step meter. Names (vibe, never a dig at skill): 1 Fresh Grip Tape · 2 Tiny Wheels, Big Dreams · 3 Kitchen Table Ripper · 4 Desk Drawer Daredevil · 5 Knuckle Cruiser · 6 Rail Whisperer · 7 Pocket Pro · 8 Coping Wizard · 9 Trucks of Fury · 10 Fully Brainlocked. A note reads "First time? We recommend level 1."
 - **Landing description:** "Skate⇄Finger-board game that you can play alone or with the homies" (TV-static swap kept). There's more space between it and "Choose a mode".
 - **Setup on desktop:** stacked full-width sections like mobile (no side column, no family grid).
+
+## v2.12 (2026-11-17)
+
+- **Initials:** a finished, eligible run (SKATE out / Marathon complete) goes on its board only after the player enters initials on the recap (up to 3 letters/digits, uppercased). Skipping keeps it in history and learning only. The last initials used are remembered and prefill the prompt. `finalize` now records history only; `postScore(id, initials)` adds the board entry, and posting again just updates the initials. Older entries without initials show `---`. Multiplayer matches are unchanged and still don't go on solo boards.
+- **Removing scores:** locked behind the passcode "Corndog" (case-insensitive, trimmed) on the Scores screen. Unlocking shows a Remove link on each board entry, plus "Clear scores and history" and the "also delete" option in the forget flow. `removeScore` takes the entry off its board; history and learning are untouched. The passcode sits in client-side code, so it's a friendly lock for shared phones, not security.
+- **Marathon 5:** SOLO_LENGTHS = [5, 10, 25, 50], with a `solo-5` board.
+- **Landing:** a small "Scoreboards" link under Get started.

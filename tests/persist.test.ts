@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { KEYS, createStore, memoryStorage } from '../src/engine/persist'
+import { KEYS, createStore, memoryStorage, passcodeOk, sanitizeInitials } from '../src/engine/persist'
 import { DEFAULT_TUNABLES } from '../src/engine/tunables'
 import { end, failChallenge, land, miss, newGame, next } from './helpers'
 
@@ -54,14 +54,35 @@ describe('persistence', () => {
     expect(r1.isNewBest).toBe(true)
     expect(r2.isNewBest).toBe(true)
     expect(store.loadHistory()).toHaveLength(1)
+    // Nothing on the board until initials are entered
+    expect(store.loadScores()).toHaveLength(0)
+    expect(store.postScore(s.id, '')).toBeNull()
+    store.postScore(s.id, 'h.n!x')
+    store.postScore(s.id, 'hjn')
     expect(store.loadScores()).toHaveLength(1)
-    expect(store.loadScores()[0]).toMatchObject({ board: 'skate', value: s.score })
+    expect(store.loadScores()[0]).toMatchObject({ board: 'skate', value: s.score, initials: 'HJN' })
     // Manually ended: history yes, high score no
     const e = end(next(land(newGame({ seed: 9 }))))
     store.finalize(e)
     expect(store.loadHistory()).toHaveLength(2)
     expect(store.loadHistory()[0].endReason).toBe('ended')
+    expect(store.postScore(e.id, 'ABC')).toBeNull()
     expect(store.loadScores()).toHaveLength(1)
+    // Removing a score keeps the history
+    store.removeScore(s.id)
+    expect(store.loadScores()).toHaveLength(0)
+    expect(store.loadHistory()).toHaveLength(2)
+  })
+
+  test('initials and passcode helpers', () => {
+    expect(sanitizeInitials('ab-cd')).toBe('ABC')
+    expect(sanitizeInitials(42)).toBe('')
+    expect(passcodeOk('Corndog')).toBe(true)
+    expect(passcodeOk(' corndog ')).toBe(true)
+    expect(passcodeOk('corn dog')).toBe(false)
+    const mem = memoryStorage()
+    mem.setItem(KEYS.settings, JSON.stringify({ v: 1, data: { soloLength: 5, initials: 'zz9top' } }))
+    expect(createStore(mem).loadSettings()).toMatchObject({ soloLength: 5, initials: 'ZZ9' })
   })
 
   test('tunables: hard-locked AI / Stack Builder flags cannot be enabled from storage', () => {

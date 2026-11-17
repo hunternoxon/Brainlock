@@ -10,7 +10,7 @@ import type { Family, Filters, Outcome, Rarity, RatedTrick, Trick } from './type
 
 export const SESSION_SCHEMA = 2
 export const LETTERS = ['S', 'K', 'A', 'T', 'E'] as const
-export const SOLO_LENGTHS = [10, 25, 50] as const
+export const SOLO_LENGTHS = [5, 10, 25, 50] as const
 export type SoloLength = (typeof SOLO_LENGTHS)[number]
 export type Mode = 'skate' | 'solo'
 

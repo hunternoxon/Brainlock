@@ -245,6 +245,25 @@ export function useBrainlock() {
     },
     [store],
   )
+  /** Put the finished session on its board under these initials (remembered for next time) */
+  const postScore = useCallback(
+    (id: string, initials: string) => {
+      const e = store.postScore(id, initials)
+      if (e) {
+        setSettings({ initials: e.initials! })
+        setHistoryRev((r) => r + 1)
+      }
+      return e
+    },
+    [store, setSettings],
+  )
+  const removeScore = useCallback(
+    (id: string) => {
+      store.removeScore(id)
+      setHistoryRev((r) => r + 1)
+    },
+    [store],
+  )
   const unforget = useCallback(
     (id: string) => {
       store.unforgetSession(id)
@@ -268,6 +287,8 @@ export function useBrainlock() {
     resetSkill,
     forget,
     unforget,
+    postScore,
+    removeScore,
     tunables,
     setTunables,
     resetTunables: () => {

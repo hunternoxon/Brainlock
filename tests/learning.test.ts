@@ -111,6 +111,7 @@ describe('long-term learning', () => {
     const b = completed(11, Array(10).fill('F'))
     store.finalize(a)
     store.finalize(b)
+    store.postScore(b.id, 'BBB')
     const both = computeLongTermSkill(store.loadHistory(), 4, 0, T).skill.effective
     expect(() => store.forgetSession(b.id, '', undefined, false)).toThrow()
     store.forgetSession(b.id, 'Injury / off day', 'jammed finger', false)
@@ -130,6 +131,8 @@ describe('long-term learning', () => {
     const store = createStore(memoryStorage())
     const a = completed(12, Array(10).fill('L1'))
     store.finalize(a)
+    store.postScore(a.id, 'AAA')
+    expect(store.loadScores()).toHaveLength(1)
     store.forgetSession(a.id, 'Accidental taps', undefined, true)
     expect(store.loadHistory()).toHaveLength(0)
     expect(store.loadScores()).toHaveLength(0)

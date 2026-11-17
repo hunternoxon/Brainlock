@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { FORGET_REASONS, isLearnable } from '../engine/learning'
-import type { HistoryEntry } from '../engine/persist'
+import { passcodeOk, type HistoryEntry } from '../engine/persist'
 import { fmt } from './copy'
 import type { Brainlock } from './useBrainlock'
 
 const BOARDS = [
   ['skate', 'SKATE'],
+  ['solo-5', 'Marathon 5'],
   ['solo-10', 'Marathon 10'],
   ['solo-25', 'Marathon 25'],
   ['solo-50', 'Marathon 50'],
@@ -17,6 +18,11 @@ const date = (t: number) => new Date(t).toLocaleDateString(undefined, { month: '
 export function Scores({ b, onClose }: { b: Brainlock; onClose: () => void }) {
   const [tick, setTick] = useState(0)
   const [confirm, setConfirm] = useState(false)
+  /** Removing scores is locked behind the passcode (for this visit to Scores) */
+  const [unlocked, setUnlocked] = useState(false)
+  const [asking, setAsking] = useState(false)
+  const [code, setCode] = useState('')
+  const [wrong, setWrong] = useState(false)
   void tick
   void b.historyRev
   const scores = b.store.loadScores()
@@ -47,10 +53,16 @@ export function Scores({ b, onClose }: { b: Brainlock; onClose: () => void }) {
                     {top.map((s, i) => (
                       <li key={s.sessionId}>
                         <span className="board__rank">{i + 1}</span>
+                        <span className="board__who">{s.initials || '---'}</span>
                         <span className="board__val">{fmt(s.value)}</span>
                         <span className="muted small">
                           L{s.startLevel} · {s.landed}/{s.challenges} landed · {date(s.at)}
                         </span>
+                        {unlocked && (
+                          <button className="link board__remove" aria-label={`Remove ${s.initials || ''} ${fmt(s.value)} from ${label}`} onClick={() => b.removeScore(s.sessionId)}>
+                            Remove
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ol>
@@ -71,14 +83,62 @@ export function Scores({ b, onClose }: { b: Brainlock; onClose: () => void }) {
           {history.length === 0 && <p className="hint">Nothing yet.</p>}
           <ol className="history">
             {history.slice(0, 50).map((h) => (
-              <HistoryRow key={h.id} h={h} b={b} />
+              <HistoryRow key={h.id} h={h} b={b} canDelete={unlocked} />
             ))}
           </ol>
         </section>
         </div>
       </div>
 
-      <footer className="setup__foot">
+      <footer className="setup__foot scores__foot">
+        {unlocked ? (
+          <button className="link" onClick={() => setUnlocked(false)}>
+            Lock score removal
+          </button>
+        ) : asking ? (
+          <form
+            className="passcode"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (passcodeOk(code)) {
+                setUnlocked(true)
+                setAsking(false)
+                setCode('')
+                setWrong(false)
+              } else setWrong(true)
+            }}
+          >
+            <input
+              aria-label="Passcode"
+              type="password"
+              placeholder="Passcode"
+              autoComplete="off"
+              autoFocus
+              value={code}
+              aria-invalid={wrong || undefined}
+              onChange={(e) => {
+                setCode(e.target.value)
+                setWrong(false)
+              }}
+            />
+            <button className="pill pill--sm pill--primary" type="submit" disabled={!code}>
+              Unlock
+            </button>
+            <button className="pill pill--sm" type="button" onClick={() => setAsking(false)}>
+              Cancel
+            </button>
+            {wrong && (
+              <span className="danger small" role="alert">
+                Wrong passcode
+              </span>
+            )}
+          </form>
+        ) : (
+          <button className="link" onClick={() => setAsking(true)}>
+            Remove scores…
+          </button>
+        )}
+        {unlocked && (
         <button
           className={`link ${confirm ? 'danger' : ''}`}
           onClick={() => {
@@ -90,12 +150,13 @@ export function Scores({ b, onClose }: { b: Brainlock; onClose: () => void }) {
         >
           {confirm ? 'Tap again to erase scores and history' : 'Clear scores and history'}
         </button>
+        )}
       </footer>
     </main>
   )
 }
 
-function HistoryRow({ h, b }: { h: HistoryEntry; b: Brainlock }) {
+function HistoryRow({ h, b, canDelete }: { h: HistoryEntry; b: Brainlock; canDelete: boolean }) {
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [note, setNote] = useState('')
@@ -146,10 +207,12 @@ function HistoryRow({ h, b }: { h: HistoryEntry; b: Brainlock }) {
             ))}
           </select>
           <input aria-label="Optional note" placeholder="Optional note" value={note} onChange={(e) => setNote(e.target.value)} />
-          <label className="check">
-            <input type="checkbox" checked={alsoDelete} onChange={(e) => setAlsoDelete(e.target.checked)} />
-            Also delete this session and its score
-          </label>
+          {canDelete && (
+            <label className="check">
+              <input type="checkbox" checked={alsoDelete} onChange={(e) => setAlsoDelete(e.target.checked)} />
+              Also delete this session and its score
+            </label>
+          )}
           <div className="row">
             <button className="pill pill--sm" onClick={() => setOpen(false)}>
               Cancel

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { sessionStats } from '../engine/game'
+import { sanitizeInitials } from '../engine/persist'
 import type { Go } from './App'
 import { copy, fmt } from './copy'
 import { Receipt } from './Receipt'
@@ -34,6 +35,8 @@ export function Summary({ b, go }: { b: Brainlock; go: Go }) {
         )}
         {!eligible && <p className="muted">Ended early, so it’s saved to history but not high scores.</p>}
       </section>
+
+      {eligible && <InitialsPrompt b={b} />}
 
       <dl className="stats">
         <div>
@@ -96,5 +99,51 @@ export function Summary({ b, go }: { b: Brainlock; go: Go }) {
         </button>
       </footer>
     </main>
+  )
+}
+
+/** Arcade-style: the score only goes on the board once initials are entered. */
+function InitialsPrompt({ b }: { b: Brainlock }) {
+  const s = b.session!
+  void b.historyRev
+  const posted = b.store.loadScores().find((e) => e.sessionId === s.id)
+  const [ini, setIni] = useState(() => b.settings.initials)
+  const board = s.mode === 'skate' ? 'SKATE' : `Marathon ${s.soloLength}`
+
+  if (posted)
+    return (
+      <p className="initials__done" role="status">
+        On the {board} board as <strong>{posted.initials}</strong>
+      </p>
+    )
+  return (
+    <form
+      className="initials"
+      onSubmit={(e) => {
+        e.preventDefault()
+        b.postScore(s.id, ini)
+      }}
+    >
+      <label className="label" htmlFor="initials">
+        Add your initials to the {board} board
+      </label>
+      <div className="initials__row">
+        <input
+          id="initials"
+          className="initials__input"
+          value={ini}
+          maxLength={3}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          placeholder="AAA"
+          onChange={(e) => setIni(sanitizeInitials(e.target.value))}
+        />
+        <button className="pill pill--primary" type="submit" disabled={!ini}>
+          Add score
+        </button>
+      </div>
+      <p className="hint small">Skip it and the score stays in history only.</p>
+    </form>
   )
 }

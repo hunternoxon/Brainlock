@@ -119,7 +119,7 @@ describe('attempt lifecycle', () => {
 })
 
 describe('Solo lengths', () => {
-  for (const n of [10, 25, 50] as const) {
+  for (const n of [5, 10, 25, 50] as const) {
     test(`Solo ${n} ends after exactly ${n} resolved challenges (mixed land/fail/skip)`, () => {
       let s = newGame({ mode: 'solo', soloLength: n, seed: n })
       let i = 0

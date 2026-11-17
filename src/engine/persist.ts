@@ -42,6 +42,8 @@ export interface Settings {
   sound: boolean
   debug: boolean
   multi: MultiSettings
+  /** Last initials used on a scoreboard (prefills the prompt) */
+  initials: string
 }
 
 export interface MatchRecord {
@@ -78,6 +80,8 @@ export interface ScoreEntry {
   landed: number
   challenges: number
   at: number
+  /** Up to 3 letters/digits, entered on the recap */
+  initials?: string
 }
 
 export interface HistoryEntry {
@@ -99,7 +103,7 @@ export interface HistoryEntry {
 }
 
 export function defaultSettings(): Settings {
-  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: false, debug: false, multi: defaultMulti() }
+  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: false, debug: false, multi: defaultMulti(), initials: '' }
 }
 
 export const boardKey = (mode: Mode, soloLength?: SoloLength) => (mode === 'skate' ? 'skate' : `solo-${soloLength}`)
@@ -157,6 +161,7 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
         sound: !!s.sound,
         debug: !!s.debug,
         multi: sanitizeMulti(s.multi),
+        initials: sanitizeInitials(s.initials),
       }
     },
     saveSettings(s: Settings) {
@@ -215,8 +220,9 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
       }) ?? []
     },
     /**
-     * Record a finished session once (idempotent by session id). Only SKATE
-     * losses and completed Solo runs go on the high-score boards.
+     * Record a finished session in history once (idempotent by session id).
+     * Scores reach a board only via postScore (after the player enters initials),
+     * and only SKATE losses and completed Marathon runs are eligible.
      */
     finalize(s: GameState): { isNewBest: boolean; previousBest: number | null } {
       const history = this.loadHistory()
@@ -244,23 +250,36 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
         session: s,
       })
       write(KEYS.history, history.slice(0, HISTORY_CAP))
-      if (!eligible) return { isNewBest: false, previousBest }
-      scores.push({
-        sessionId: s.id,
-        board,
-        value: s.score,
-        mode: s.mode,
-        soloLength: s.mode === 'solo' ? s.soloLength : undefined,
-        endReason: s.endReason!,
-        startLevel: s.startLevel,
-        endSkill: s.skill.effective,
-        landed: stats.landed,
-        challenges: s.history.length,
-        at: s.endedAt ?? now(),
-      })
+      return { isNewBest, previousBest }
+    },
+    /** Put a finished, eligible session on its board with initials (re-posting updates the initials). */
+    postScore(sessionId: string, initials: string): ScoreEntry | null {
+      const h = this.loadHistory().find((x) => x.id === sessionId)
+      const ini = sanitizeInitials(initials)
+      if (!h || !ini || (h.endReason !== 'skate' && h.endReason !== 'solo-complete')) return null
+      const scores = this.loadScores().filter((e) => e.sessionId !== sessionId)
+      const entry: ScoreEntry = {
+        sessionId,
+        board: boardKey(h.mode, h.soloLength),
+        value: h.score,
+        mode: h.mode,
+        soloLength: h.mode === 'solo' ? h.soloLength : undefined,
+        endReason: h.endReason,
+        startLevel: h.startLevel,
+        endSkill: h.skillEnd,
+        landed: h.stats.landed,
+        challenges: h.session.history.length,
+        at: h.endedAt,
+        initials: ini,
+      }
+      scores.push(entry)
       scores.sort((a, b) => b.value - a.value)
       write(KEYS.scores, scores.slice(0, SCORES_CAP))
-      return { isNewBest, previousBest }
+      return entry
+    },
+    /** Take a score off its board (history and learning are untouched). */
+    removeScore(sessionId: string) {
+      write(KEYS.scores, this.loadScores().filter((e) => e.sessionId !== sessionId))
     },
     /**
      * Exclude a session from skill learning (reason required). History and score
@@ -342,6 +361,15 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
 }
 
 export type Store = ReturnType<typeof createStore>
+
+/** Arcade-style initials: up to 3 letters/digits, uppercase */
+export function sanitizeInitials(x: unknown): string {
+  return typeof x === 'string' ? x.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3) : ''
+}
+
+/** Unlocks removing scores. A friendly lock for shared phones, not real security. */
+export const SCORE_PASSCODE = 'Corndog'
+export const passcodeOk = (x: string) => x.trim().toLowerCase() === SCORE_PASSCODE.toLowerCase()
 
 export function memoryStorage(): StorageLike & { data: Map<string, string> } {
   const data = new Map<string, string>()

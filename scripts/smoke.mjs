@@ -177,6 +177,11 @@ try {
     await page.getByRole('button', { name: /^(Next|See results)$/ }).click()
   }
   check('Marathon 10 ends after exactly 10', n === 10 && (await text('.summary__title')) === 'Run complete.', `resolved ${n}`)
+  check('recap asks for initials before the score goes on a board', await page.locator('#initials').isVisible())
+  await page.locator('#initials').fill('hj9n')
+  check('initials input keeps 3 uppercase letters/digits', (await page.locator('#initials').inputValue()) === 'HJ9')
+  await btn('Add score').click()
+  check('score posted under the initials', (await text('.initials__done')).includes('Marathon 10 board as HJ9'))
   await shot('09-solo-summary')
   await btn('Home').click()
   check('after the recap, Home starts at the first question', (await text('.q__title')) === 'Choose a mode')
@@ -192,11 +197,27 @@ try {
   check('after ending early, Home starts at the first question', (await text('.q__title')) === 'Choose a mode')
   await survey({ mode: 'Marathon', length: 10 })
 
-  await btn('Scores & history').click()
+  while (await btn('Back').isVisible()) {
+    await btn('Back').click()
+    await wait(150)
+  }
+  check('landing has a small Scoreboards link', await visible('Scoreboards'))
+  await btn('Scoreboards').click()
   const board = await page.locator('.board').count()
-  check('scores page has SKATE + Marathon 10 boards and history', board === 2 && (await page.locator('.history > li').count()) === 3)
+  check('only the run with initials is on a board (SKATE was skipped); history has all 3', board === 1 && (await page.locator('.history > li').count()) === 3 && (await text('.board__who')) === 'HJ9', `boards ${board}`)
+  check('Marathon 5 board exists', (await page.locator('.panel h3', { hasText: /^Marathon 5$/ }).count()) === 1)
+  check('remove is locked until the passcode', (await page.getByRole('button', { name: /^Remove HJ9/ }).count()) === 0 && !(await visible('Clear scores and history')))
+  await btn('Remove scores…').click()
+  await page.getByLabel('Passcode').fill('hotdog')
+  await btn('Unlock').click()
+  check('wrong passcode is rejected', (await text('[role=alert]')) === 'Wrong passcode' && (await page.getByRole('button', { name: /^Remove HJ9/ }).count()) === 0)
+  await page.getByLabel('Passcode').fill('Corndog')
+  await btn('Unlock').click()
   await shot('10-scores')
+  await page.getByRole('button', { name: /^Remove HJ9/ }).click()
+  check('Corndog unlocks removal; removing keeps history', (await page.locator('.board').count()) === 0 && (await page.locator('.history > li').count()) === 3)
   await btn('Done').click()
+  await survey({ mode: 'Marathon', length: 10 })
 
   // Forget a completed session for learning (reason required), history kept
   await btn('Scores & history').click()

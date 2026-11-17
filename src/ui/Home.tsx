@@ -16,7 +16,7 @@ export type HomeStep = 'mode' | 'length' | 'players' | 'names' | 'level' | 'read
 /** One sentence per line (avoids awkward wraps on phones) */
 const MODE_DESC = {
   skate: ['Three misses earns a letter.', 'Spell S-K-A-T-E and you’re out.'],
-  solo: ['A fixed run of 10, 25 or 50 challenges.', 'Score as much as you can.'],
+  solo: ['A fixed run of 5, 10, 25 or 50 challenges.', 'Score as much as you can.'],
 } as const
 
 /**
@@ -318,9 +318,14 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
         </section>
 
         {current === 'mode' ? (
-          <button className="pill pill--primary pill--xl survey__start" onClick={next}>
-            Get started
-          </button>
+          <>
+            <button className="pill pill--primary pill--xl survey__start" onClick={next}>
+              Get started
+            </button>
+            <button className="link survey__scores" onClick={() => go('scores')}>
+              Scoreboards
+            </button>
+          </>
         ) : (
           <nav className="survey__nav" aria-label="Steps">
             <button className="pill survey__back" onClick={back}>
