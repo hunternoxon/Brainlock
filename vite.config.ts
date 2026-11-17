@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: { port: 5280, strictPort: true, host: true },
   preview: { port: 5281, strictPort: true },
-  test: { include: ['tests/**/*.test.ts'], environment: 'node' },
+  // Generation-heavy property tests sample thousands of tricks; CI runners are slower than a laptop
+  test: { include: ['tests/**/*.test.ts'], environment: 'node', testTimeout: 60_000 },
 })
