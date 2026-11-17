@@ -1,89 +1,118 @@
 import { useEffect, useRef, useState } from 'react'
 import { LETTERS, soloRemaining, type Challenge, type GameState } from '../engine/game'
+import type { MatchState, TurnAction } from '../engine/match'
 import { flowMult } from '../engine/score'
-import type { View } from './App'
+import type { Go } from './App'
 import { copy, fmt, ordinal } from './copy'
 import { Receipt } from './Receipt'
+import { MatchBar, MatchSummary, nextPlayerLabel, turnLabel } from './Match'
 import { Summary } from './Summary'
 import { Trip } from './Trip'
 import type { Brainlock } from './useBrainlock'
 
-export function Play({ b, go }: { b: Brainlock; go: (v: View) => void }) {
-  const s = b.session!
+type TurnInput = TurnAction extends infer A ? (A extends { at: number } ? Omit<A, 'at'> : never) : never
+
+/** What the play screen needs, whether it's a solo session or one player's turn in a match. */
+export interface PlayCtl {
+  s: GameState
+  act: (a: TurnInput) => void
+  next: () => void
+  end: () => void
+  match?: MatchState
+}
+
+export function Play({ b, go, ctl }: { b: Brainlock; go: Go; ctl: PlayCtl }) {
+  const s = ctl.s
   const c = s.current
   const [menu, setMenu] = useState(false)
   const nextRef = useRef<HTMLButtonElement>(null)
-  const landed = s.status === 'result' && c?.outcome === 'landed'
+  // In a match, a player knocked out (or done with Marathon) still sees their result before Next
+  const status = ctl.match && s.status === 'over' && ctl.match.status === 'playing' ? 'result' : s.status
+  const landed = status === 'result' && c?.outcome === 'landed'
+  const failed = status === 'result' && c?.outcome === 'failed'
 
   // Keyboard: L / M / S during a challenge, N or Enter for Next
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (menu || e.metaKey || e.ctrlKey || e.altKey) return
       const k = e.key.toLowerCase()
-      if (s.status === 'playing' && c) {
-        if (k === 'l') b.dispatch({ type: 'land', challengeId: c.id })
-        if (k === 'm') b.dispatch({ type: 'miss', challengeId: c.id })
-        if (k === 's') b.dispatch({ type: 'skip', challengeId: c.id })
-      } else if (s.status === 'result' && (k === 'n' || k === 'enter')) {
+      if (status === 'playing' && c) {
+        if (k === 'l') ctl.act({ type: 'land', challengeId: c.id })
+        if (k === 'm') ctl.act({ type: 'miss', challengeId: c.id })
+        if (k === 's') ctl.act({ type: 'skip', challengeId: c.id })
+      } else if (status === 'result' && (k === 'n' || k === 'enter')) {
         e.preventDefault()
-        b.dispatch({ type: 'next' })
+        ctl.next()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [b, c, menu, s.status])
+  }, [ctl, c, menu, status])
 
   useEffect(() => {
-    if (s.status === 'result') nextRef.current?.focus({ preventScroll: true })
-  }, [s.status, c?.id])
+    if (status === 'result') nextRef.current?.focus({ preventScroll: true })
+  }, [status, c?.id])
 
-  if (s.status === 'over') return <Summary b={b} go={go} />
+  if (status === 'over') return ctl.match ? <MatchSummary b={b} go={go} m={ctl.match} /> : <Summary b={b} go={go} />
+
+  const player = ctl.match?.players[ctl.match.turn]
+  const nextLabel = ctl.match
+    ? nextPlayerLabel(ctl.match)
+    : s.mode === 'solo' && soloRemaining(s) === 0
+      ? 'See results'
+      : 'Next'
 
   return (
-    <main className="screen play" data-status={s.status} data-landed={landed || undefined}>
-      <Trip active={landed} lookKey={c?.id ?? ''} />
+    <main className="screen play" data-status={status} data-landed={landed || undefined} data-failed={failed || undefined}>
+      <Trip active={landed || failed} variant={failed ? 'fail' : 'land'} lookKey={c?.id ?? ''} />
+      {ctl.match && <MatchBar m={ctl.match} />}
       <Hud s={s} onMenu={() => setMenu(true)} />
 
       <section className="stage" aria-live="polite">
-        {s.status === 'blocked' && <Blocked b={b} go={go} />}
-        {c && s.status !== 'blocked' && (
+        {player && (
+          <p className="turn" key={`${player.id}-${c?.id}`}>
+            {turnLabel(player.name)}
+          </p>
+        )}
+        {status === 'blocked' && <Blocked ctl={ctl} go={go} />}
+        {c && status !== 'blocked' && (
           <>
-            <Attempts c={c} resolved={s.status === 'result'} />
+            <Attempts c={c} resolved={status === 'result'} />
             <h2 className="trick" key={c.id}>
               <span className="trick__name">{c.name}</span>
               <span className="trick__where">{c.where}</span>
             </h2>
             {c.experimental ? <p className="tag">Experimental combo</p> : (c.rarity === 'rare' || c.rarity === 'very-rare') && <p className="tag">Rare one</p>}
             {b.settings.debug && <Debug b={b} s={s} c={c} />}
-            {s.status === 'result' && <ResultCard b={b} s={s} c={c} />}
+            {status === 'result' && <ResultCard ctl={ctl} s={s} c={c} />}
           </>
         )}
       </section>
 
       <footer className="thumb">
-        {s.status === 'playing' && c && (
+        {status === 'playing' && c && (
           <>
-            <button className="pill pill--ghost pill--sm thumb__skip" onClick={() => b.dispatch({ type: 'skip', challengeId: c.id })}>
+            <button className="pill pill--ghost pill--sm thumb__skip" onClick={() => ctl.act({ type: 'skip', challengeId: c.id })}>
               Skip{s.tunables.skipPenaltyEnabled && s.tunables.skipPenaltyPoints > 0 ? ` · −${s.tunables.skipPenaltyPoints}` : ''}
             </button>
             <div className="thumb__row">
-              <button className="pill pill--xl pill--miss" onClick={() => b.dispatch({ type: 'miss', challengeId: c.id })}>
+              <button className="pill pill--xl pill--miss" onClick={() => ctl.act({ type: 'miss', challengeId: c.id })}>
                 Miss
               </button>
-              <button className="pill pill--xl pill--primary pill--land" onClick={() => b.dispatch({ type: 'land', challengeId: c.id })}>
+              <button className="pill pill--xl pill--primary pill--land" onClick={() => ctl.act({ type: 'land', challengeId: c.id })}>
                 Land
               </button>
             </div>
           </>
         )}
-        {s.status === 'result' && (
-          <button ref={nextRef} className={`pill pill--xl pill--next ${landed ? 'pill--cutout' : 'pill--primary'}`} onClick={() => b.dispatch({ type: 'next' })}>
-            {s.mode === 'solo' && soloRemaining(s) === 0 ? 'See results' : 'Next'}
+        {status === 'result' && (
+          <button ref={nextRef} className={`pill pill--xl pill--next ${landed || failed ? 'pill--cutout' : 'pill--primary'}`} onClick={ctl.next}>
+            {nextLabel}
           </button>
         )}
       </footer>
 
-      {menu && <Menu b={b} go={go} onClose={() => setMenu(false)} />}
+      {menu && <Menu b={b} ctl={ctl} go={go} onClose={() => setMenu(false)} />}
     </main>
   )
 }
@@ -141,7 +170,7 @@ function Attempts({ c, resolved }: { c: Challenge; resolved: boolean }) {
   )
 }
 
-function ResultCard({ b, s, c }: { b: Brainlock; s: GameState; c: Challenge }) {
+function ResultCard({ ctl, s, c }: { ctl: PlayCtl; s: GameState; c: Challenge }) {
   const [open, setOpen] = useState(false)
   const r = c.receipt
   return (
@@ -156,7 +185,10 @@ function ResultCard({ b, s, c }: { b: Brainlock; s: GameState; c: Challenge }) {
       )}
       {c.outcome === 'failed' && (
         <>
-          <p className="result__head">{c.letter ? `Three misses · ${c.letter} earned` : `Three misses · ${copy.failed(c.index)}`}</p>
+          <p className="result__head">
+            {c.letter ? `Three misses · ${c.letter} earned` : `Three misses · ${copy.failed(c.index)}`}
+            {ctl.match && s.endReason === 'skate' && ' · out of the game'}
+          </p>
           <p className="result__points">+0</p>
         </>
       )}
@@ -183,10 +215,10 @@ function ResultCard({ b, s, c }: { b: Brainlock; s: GameState; c: Challenge }) {
         ) : (
           <>
             <span className="hint small">Felt</span>
-            <button className="link small" onClick={() => b.dispatch({ type: 'feedback', challengeId: c.id, value: 'too-easy' })}>
+            <button className="link small" onClick={() => ctl.act({ type: 'feedback', challengeId: c.id, value: 'too-easy' })}>
               too easy
             </button>
-            <button className="link small" onClick={() => b.dispatch({ type: 'feedback', challengeId: c.id, value: 'too-hard' })}>
+            <button className="link small" onClick={() => ctl.act({ type: 'feedback', challengeId: c.id, value: 'too-hard' })}>
               too hard
             </button>
           </>
@@ -224,8 +256,8 @@ function Debug({ b, s, c }: { b: Brainlock; s: GameState; c: Challenge }) {
   )
 }
 
-function Blocked({ b, go }: { b: Brainlock; go: (v: View) => void }) {
-  const s = b.session!
+function Blocked({ ctl, go }: { ctl: PlayCtl; go: Go }) {
+  const s = ctl.s
   return (
     <div className="blocked" role="alert">
       <p className="result__head">No fair trick available</p>
@@ -236,14 +268,14 @@ function Blocked({ b, go }: { b: Brainlock; go: (v: View) => void }) {
       ))}
       <div className="col">
         {(s.blocked?.anyLevel ?? 0) > 0 && (
-          <button className="pill" onClick={() => b.dispatch({ type: 'allowStretch' })}>
+          <button className="pill" onClick={() => ctl.act({ type: 'allowStretch' })}>
             Allow harder tricks this session
           </button>
         )}
         <button
           className="pill pill--primary"
           onClick={() => {
-            b.dispatch({ type: 'end' })
+            ctl.end()
             go('setup')
           }}
         >
@@ -254,7 +286,8 @@ function Blocked({ b, go }: { b: Brainlock; go: (v: View) => void }) {
   )
 }
 
-function Menu({ b, go, onClose }: { b: Brainlock; go: (v: View) => void; onClose: () => void }) {
+function Menu({ b, ctl, go, onClose }: { b: Brainlock; ctl: PlayCtl; go: Go; onClose: () => void }) {
+  const what = ctl.match ? 'match' : 'session'
   const [confirm, setConfirm] = useState(false)
   return (
     <div className="sheet-backdrop" onClick={onClose}>
@@ -266,7 +299,7 @@ function Menu({ b, go, onClose }: { b: Brainlock; go: (v: View) => void; onClose
             go('home')
           }}
         >
-          Home (session stays saved)
+          Home ({what} stays saved)
         </button>
         <button className="pill" aria-pressed={b.settings.sound} onClick={() => b.setSettings({ sound: !b.settings.sound })}>
           Sound: {b.settings.sound ? 'on' : 'off'}
@@ -279,10 +312,10 @@ function Menu({ b, go, onClose }: { b: Brainlock; go: (v: View) => void; onClose
           onClick={() => {
             if (!confirm) return setConfirm(true)
             onClose()
-            b.dispatch({ type: 'end' })
+            ctl.end()
           }}
         >
-          {confirm ? 'Tap again to end session' : 'End session'}
+          {confirm ? `Tap again to end ${what}` : `End ${what}`}
         </button>
         <button className="pill pill--ghost" onClick={onClose}>
           Close

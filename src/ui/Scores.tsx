@@ -6,9 +6,9 @@ import type { Brainlock } from './useBrainlock'
 
 const BOARDS = [
   ['skate', 'SKATE'],
-  ['solo-10', 'Solo 10'],
-  ['solo-25', 'Solo 25'],
-  ['solo-50', 'Solo 50'],
+  ['solo-10', 'Marathon 10'],
+  ['solo-25', 'Marathon 25'],
+  ['solo-50', 'Marathon 50'],
 ] as const
 
 const REASON: Record<string, string> = { skate: 'S-K-A-T-E', 'solo-complete': 'Completed', ended: 'Ended early', abandoned: 'Abandoned' }
@@ -60,6 +60,9 @@ export function Scores({ b, onClose }: { b: Brainlock; onClose: () => void }) {
           })}
         </div>
 
+        <div className="scores__side">
+        <MatchList b={b} />
+
         <section className="panel scores__history">
           <div className="panel__head">
             <h3>History</h3>
@@ -72,6 +75,7 @@ export function Scores({ b, onClose }: { b: Brainlock; onClose: () => void }) {
             ))}
           </ol>
         </section>
+        </div>
       </div>
 
       <footer className="setup__foot">
@@ -102,7 +106,7 @@ function HistoryRow({ h, b }: { h: HistoryEntry; b: Brainlock }) {
   return (
     <li>
       <span>
-        {h.mode === 'skate' ? 'SKATE' : `Solo ${h.soloLength}`} · {REASON[h.endReason] ?? h.endReason}
+        {h.mode === 'skate' ? 'SKATE' : `Marathon ${h.soloLength}`} · {REASON[h.endReason] ?? h.endReason}
       </span>
       <span className="board__val">{fmt(h.score)}</span>
       <span className="muted small">
@@ -165,5 +169,36 @@ function HistoryRow({ h, b }: { h: HistoryEntry; b: Brainlock }) {
         </div>
       )}
     </li>
+  )
+}
+
+function MatchList({ b }: { b: Brainlock }) {
+  void b.historyRev
+  const matches = b.store.loadMatches()
+  return (
+    <section className="panel scores__matches">
+      <div className="panel__head">
+        <h3>Multiplayer</h3>
+      </div>
+      {matches.length === 0 ? (
+        <p className="hint">No matches yet. Pick 2–4 players on the home screen.</p>
+      ) : (
+        <ol className="history">
+          {matches.slice(0, 10).map((m) => {
+            const winners = m.players.filter((p) => m.winners.includes(p.id)).map((p) => p.name)
+            return (
+              <li key={m.id}>
+                <span>
+                  {m.mode === 'skate' ? 'SKATE' : `Marathon ${m.soloLength}`} · {winners.length ? `${winners.join(' & ')} won` : 'no winner'}
+                  {m.endReason === 'ended' ? ' (ended early)' : ''}
+                </span>
+                <span className="muted small">{date(m.endedAt)}</span>
+                <span className="muted small">{m.players.map((p) => `${p.name} ${fmt(p.score)}${m.mode === 'skate' ? (p.out ? ' (out)' : p.letters ? ` (${'SKATE'.slice(0, p.letters)})` : '') : ''}`).join(' · ')}</span>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+    </section>
   )
 }

@@ -24,6 +24,8 @@ uniform float uSegs;
 uniform float uTwist;
 uniform float uZoom;
 uniform float uHue;
+uniform float uMode;
+uniform float uMelt;
 
 const float PI = 3.14159265;
 
@@ -74,6 +76,15 @@ void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / min(uRes.x, uRes.y);
   uv -= uMouse * vec2(0.2, 0.14);
   uv *= 1.0 - uWarp * 0.32;
+  // Fail mode: columns drip downward and wobble as the screen melts
+  float drip = 0.0;
+  if (uMode > 0.5) {
+    float x = gl_FragCoord.x / uRes.x;
+    drip = 0.5 + 0.5 * sin(x * 23.0 + sin(x * 9.0) * 2.0) * sin(x * 7.3 + 1.7);
+    drip = pow(clamp(drip, 0.0, 1.0), 2.0);
+    uv.y += uMelt * drip * 0.9;
+    uv.x += sin(uv.y * 6.0 + uTime * 0.7) * 0.03 * uMelt;
+  }
   float ca = 0.005 + uWarp * 0.035 + uIntensity * 0.01;
   vec3 col;
   col.r = tunnel(uv * (1.0 + ca)).r;
@@ -90,6 +101,15 @@ void main() {
   col += (hash(gl_FragCoord.xy + fract(uTime) * 91.0) - 0.5) * 0.09;
   col = mix(col, vec3(1.0), clamp(uExit * 1.5 - r * (1.0 - uExit) * 1.3, 0.0, 1.0));
   float trail = clamp(uWarp * 0.9 + uIntensity * 0.3, 0.0, 0.82);
+  if (uMode > 0.5) {
+    // Remap everything to blood red, with hot highlights, darker where it drips
+    float l = dot(col, vec3(0.3, 0.59, 0.11));
+    vec3 red = mix(vec3(0.04, 0.0, 0.01), vec3(0.95, 0.06, 0.03), smoothstep(0.03, 0.55, l));
+    red = mix(red, vec3(1.0, 0.62, 0.45), smoothstep(0.7, 1.0, l));
+    col = red * (1.0 - 0.35 * drip * uMelt * smoothstep(0.7, 0.0, sp.y));
+    // Long smeared trails read as melting
+    trail = clamp(0.55 + uMelt * 0.35, 0.0, 0.92);
+  }
   gl_FragColor = vec4(col, 1.0 - trail);
 }
 `
@@ -150,7 +170,7 @@ function proceduralAtlas(): HTMLCanvasElement {
   return c
 }
 
-export type TunnelFrame = { intensity: number; warp: number; exit: number; mouseX: number; mouseY: number; speed: number; look?: TunnelLook }
+export type TunnelFrame = { intensity: number; warp: number; exit: number; mouseX: number; mouseY: number; speed: number; look?: TunnelLook; mode?: number; melt?: number }
 export type Tunnel = { render(dt: number, frame: TunnelFrame): void; dispose(): void }
 
 export function createTunnel(canvas: HTMLCanvasElement, renderScale = 0.45): Tunnel | null {
@@ -179,7 +199,7 @@ export function createTunnel(canvas: HTMLCanvasElement, renderScale = 0.45): Tun
   const u = (n: string) => gl.getUniformLocation(program, n)
   const U = {
     res: u('uRes'), time: u('uTime'), travel: u('uTravel'), intensity: u('uIntensity'), warp: u('uWarp'), exit: u('uExit'),
-    mouse: u('uMouse'), shape: u('uShape'), segs: u('uSegs'), twist: u('uTwist'), zoom: u('uZoom'), hue: u('uHue'),
+    mouse: u('uMouse'), mode: u('uMode'), melt: u('uMelt'), shape: u('uShape'), segs: u('uSegs'), twist: u('uTwist'), zoom: u('uZoom'), hue: u('uHue'),
   }
 
   const texture = gl.createTexture()
@@ -223,6 +243,8 @@ export function createTunnel(canvas: HTMLCanvasElement, renderScale = 0.45): Tun
       gl.uniform1f(U.twist, look.twist)
       gl.uniform1f(U.zoom, look.zoom)
       gl.uniform1f(U.hue, look.hue)
+      gl.uniform1f(U.mode, f.mode ?? 0)
+      gl.uniform1f(U.melt, f.melt ?? 0)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     },
     dispose() {

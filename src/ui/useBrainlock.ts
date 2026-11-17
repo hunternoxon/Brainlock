@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { diagnosePool } from '../engine/catalog'
 import { reduce, startSession, type Action, type GameState } from '../engine/game'
 import { computeLongTermSkill } from '../engine/learning'
+import { matchAct as matchActPure, matchEnd as matchEndPure, matchNext as matchNextPure, startMatch, type MatchState, type TurnAction } from '../engine/match'
 import { createStore, memoryStorage, type Settings } from '../engine/persist'
 import { DEFAULT_TUNABLES, type Tunables } from '../engine/tunables'
 import { sfx } from './sound'
@@ -46,6 +47,12 @@ export function useBrainlock() {
   const [historyRev, setHistoryRev] = useState(0)
   const [issues] = useState(() => [...store.issues])
   const nextSeed = useRef<number | null>(null)
+  const matchRef = useRef<MatchState | null>(null)
+  const [match, setMatchState] = useState<MatchState | null>(() => {
+    const m = store.loadMatch()
+    matchRef.current = m
+    return m
+  })
 
   const commit = useCallback(
     (next: GameState, prev: GameState | null) => {
@@ -63,21 +70,78 @@ export function useBrainlock() {
     [store],
   )
 
+  const playSound = useCallback(
+    (type: string, after: GameState | undefined, over: boolean) => {
+      if (!settings.sound) return
+      if (over) sfx.over()
+      else if (type === 'land') sfx.land()
+      else if (type === 'miss') (after?.current?.outcome === 'failed' ? sfx.fail : sfx.miss)()
+    },
+    [settings.sound],
+  )
+
   const dispatch = useCallback(
     (a: DistAction) => {
       const prev = sessionRef.current
       if (!prev) return
       const next = reduce(prev, { ...a, at: Date.now() } as Action)
       if (next === prev) return
-      if (settings.sound) {
-        if (next.status === 'over' && next.endReason !== 'ended') sfx.over()
-        else if (a.type === 'land') sfx.land()
-        else if (a.type === 'miss') (next.current?.outcome === 'failed' ? sfx.fail : sfx.miss)()
-      }
+      playSound(a.type, next, next.status === 'over' && next.endReason !== 'ended')
       commit(next, prev)
     },
-    [commit, settings.sound],
+    [commit, playSound],
   )
+
+  const commitMatch = useCallback(
+    (m: MatchState) => {
+      matchRef.current = m
+      if (m.status === 'over') {
+        store.clearMatch()
+        store.finalizeMatch(m)
+      } else store.saveMatch(m)
+      setMatchState(m)
+    },
+    [store],
+  )
+
+  type TurnInput = TurnAction extends infer A ? (A extends { at: number } ? Omit<A, 'at'> : never) : never
+  const matchAct = useCallback(
+    (a: TurnInput) => {
+      const m = matchRef.current
+      if (!m) return
+      const next = matchActPure(m, { ...a, at: Date.now() } as TurnAction)
+      if (next === m) return
+      const s = next.players[next.turn].session
+      playSound(a.type, s, s.status === 'over')
+      commitMatch(next)
+    },
+    [commitMatch, playSound],
+  )
+  const matchNext = useCallback(() => {
+    const m = matchRef.current
+    if (!m) return
+    const next = matchNextPure(m, Date.now())
+    if (next === m) return
+    if (next.status === 'over' && settings.sound) sfx.over()
+    commitMatch(next)
+  }, [commitMatch, settings.sound])
+  const matchEnd = useCallback(() => {
+    const m = matchRef.current
+    if (m) commitMatch(matchEndPure(m, Date.now()))
+  }, [commitMatch])
+  const leaveMatch = useCallback(() => {
+    if (matchRef.current?.status === 'over') {
+      matchRef.current = null
+      setMatchState(null)
+    }
+  }, [])
+  const discardMatch = useCallback(() => {
+    const m = matchRef.current
+    if (m && m.status !== 'over') store.finalizeMatch(matchEndPure(m, Date.now()))
+    store.clearMatch()
+    matchRef.current = null
+    setMatchState(null)
+  }, [store])
 
   const setSettings = useCallback(
     (patch: Partial<Settings>) => {
@@ -106,6 +170,26 @@ export function useBrainlock() {
   }, [historyRev, profile.resets, settings.level, store, tunables])
 
   const start = useCallback(() => {
+    const mu = settings.multi
+    if (mu.count > 1) {
+      const prevM = matchRef.current
+      if (prevM && prevM.status !== 'over') store.finalizeMatch(matchEndPure(prevM, Date.now()))
+      const seed = nextSeed.current ?? randomSeed()
+      nextSeed.current = null
+      commitMatch(
+        startMatch({
+          mode: settings.mode,
+          soloLength: settings.soloLength,
+          filters: settings.filters,
+          tunables,
+          shared: mu.shared,
+          seed,
+          at: Date.now(),
+          players: Array.from({ length: mu.count }, (_, i) => ({ name: mu.names[i], level: i === 0 ? settings.level : mu.levels[i] })),
+        }),
+      )
+      return 'match' as const
+    }
     const prev = sessionRef.current
     if (prev && prev.status !== 'over') store.finalize(reduce(prev, { type: 'abandon', at: Date.now() }))
     setHistoryRev((r) => r + 1)
@@ -125,7 +209,8 @@ export function useBrainlock() {
     sessionRef.current = s
     store.saveSession(s)
     setSessionState(s)
-  }, [longTerm.skill, settings, store, tunables])
+    return 'single' as const
+  }, [commitMatch, longTerm.skill, settings, store, tunables])
 
   /** Leave the summary / blocked screen and go home. Unfinished sessions stay resumable. */
   const leave = useCallback(() => {
@@ -191,6 +276,12 @@ export function useBrainlock() {
     },
     session,
     finish,
+    match,
+    matchAct,
+    matchNext,
+    matchEnd,
+    leaveMatch,
+    discardMatch,
     dispatch,
     start,
     leave,

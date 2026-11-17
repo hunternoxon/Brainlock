@@ -1,5 +1,6 @@
 import { sanitizeFilters } from './catalog'
 import { SESSION_SCHEMA, SOLO_LENGTHS, sessionStats, type GameState, type Mode, type SoloLength } from './game'
+import { MATCH_SCHEMA, MAX_PLAYERS, standings, type MatchState } from './match'
 import { sanitizeTunables, type Tunables } from './tunables'
 import type { Filters } from './types'
 
@@ -17,9 +18,21 @@ export const KEYS = {
   history: P + 'history',
   scores: P + 'scores',
   tunables: P + 'tunables',
+  match: P + 'match',
+  matches: P + 'matches',
 }
 const HISTORY_CAP = 200
 const SCORES_CAP = 100
+
+export interface MultiSettings {
+  /** 1 = single player; 2–4 = local pass-and-play */
+  count: number
+  names: string[]
+  /** Levels for players 2–4 (player 1 uses Settings.level) */
+  levels: number[]
+  /** Same trick for everyone each round */
+  shared: boolean
+}
 
 export interface Settings {
   mode: Mode
@@ -28,6 +41,23 @@ export interface Settings {
   filters: Filters
   sound: boolean
   debug: boolean
+  multi: MultiSettings
+}
+
+export interface MatchRecord {
+  id: string
+  mode: Mode
+  soloLength: SoloLength
+  endReason: string
+  shared: boolean
+  winners: string[]
+  players: { id: string; name: string; level: number; score: number; letters: number; landed: number; out: boolean }[]
+  startedAt: number
+  endedAt: number
+}
+
+export function defaultMulti(): MultiSettings {
+  return { count: 1, names: ['You', 'Player 2', 'Player 3', 'Player 4'], levels: [3, 3, 3, 3], shared: true }
 }
 
 /** Long-term profile metadata. The skill itself is recomputed from history (learning.ts). */
@@ -69,7 +99,7 @@ export interface HistoryEntry {
 }
 
 export function defaultSettings(): Settings {
-  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: false, debug: false }
+  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: false, debug: false, multi: defaultMulti() }
 }
 
 export const boardKey = (mode: Mode, soloLength?: SoloLength) => (mode === 'skate' ? 'skate' : `solo-${soloLength}`)
@@ -126,6 +156,7 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
         filters: sanitizeFilters(s.filters),
         sound: !!s.sound,
         debug: !!s.debug,
+        multi: sanitizeMulti(s.multi),
       }
     },
     saveSettings(s: Settings) {
@@ -158,7 +189,7 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
         if (!isObj(x)) throw new Error('session not an object')
         const s = x as unknown as GameState
         if (s.schema !== SESSION_SCHEMA) throw new Error(`session schema ${s.schema} != ${SESSION_SCHEMA}`)
-        if (!['playing', 'result', 'blocked', 'over'].includes(s.status)) throw new Error('bad status')
+        if (!['playing', 'result', 'blocked', 'over', 'waiting'].includes(s.status)) throw new Error('bad status')
         if (s.status === 'playing' && (!s.current || !s.current.trick)) throw new Error('playing without challenge')
         if (typeof s.score !== 'number' || typeof s.rng !== 'number' || !Array.isArray(s.history) || !Array.isArray(s.events)) throw new Error('missing fields')
         if (s.current && (s.current.attempt < 1 || s.current.attempt > 3)) throw new Error('bad attempt')
@@ -257,9 +288,55 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
         write(KEYS.history, history)
       }
     },
+    loadMatch(): MatchState | null {
+      return read(KEYS.match, (x) => {
+        const m = x as MatchState
+        if (!isObj(x) || m.schema !== MATCH_SCHEMA || !Array.isArray(m.players) || m.players.length < 2) throw new Error('bad match')
+        if (m.players.some((p) => !p.session || p.session.schema !== SESSION_SCHEMA)) throw new Error('bad match player')
+        return m
+      })
+    },
+    saveMatch(m: MatchState) {
+      write(KEYS.match, m)
+    },
+    clearMatch() {
+      storage.removeItem(KEYS.match)
+    },
+    loadMatches(): MatchRecord[] {
+      return read(KEYS.matches, (x) => {
+        if (!Array.isArray(x)) throw new Error('matches not an array')
+        return x as MatchRecord[]
+      }) ?? []
+    },
+    /** Record a finished match once. Multiplayer never feeds long-term learning or solo high scores. */
+    finalizeMatch(m: MatchState) {
+      const list = this.loadMatches()
+      if (list.some((r) => r.id === m.id)) return
+      list.unshift({
+        id: m.id,
+        mode: m.mode,
+        soloLength: m.soloLength,
+        endReason: m.endReason ?? 'ended',
+        shared: m.shared,
+        winners: m.winners,
+        players: standings(m).map((p) => ({
+          id: p.id,
+          name: p.name,
+          level: p.level,
+          score: p.session.score,
+          letters: p.session.letters,
+          landed: sessionStats(p.session).landed,
+          out: p.session.endReason === 'skate',
+        })),
+        startedAt: m.startedAt,
+        endedAt: m.endedAt ?? now(),
+      })
+      write(KEYS.matches, list.slice(0, 50))
+    },
     clearScoresAndHistory() {
       storage.removeItem(KEYS.scores)
       storage.removeItem(KEYS.history)
+      storage.removeItem(KEYS.matches)
     },
   }
 }
@@ -274,4 +351,16 @@ export function memoryStorage(): StorageLike & { data: Map<string, string> } {
     setItem: (k, v) => void data.set(k, v),
     removeItem: (k) => void data.delete(k),
   }
+}
+
+export function sanitizeMulti(m: Partial<MultiSettings> | undefined): MultiSettings {
+  const d = defaultMulti()
+  if (!m || typeof m !== 'object') return d
+  const count = typeof m.count === 'number' && m.count >= 1 && m.count <= MAX_PLAYERS ? Math.round(m.count) : 1
+  const names = d.names.map((n, i) => (Array.isArray(m.names) && typeof m.names[i] === 'string' ? m.names[i].slice(0, 16) : n))
+  const levels = d.levels.map((l, i) => {
+    const v = Array.isArray(m.levels) ? m.levels[i] : undefined
+    return typeof v === 'number' && v >= 1 && v <= 10 ? Math.round(v) : l
+  })
+  return { count, names, levels, shared: typeof m.shared === 'boolean' ? m.shared : true }
 }

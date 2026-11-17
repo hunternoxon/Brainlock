@@ -171,18 +171,19 @@ export interface LipDef {
   revert?: boolean
 }
 export const LIPS: Record<string, LipDef> = {
-  'tail stall': { label: 'Tail Stall', directional: false, gate: 1, diff: 1, value: 0.25, rarity: 'core' },
-  'axle stall': { label: 'Axle Stall', directional: true, gate: 1, diff: 1.5, value: 0.3, rarity: 'core' },
-  'nose stall': { label: 'Nose Stall', directional: false, gate: 2, diff: 1.5, value: 0.3, rarity: 'core' },
-  'rock to fakie': { label: 'Rock to Fakie', directional: false, gate: 1, diff: 1.5, value: 0.3, rarity: 'core' },
-  '5-0 stall': { label: '5-0 Stall', directional: true, gate: 3, diff: 2, value: 0.35, rarity: 'core' },
+  // Difficulties staggered so coping tricks spread across levels 1–7 instead of stacking on gates (PROVISIONAL)
+  'tail stall': { label: 'Tail Stall', directional: false, gate: 1, diff: 0.5, value: 0.25, rarity: 'core' },
+  'rock to fakie': { label: 'Rock to Fakie', directional: false, gate: 1, diff: 0.9, value: 0.3, rarity: 'core' },
+  'axle stall': { label: 'Axle Stall', directional: true, gate: 1, diff: 1.2, value: 0.3, rarity: 'core' },
+  'nose stall': { label: 'Nose Stall', directional: false, gate: 2, diff: 1.6, value: 0.3, rarity: 'core' },
+  '5-0 stall': { label: '5-0 Stall', directional: true, gate: 2, diff: 2.0, value: 0.35, rarity: 'core' },
   'rock and roll': { label: 'Rock and Roll', directional: false, gate: 3, diff: 2.5, value: 0.4, rarity: 'core' },
-  nosepick: { label: 'Nosepick', directional: false, gate: 3, diff: 2.5, value: 0.4, rarity: 'core' },
-  'smith stall': { label: 'Smith Stall', directional: true, gate: 5, diff: 3, value: 0.55, rarity: 'core' },
-  'feeble stall': { label: 'Feeble Stall', directional: true, gate: 5, diff: 3, value: 0.55, rarity: 'core' },
-  disaster: { label: 'Disaster', directional: true, gate: 5, diff: 3, value: 0.5, rarity: 'core', revert: true },
-  'blunt to fakie': { label: 'Blunt to Fakie', directional: true, gate: 6, diff: 3.5, value: 0.6, rarity: 'core' },
-  'noseblunt stall': { label: 'Noseblunt Stall', directional: true, gate: 7, diff: 4, value: 0.7, rarity: 'uncommon' },
+  nosepick: { label: 'Nosepick', directional: false, gate: 3, diff: 2.9, value: 0.4, rarity: 'core' },
+  disaster: { label: 'Disaster', directional: true, gate: 4, diff: 3.3, value: 0.5, rarity: 'core', revert: true },
+  'smith stall': { label: 'Smith Stall', directional: true, gate: 4, diff: 3.8, value: 0.55, rarity: 'core' },
+  'feeble stall': { label: 'Feeble Stall', directional: true, gate: 5, diff: 4.3, value: 0.55, rarity: 'core' },
+  'blunt to fakie': { label: 'Blunt to Fakie', directional: true, gate: 5, diff: 4.8, value: 0.6, rarity: 'core' },
+  'noseblunt stall': { label: 'Noseblunt Stall', directional: true, gate: 6, diff: 5.5, value: 0.7, rarity: 'uncommon' },
 }
 
 // ---- Exits ----

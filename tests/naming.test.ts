@@ -12,6 +12,9 @@ const score = (t: Trick) => scoreLanding(t, 1, 0).total
 describe('conventional names from canonical components', () => {
   const cases: [Trick, string][] = [
     [air('ollie'), 'Ollie'],
+    [air('ollie', { stance: 'nollie' }), 'Nollie'],
+    [air('ollie', { stance: 'fakie' }), 'Fakie Ollie'],
+    [air('hardflip', { spin: { deg: 180, dir: 'FS' } }), 'FS 180 Hardflip'],
     [air('ollie', { spin: { deg: 180, dir: 'FS' } }), 'FS 180'],
     [air('ollie', { stance: 'fakie', spin: { deg: 180, dir: 'FS' } }), 'Half Cab'],
     [air('ollie', { stance: 'fakie', spin: { deg: 180, dir: 'BS' } }), 'Fakie BS 180'],
@@ -64,6 +67,27 @@ describe('conventional names from canonical components', () => {
   })
   test('FS 180 + kickflip is never displayed as the verbose "FS 180 Kickflip"', () => {
     expect(fullCatalog().some((c) => /\b(FS|BS) 180 (Kickflip|Heelflip)\b/.test(trickName(c.trick)))).toBe(false)
+  })
+  test('hardflip / inward heelflip + 180 are rare; varial + 180 stays uncommon', () => {
+    const r = (flip: string) => fullCatalog().find((c) => c.trick.flip === flip && c.trick.spin?.deg === 180 && c.trick.pattern === 'flip-only')!.rarity
+    expect(r('hardflip')).toBe('rare')
+    expect(r('inward heelflip')).toBe('rare')
+    expect(r('varial kickflip')).toBe('uncommon')
+  })
+  test('switch/nollie flips are staggered by the flip itself', () => {
+    const rate = (stance: string, flip: string) => fullCatalog().find((c) => c.trick.obstacle === 'flat' && c.trick.stance === stance && c.trick.flip === flip && c.trick.pattern === 'flip-only' && !c.trick.spin && !c.trick.flips && !c.trick.revert)!.rating
+    for (const st of ['switch', 'nollie']) {
+      expect(rate(st, 'kickflip')).toBeLessThan(rate(st, 'varial kickflip'))
+      expect(rate(st, 'varial kickflip')).toBeLessThan(rate(st, 'hardflip'))
+      expect(rate(st, 'hardflip')).toBeLessThan(rate(st, 'tre flip'))
+    }
+  })
+  test('quarterpipe coping tricks are staggered (no big rating clumps)', () => {
+    const qp = fullCatalog().filter((c) => c.trick.obstacle === 'quarterpipe' && c.trick.stance === 'regular' && c.trick.pattern === 'coping' && !c.trick.revert)
+    const counts: Record<string, number> = {}
+    for (const c of qp) counts[c.rating] = (counts[c.rating] ?? 0) + 1
+    expect(Math.max(...Object.values(counts))).toBeLessThanOrEqual(2)
+    expect(new Set(qp.map((c) => Math.floor(c.rating))).size).toBeGreaterThanOrEqual(5)
   })
   test('half cab only for fakie + FS rotation', () => {
     for (const c of fullCatalog()) if (/Cab/.test(trickName(c.trick))) expect([c.trick.stance, c.trick.spin?.dir]).toEqual(['fakie', 'FS'])

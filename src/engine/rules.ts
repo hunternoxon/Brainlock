@@ -128,4 +128,8 @@ export const DIFFICULTY = {
   combo: { flipGrind: 1.0, flipManual: 0.5, spinFlip180: 0.5, spinFlip360: 1.0, spinBoard: 0.5, spinGrind: 1.0, spinManual: 0.5 },
   directionWeight: 2,
   modifierWeight: 0.4,
+  /** Share of a trick's own difficulty kept above a stance/obstacle gate */
+  coreSpread: 0.35,
+  /** BS lip tricks rate slightly higher (blind side) */
+  lipBS: 0.2,
 }

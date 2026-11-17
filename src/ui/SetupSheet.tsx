@@ -24,7 +24,7 @@ export function SetupSheet({ b, onClose }: { b: Brainlock; onClose: () => void }
       <header className="setup__head">
         <div>
           <h2>Setup</h2>
-          <p className="hint">Saved as your defaults. Applies to the next session.</p>
+          <p className="field__desc">Saved as your defaults. Applies to the next session.</p>
         </div>
         <button className="pill pill--primary" onClick={onClose}>
           Done
@@ -79,7 +79,7 @@ export function SetupSheet({ b, onClose }: { b: Brainlock; onClose: () => void }
             <div className="panel__head">
               <h3 id="var-h">Variations</h3>
             </div>
-            <p className="label" id="rare-l">
+            <p className="switch-row__label" id="rare-l">
               Rare &amp; experimental tricks
             </p>
             <div className="seg seg--small" role="radiogroup" aria-labelledby="rare-l">
@@ -89,7 +89,7 @@ export function SetupSheet({ b, onClose }: { b: Brainlock; onClose: () => void }
                 </button>
               ))}
             </div>
-            <p className="hint small">Late flips, 540s, reverts, grind-to-grind and more. Off keeps everyday tricks only.</p>
+            <p className="field__desc">Late flips, 540s, reverts, grind-to-grind and more. Off keeps everyday tricks only.</p>
             <Switch label="Double flips" hint="Rare, level 7+" on={f.doubles} onChange={(v) => set({ doubles: v })} />
             <Switch label="Triple flips" hint="Extremely rare, level 9+" on={f.triples} onChange={(v) => set({ triples: v })} />
             <Switch label="Transfers" hint="Between compatible obstacles, very rare" on={f.transfers} onChange={(v) => set({ transfers: v })} />
@@ -200,7 +200,7 @@ function SubChip({ fam, k, f, on, set }: { fam: Family; k: string; f: Filters; o
   )
 }
 
-function SwitchButton({ on, label, onChange }: { on: boolean; label: string; onChange: (v: boolean) => void }) {
+export function SwitchButton({ on, label, onChange }: { on: boolean; label: string; onChange: (v: boolean) => void }) {
   return (
     <button className="switch" role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)}>
       <span className="switch__knob" />
@@ -208,7 +208,7 @@ function SwitchButton({ on, label, onChange }: { on: boolean; label: string; onC
   )
 }
 
-function Switch({ label, hint, on, onChange }: { label: string; hint: string; on: boolean; onChange: (v: boolean) => void }) {
+export function Switch({ label, hint, on, onChange }: { label: string; hint: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="switch-row">
       <div>

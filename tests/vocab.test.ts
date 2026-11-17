@@ -11,7 +11,7 @@ const names = (ps: RatedTrick[]) => ps.map((p) => displayText(p.trick))
 describe('fundamentals', () => {
   test('Ollie is a valid beginner prompt', () => {
     const ollie = fullCatalog().find((c) => c.trick.flip === 'ollie' && !c.trick.spin && c.trick.obstacle === 'flat' && c.trick.stance === 'regular')
-    expect(ollie?.rating).toBe(1)
+    expect(ollie!.rating).toBeLessThanOrEqual(1.2)
     expect(names(run(defaultFilters(), 1, 300))).toContain('Ollie on flat')
   })
   test('low-level pools include FS and BS pop shuvits', () => {

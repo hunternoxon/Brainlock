@@ -1,93 +1,93 @@
-catalog: 16470 legal tricks, built in 173 ms (first call; cached after). Tiers {"core":4674,"rare":1088,"very-rare":6528,"uncommon":1972,"experimental":2208}
+catalog: 16470 legal tricks, built in 216 ms (first call; cached after). Tiers {"core":4674,"rare":1136,"very-rare":6528,"uncommon":1924,"experimental":2208}
 
-L1: avg rating 1.17 · families {"flips":632,"stalls":97,"manuals":271} · rarity {"core":1000} · immediate repeats 0
+L1: avg rating 1.45 · families {"flips":560,"stalls":179,"manuals":261} · rarity {"core":1000} · immediate repeats 0
 
-L2: avg rating 1.99 · families {"manuals":324,"flips":345,"grinds":103,"stalls":223,"spins":5} · rarity {"core":1000} · immediate repeats 0
-  · Fakie Manual on the manual pad  [2.2]
-  · FS Pop Shuvit on the manual pad  [2]
-  · BS 50-50 on the curb  [2]
-  · Kickflip on the manual pad  [1]
-  · FS 180 to Manual on the box  [2.5]
-  · Heelflip on the bank  [1.3]
+L2: avg rating 2.07 · families {"manuals":282,"flips":335,"stalls":279,"grinds":101,"spins":3} · rarity {"core":1000} · immediate repeats 0
+  · Fakie Manual on the manual pad  [2.6]
+  · FS Pop Shuvit on flat  [2]
   · Nose Manual on the curb  [2]
-  · Manual on the manual pad  [1]
-  · Fakie Nose Manual on the box  [2.5]
-  · BS 50-50 on the box  [2]
-  · Fakie Manual on the curb  [2.2]
-  · Nose Stall on the quarterpipe coping  [2.3]
+  · Heelflip on the manual pad  [1.4]
+  · FS 180 to Manual on the box  [2.5]
+  · Rock to Fakie on the quarterpipe coping  [1.7]
+  · Nose Manual on the box  [2]
+  · Kickflip on the bank  [1.5]
+  · Fakie BS 50-50 on the box  [2.6]
+  · FS 50-50 on the curb  [2]
+  · Fakie Ollie on the manual pad  [2.4]
+  · BS Axle Stall on the quarterpipe coping  [2.2]
 
-L3: avg rating 2.97 · families {"stalls":257,"flips":288,"manuals":288,"grinds":164,"spins":3} · rarity {"core":991,"uncommon":9} · immediate repeats 0
+L3: avg rating 2.96 · families {"stalls":245,"manuals":290,"flips":319,"grinds":143,"spins":3} · rarity {"core":991,"uncommon":9} · immediate repeats 0
 
-L4: avg rating 4.04 · families {"grinds":167,"manuals":333,"flips":415,"stalls":72,"spins":13} · rarity {"core":925,"uncommon":75} · immediate repeats 0
+L4: avg rating 3.99 · families {"flips":358,"manuals":268,"grinds":124,"stalls":207,"spins":43} · rarity {"core":867,"rare":40,"uncommon":93} · immediate repeats 0
 
-L5: avg rating 4.97 · families {"grinds":203,"flips":294,"manuals":300,"stalls":190,"spins":13} · rarity {"uncommon":127,"core":852,"rare":21} · immediate repeats 0
-  · FS Nosegrind Shuvit Out on the ledge  [5.5, uncommon]
-  · Nollie FS 180 Varial Heelflip on flat  [4.5, uncommon]
-  · Fakie Varial Heelflip to Nose Manual on the manual pad  [5]
-  · Nollie Varial Heelflip to Nose Manual on the manual pad  [5.5]
-  · FS Smith Stall on the quarterpipe coping  [5.3]
-  · Fakie FS 180 Inward Heelflip on flat  [5, uncommon]
-  · FS Lipslide Shuvit Out on the flatbar  [5.3, uncommon]
-  · BS Disaster on the quarterpipe coping  [5.3]
-  · Nollie BS Heelflip over the gap  [4.8]
-  · Nollie FS 180 to Manual on the box  [4.5]
-  · BS 180 Inward Heelflip on the bank  [4.8, uncommon]
-  · Switch Varial Heelflip to Manual on the manual pad  [5.7]
+L5: avg rating 5.03 · families {"grinds":182,"flips":308,"manuals":279,"stalls":218,"spins":13} · rarity {"core":858,"uncommon":109,"rare":33} · immediate repeats 0
+  · BS Smith Grind on the ledge  [5.4]
+  · Nollie BS Heelflip on flat  [5.2]
+  · Fakie Varial Kickflip to Nose Manual on the manual pad  [5]
+  · Nollie Heelflip on the manual pad  [4.8]
+  · FS Feeble Stall on the quarterpipe coping  [5.3]
+  · Nollie FS Flip on flat  [5.2]
+  · FS Boardslide on the rail  [5.1]
+  · BS Feeble Stall on the quarterpipe coping  [5.3]
+  · Fakie FS 180 Varial Heelflip over the gap  [4.8, uncommon]
+  · Nollie BS 180 to Nose Manual on the manual pad  [5.6]
+  · Nollie BS Flip on the bank  [5.3]
+  · Heelflip FS 50-50 on the box  [5.9]
 
-L6: avg rating 5.91 · families {"stalls":217,"manuals":246,"grinds":233,"flips":296,"spins":8} · rarity {"core":782,"uncommon":188,"rare":30} · immediate repeats 0
+L6: avg rating 6.03 · families {"stalls":186,"flips":303,"grinds":224,"manuals":272,"spins":15} · rarity {"core":800,"uncommon":175,"rare":25} · immediate repeats 0
 
-L7: avg rating 6.89 · families {"flips":498,"manuals":160,"stalls":128,"grinds":214} · rarity {"uncommon":450,"core":504,"rare":46} · immediate repeats 0
+L7: avg rating 6.89 · families {"manuals":248,"flips":404,"spins":17,"stalls":124,"grinds":207} · rarity {"core":733,"uncommon":225,"rare":42} · immediate repeats 0
 
-L8: avg rating 7.89 · families {"stalls":76,"flips":549,"grinds":229,"manuals":146} · rarity {"uncommon":561,"core":403,"rare":29,"very-rare":7} · immediate repeats 0
-  · Switch FS Noseblunt Stall on the quarterpipe coping  [7.9, uncommon]
+L8: avg rating 7.84 · families {"stalls":102,"flips":497,"grinds":216,"manuals":179,"spins":6} · rarity {"core":519,"uncommon":449,"rare":25,"very-rare":7} · immediate repeats 0
+  · Switch BS Feeble Stall on the quarterpipe coping  [7.5]
   · Nollie BS Bigflip on the bank  [7.8, uncommon]
-  · Fakie BS Overcrook on the handrail  [8]
-  · Fakie Laser Flip over the gap  [8.5]
-  · Switch BS Bluntslide on the hubba  [8.6]
-  · Switch BS 180 Inward Heelflip over the gap  [6.8, uncommon]
+  · Switch BS Smith Grind on the quarterpipe coping  [7.5]
+  · Nollie Laser Flip over the gap  [8.7]
+  · Switch FS Lipslide Heelflip Out on the rail  [7.6, uncommon]
+  · Switch FS 180 Varial Heelflip over the gap  [7.1, uncommon]
   · Fakie BS Bigflip on the bank  [7.4, uncommon]
-  · Switch Tre Flip to Nose Manual on the manual pad  [9]
-  · BS 360 Kickflip over the gap  [8.5, rare]
-  · Fakie Hardflip FS 5-0 on the ledge  [8.6]
-  · Laser Flip over the gap  [8.3]
-  · Fakie Kickflip FS Overcrook on the ledge  [8.4]
+  · Hardflip BS Noseslide on the curb  [8.2]
+  · BS 360 Heelflip over the gap  [8.5, rare]
+  · Fakie Inward Heelflip BS Nosegrind on the ledge  [9]
+  · Switch FS Feeble Stall on the quarterpipe coping  [7.4]
+  · Fakie Impossible on the bank  [8.3, uncommon]
 
-L9: avg rating 8.87 · families {"flips":281,"grinds":501,"manuals":196,"stalls":22} · rarity {"uncommon":271,"core":694,"rare":31,"very-rare":4} · immediate repeats 0
+L9: avg rating 8.84 · families {"flips":292,"grinds":491,"manuals":193,"stalls":24} · rarity {"uncommon":277,"core":688,"rare":31,"very-rare":4} · immediate repeats 0
 
-L10: avg rating 9.71 · families {"grinds":830,"flips":119,"manuals":51} · rarity {"core":788,"uncommon":178,"rare":28,"very-rare":6} · immediate repeats 0
+L10: avg rating 9.70 · families {"grinds":829,"flips":119,"manuals":52} · rarity {"core":779,"uncommon":187,"rare":28,"very-rare":6} · immediate repeats 0
   · Switch Heelflip BS Bluntslide on the handrail  [10]
   · Nollie Inward Heelflip FS Smith Grind on the hubba  [10]
   · Switch FS Noseblunt Slide on the ledge  [9]
   · Nollie Tre Flip BS Tailslide on the curb  [10]
-  · Switch Inward Heelflip BS 5-0 on the handrail  [9.6]
+  · Switch Varial Heelflip BS Feeble Grind on the handrail  [10]
   · Switch BS Noseblunt Slide Shuvit Out on the ledge  [10, uncommon]
   · Nollie Laser Flip over the gap  [8.7]
   · Switch Tre Flip to Nose Manual on the manual pad  [9]
-  · Switch Tre Flip BS Smith Grind on the rail  [10]
+  · Switch Inward Heelflip BS Smith Grind on the rail  [10]
   · Switch BS Bigflip over the gap  [8.8, uncommon]
-  · Fakie Tre Flip FS Boardslide on the handrail  [10]
-  · Switch Tre Flip BS 5-0 on the box  [9.8]
+  · Fakie Tre Flip FS 5-0 on the handrail  [10]
+  · Switch Tre Flip BS Noseslide on the box  [9.8]
 
 invalid samples: 0
 
 == Quarterpipe only (default families, rarity very low) ==
-L1: 4 distinct, flip-air share 0.0%: Tail Stall on the quarterpipe coping · FS Axle Stall on the quarterpipe coping · Rock to Fakie on the quarterpipe coping · BS Axle Stall on the quarterpipe coping
-L3: 23 distinct, flip-air share 33.5%: FS 50-50 on the quarterpipe coping · BS 5-0 Stall on the quarterpipe coping · FS Axle Stall on the quarterpipe coping · Fakie Kickflip Fakie on the quarterpipe · Nosepick on the quarterpipe coping · Rock and Roll on the quarterpipe coping · BS 50-50 on the quarterpipe coping · FS 5-0 Stall on the quarterpipe coping · FS 5-0 on the quarterpipe coping · Nose Stall on the quarterpipe coping · Rock to Fakie on the quarterpipe coping · BS Slash Grind on the quarterpipe coping
-L5: 40 distinct, flip-air share 21.0%: Switch Varial Heelflip Fakie on the quarterpipe · FS Feeble Grind on the quarterpipe coping · BS Feeble Stall on the quarterpipe coping · BS Tailslide on the quarterpipe coping · Switch Heelflip Fakie on the quarterpipe · FS Smith Grind on the quarterpipe coping · FS Lipslide on the quarterpipe coping · Nollie Kickflip Fakie on the quarterpipe · FS Smith Stall on the quarterpipe coping · FS Tailslide on the quarterpipe coping · FS Feeble Stall on the quarterpipe coping · Nollie Varial Heelflip Fakie on the quarterpipe
-L7: 38 distinct, flip-air share 3.5%: BS Noseblunt Stall on the quarterpipe coping · Switch FS Feeble Grind on the quarterpipe coping · FS Noseblunt Stall on the quarterpipe coping · Switch BS Noseblunt Stall on the quarterpipe coping · Switch FS Noseblunt Stall on the quarterpipe coping · Switch FS Smith Grind on the quarterpipe coping · Switch BS Blunt to Fakie on the quarterpipe coping · Switch BS Smith Grind on the quarterpipe coping · Switch FS Blunt to Fakie on the quarterpipe coping · Switch BS Feeble Grind on the quarterpipe coping · FS Blunt to Fakie on the quarterpipe coping · Switch BS 5-0 on the quarterpipe coping
+L1: 4 distinct, flip-air share 0.0%: Tail Stall on the quarterpipe coping · Rock to Fakie on the quarterpipe coping · FS Axle Stall on the quarterpipe coping · BS Axle Stall on the quarterpipe coping
+L3: 21 distinct, flip-air share 20.0%: FS 50-50 on the quarterpipe coping · BS 5-0 Stall on the quarterpipe coping · FS Axle Stall on the quarterpipe coping · Rock and Roll on the quarterpipe coping · FS 5-0 Stall on the quarterpipe coping · BS 5-0 on the quarterpipe coping · Rock to Fakie on the quarterpipe coping · FS 5-0 on the quarterpipe coping · BS Slash Grind on the quarterpipe coping · Nose Stall on the quarterpipe coping · BS Axle Stall on the quarterpipe coping · Nosepick on the quarterpipe coping
+L5: 33 distinct, flip-air share 22.5%: FS Blunt to Fakie on the quarterpipe coping · BS Smith Grind on the quarterpipe coping · FS Feeble Stall on the quarterpipe coping · BS Tailslide on the quarterpipe coping · BS Blunt to Fakie on the quarterpipe coping · FS Smith Grind on the quarterpipe coping · BS Lipslide on the quarterpipe coping · Nollie Heelflip Fakie on the quarterpipe · FS Feeble Grind on the quarterpipe coping · Kickflip Fakie on the quarterpipe · FS Smith Stall on the quarterpipe coping · Fakie Heelflip Fakie on the quarterpipe
+L7: 40 distinct, flip-air share 10.5%: Switch FS 5-0 on the quarterpipe coping · Switch Nosepick on the quarterpipe coping · Switch FS Feeble Grind on the quarterpipe coping · Switch BS Feeble Stall on the quarterpipe coping · Switch BS Smith Stall on the quarterpipe coping · Switch Varial Heelflip Fakie on the quarterpipe · Switch FS Blunt to Fakie on the quarterpipe coping · Switch Varial Kickflip Fakie on the quarterpipe · Switch BS Lipslide on the quarterpipe coping · Switch BS Tailslide on the quarterpipe coping · BS Noseblunt Stall on the quarterpipe coping · Switch FS 50-50 on the quarterpipe coping
 
 == Rarity (share of picks, 3000 per row, all obstacles) ==
-very low (default) L5: rare 3.0%, very-rare 0.0%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 6.3%, reverts 3.0%
-very low (default) L8: rare 3.2%, very-rare 0.2%, experimental 0.0%, doubles 0.4%, triples 0.0%, transfers 0.0%, exits 6.6%, reverts 0.0%
-very low (default) L10: rare 3.0%, very-rare 0.6%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 10.7%, reverts 0.0%
-off L8: rare 0.0%, very-rare 0.0%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 4.8%, reverts 0.0%
-low L8: rare 8.1%, very-rare 0.8%, experimental 0.0%, doubles 1.0%, triples 0.0%, transfers 0.0%, exits 8.0%, reverts 0.2%
-normal L8: rare 15.4%, very-rare 1.0%, experimental 1.8%, doubles 1.7%, triples 0.0%, transfers 0.0%, exits 10.2%, reverts 0.3%
-normal + triples + transfers L10: rare 15.3%, very-rare 1.6%, experimental 0.7%, doubles 0.7%, triples 0.4%, transfers 0.0%, exits 9.6%, reverts 0.0%
+very low (default) L5: rare 3.6%, very-rare 0.0%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 5.8%, reverts 2.0%
+very low (default) L8: rare 3.1%, very-rare 0.4%, experimental 0.0%, doubles 0.1%, triples 0.0%, transfers 0.0%, exits 5.7%, reverts 0.6%
+very low (default) L10: rare 3.0%, very-rare 0.6%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 10.8%, reverts 0.0%
+off L8: rare 0.0%, very-rare 0.0%, experimental 0.0%, doubles 0.0%, triples 0.0%, transfers 0.0%, exits 4.9%, reverts 0.0%
+low L8: rare 7.5%, very-rare 1.1%, experimental 0.0%, doubles 0.7%, triples 0.0%, transfers 0.0%, exits 6.3%, reverts 1.0%
+normal L8: rare 15.5%, very-rare 0.9%, experimental 2.0%, doubles 1.1%, triples 0.0%, transfers 0.0%, exits 7.7%, reverts 1.7%
+normal + triples + transfers L10: rare 15.3%, very-rare 1.6%, experimental 0.7%, doubles 0.6%, triples 0.4%, transfers 0.0%, exits 9.7%, reverts 0.0%
 
 == Adaptation convergence: simulated player, effective level after N challenges ==
 "true" = rating where the player lands 50% of single attempts; equilibrium sits ~1 level above that.
-start 3, true 6: 10 → 3.80, 25 → 5.54, 50 → 6.54, 100 → 6.54 (max step 0.150)
-start 8, true 4: 10 → 7.30, 25 → 6.23, 50 → 5.46, 100 → 4.96 (max step 0.086)
-start 5, true 5: 10 → 5.34, 25 → 5.59, 50 → 5.59, 100 → 5.81 (max step 0.065)
-start 1, true 3: 10 → 1.86, 25 → 3.19, 50 → 3.70, 100 → 3.65 (max step 0.141)
+start 3, true 6: 10 → 3.76, 25 → 5.74, 50 → 6.43, 100 → 6.51 (max step 0.150)
+start 8, true 4: 10 → 7.30, 25 → 6.18, 50 → 5.38, 100 → 4.59 (max step 0.087)
+start 5, true 5: 10 → 5.30, 25 → 5.52, 50 → 5.83, 100 → 5.77 (max step 0.058)
+start 1, true 3: 10 → 1.88, 25 → 3.04, 50 → 3.66, 100 → 3.56 (max step 0.140)

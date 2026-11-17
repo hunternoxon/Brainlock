@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { sessionStats } from '../engine/game'
-import type { View } from './App'
+import type { Go } from './App'
 import { copy, fmt } from './copy'
 import { Receipt } from './Receipt'
 import type { Brainlock } from './useBrainlock'
 
-export function Summary({ b, go }: { b: Brainlock; go: (v: View) => void }) {
+export function Summary({ b, go }: { b: Brainlock; go: Go }) {
   const s = b.session!
   const st = sessionStats(s)
   const f = b.finish
@@ -16,7 +16,7 @@ export function Summary({ b, go }: { b: Brainlock; go: (v: View) => void }) {
   return (
     <main className="screen summary">
       <header>
-        <p className="meta">{s.mode === 'skate' ? 'SKATE' : `Solo ${s.soloLength}`}</p>
+        <p className="meta">{s.mode === 'skate' ? 'SKATE' : `Marathon ${s.soloLength}`}</p>
         <h2 className="summary__title">{copy.over(s.endReason)}</h2>
         {s.endReason === 'skate' && last && (
           <p className="muted">
@@ -81,9 +81,7 @@ export function Summary({ b, go }: { b: Brainlock; go: (v: View) => void }) {
       <footer className="thumb">
         <button
           className="pill pill--primary pill--xl"
-          onClick={() => {
-            b.start()
-          }}
+          onClick={() => go('play', b.start())}
         >
           New session
         </button>

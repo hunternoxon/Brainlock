@@ -94,6 +94,7 @@ try {
   await btn('Miss').click()
   check('third miss → "S earned" result', (await text('.result__head')).includes('S earned'))
   check('letter S lit', (await page.locator('.letter[data-on]').count()) === 1)
+  check('third miss opens the red melt background', (await page.locator('.play[data-failed] .trip[data-variant=fail][data-active]').count()) === 1)
   await shot('06-failed')
   await btn('Next').click()
 
@@ -114,10 +115,10 @@ try {
   await btn('Home').click()
 
   // Solo 10
-  await page.getByRole('radio', { name: 'Solo' }).click()
+  await page.getByRole('radio', { name: 'Marathon' }).click()
   await page.getByRole('radio', { name: '10' }).click()
   await btn('Start session').click()
-  check('Solo shows progress, not SKATE letters', (await page.locator('.letters').count()) === 0 && (await text('.progress')).startsWith('1'))
+  check('Marathon shows progress, not SKATE letters', (await page.locator('.letters').count()) === 0 && (await text('.progress')).startsWith('1'))
   let n = 0
   while (!(await page.locator('.summary__title').isVisible()) && n < 20) {
     const act = n % 3
@@ -128,7 +129,7 @@ try {
     if (n === 4) await shot('08-solo-progress')
     await page.getByRole('button', { name: /^(Next|See results)$/ }).click()
   }
-  check('Solo 10 ends after exactly 10', n === 10 && (await text('.summary__title')) === 'Run complete.', `resolved ${n}`)
+  check('Marathon 10 ends after exactly 10', n === 10 && (await text('.summary__title')) === 'Run complete.', `resolved ${n}`)
   await shot('09-solo-summary')
   await btn('Home').click()
 
@@ -142,7 +143,7 @@ try {
 
   await btn('Scores & history').click()
   const board = await page.locator('.board').count()
-  check('scores page has SKATE + Solo 10 boards and history', board === 2 && (await page.locator('.history > li').count()) === 3)
+  check('scores page has SKATE + Marathon 10 boards and history', board === 2 && (await page.locator('.history > li').count()) === 3)
   await shot('10-scores')
   await btn('Done').click()
 
@@ -201,6 +202,31 @@ try {
   await btn('End session').click()
   await btn('Tap again to end session').click()
   await btn('Home').click()
+
+  // Local multiplayer: 2-player SKATE to the end
+  await page.getByRole('radio', { name: 'SKATE' }).click()
+  await page.getByRole('radio', { name: '2', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Player 2 name' }).fill('Sam')
+  await btn('Start 2-player match').click()
+  check('match shows both players and whose turn', (await page.locator('.matchbar__p').count()) === 2 && (await text('.turn')) === 'Your turn')
+  const sharedTrick = await text('.trick__name')
+  await btn('Land').click()
+  check('Next hands the phone over', (await text('.pill--next')) === 'Pass to Sam')
+  await page.locator('.pill--next').click()
+  check('Sam gets the same trick (shared round)', (await text('.turn')).startsWith('Sam') && (await text('.trick__name')) === sharedTrick)
+  await shot('17-match-turn')
+  for (let r = 0; r < 5; r++) {
+    for (let m = 0; m < 3; m++) await btn('Miss').click()
+    await page.locator('.pill--next').click()
+    if (r < 4) {
+      await btn('Land').click()
+      await page.locator('.pill--next').click()
+    }
+  }
+  check('2-player SKATE ends when Sam spells SKATE; You win', (await text('.summary__title')) === 'You win' && (await page.locator('.standings li').count()) === 2)
+  await shot('18-match-summary')
+  await btn('Home').click()
+  await page.getByRole('radio', { name: 'Just me' }).click()
 
   // Desktop width
   await page.setViewportSize({ width: 1440, height: 900 })

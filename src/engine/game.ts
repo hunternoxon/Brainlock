@@ -4,8 +4,9 @@ import { displayText, trickName, wherePhrase } from './canonical'
 import { Rng } from './rng'
 import { scoreLanding, skipReceipt, FORMULA_VERSION, type Receipt } from './score'
 import { recentOf, selectChallenge, type RecentPick, type SelectionTrace } from './select'
+import { validateTrick } from './validate'
 import type { Tunables } from './tunables'
-import type { Family, Filters, Outcome, Rarity, Trick } from './types'
+import type { Family, Filters, Outcome, Rarity, RatedTrick, Trick } from './types'
 
 export const SESSION_SCHEMA = 2
 export const LETTERS = ['S', 'K', 'A', 'T', 'E'] as const
@@ -54,7 +55,8 @@ export interface GameEvent {
   note?: string
 }
 
-export type Status = 'playing' | 'result' | 'blocked' | 'over'
+/** 'waiting' = resolved and parked until this player's next turn (multiplayer) */
+export type Status = 'playing' | 'result' | 'blocked' | 'over' | 'waiting'
 export type EndReason = 'skate' | 'solo-complete' | 'ended' | 'abandoned'
 
 export interface GameState {
@@ -107,12 +109,18 @@ export type Action =
   | { type: 'allowStretch'; at: number }
   | { type: 'tune'; tunables: Tunables; at: number }
   | { type: 'feedback'; challengeId: string; value: 'too-easy' | 'too-hard'; at: number }
+  /** Multiplayer: move the resolved challenge to history and wait for the next turn */
+  | { type: 'park'; at: number }
+  /** Multiplayer: start this player's turn, optionally with a shared trick */
+  | { type: 'assign'; pick?: RatedTrick; at: number }
 
 export interface StartOptions {
   mode: Mode
   soloLength: SoloLength
   filters: Filters
   startLevel: number
+  /** Multiplayer: start in 'waiting' and let the match assign the first trick */
+  deferFirst?: boolean
   /** Persisted adaptive state; re-anchored if its anchor differs from startLevel */
   skill?: SkillState
   tunables: Tunables
@@ -158,10 +166,11 @@ export function startSession(o: StartOptions): GameState {
     updatedAt: o.at,
   }
   s.events = event(s, { at: o.at, type: 'start', note: `${o.mode}${o.mode === 'solo' ? ` ${o.soloLength}` : ''} L${o.startLevel} skill ${skill.effective.toFixed(2)} seed ${s.seed}` })
-  return generate(s, o.at)
+  return o.deferFirst ? { ...s, status: 'waiting' } : generate(s, o.at)
 }
 
-function generate(s: GameState, at: number): GameState {
+function generate(s: GameState, at: number, forced?: RatedTrick): GameState {
+  if (forced) return generateForced(s, at, forced)
   const rng = new Rng(s.rng)
   const t = s.tunables
   const last3 = s.history.slice(-3)
@@ -215,6 +224,58 @@ function generate(s: GameState, at: number): GameState {
     recent,
     updatedAt: at,
     events: event(s, { at, type: 'generate', challengeId: c.id, note: `${c.display} [${c.rating}] target ${trace.target} (${trace.mix}${trace.boost ? `, boost ${trace.boost}` : ''}) ${trace.rarityRoll}` }),
+  }
+}
+
+/** A shared (multiplayer) trick: same legality checks, no level gate (everyone gets the round's trick). */
+function generateForced(s: GameState, at: number, pick: RatedTrick): GameState {
+  const v = validateTrick(pick.trick, { filters: s.filters })
+  if (!v.ok) return generate(s, at)
+  const index = s.history.length
+  const trace: SelectionTrace = {
+    skill: s.skill.effective,
+    boost: s.boost,
+    gateLevel: 10,
+    mix: 'core',
+    target: pick.rating,
+    maxRating: pick.rating,
+    band: 0,
+    poolSize: 1,
+    bandSize: 1,
+    rarityRoll: 'shared',
+    spinRoll: 'shared',
+    pattern: pick.trick.pattern,
+    notes: ['Shared trick for this round'],
+  }
+  const c: Challenge = {
+    id: `${s.id}-c${index + 1}`,
+    index,
+    trick: pick.trick,
+    key: pick.key,
+    signature: pick.signature,
+    name: trickName(pick.trick),
+    where: wherePhrase(pick.trick),
+    display: displayText(pick.trick),
+    rating: pick.rating,
+    rarity: pick.rarity,
+    family: pick.family,
+    experimental: pick.rarity === 'experimental',
+    skillAtStart: s.skill.effective,
+    startLevel: s.startLevel,
+    selection: trace,
+    attempt: 1,
+    attempts: [],
+    createdAt: at,
+  }
+  return {
+    ...s,
+    status: 'playing',
+    blocked: undefined,
+    current: c,
+    recent: [...s.recent, recentOf(pick)].slice(-50),
+    seen: s.seen.includes(pick.signature) ? s.seen : [...s.seen, pick.signature],
+    updatedAt: at,
+    events: event(s, { at, type: 'generate', challengeId: c.id, note: `${c.display} [${c.rating}] shared` }),
   }
 }
 
@@ -305,6 +366,16 @@ export function reduce(s: GameState, a: Action): GameState {
     case 'allowStretch': {
       if (s.status !== 'blocked') return s
       return generate({ ...s, allowStretch: true, events: event(s, { at: a.at, type: 'stretch' }) }, a.at)
+    }
+    case 'park': {
+      if (s.status !== 'result' || !c) return s
+      const base: GameState = { ...s, history: [...s.history, c], current: null, updatedAt: a.at, events: event(s, { at: a.at, type: 'next', challengeId: c.id }) }
+      if (s.mode === 'solo' && s.resolved >= s.soloLength) return { ...base, status: 'over', endReason: 'solo-complete', endedAt: a.at }
+      return { ...base, status: 'waiting' }
+    }
+    case 'assign': {
+      if (s.status !== 'waiting') return s
+      return generate(s, a.at, a.pick)
     }
     case 'tune':
       return { ...s, tunables: a.tunables, events: event(s, { at: a.at, type: 'tune' }) }

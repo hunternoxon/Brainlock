@@ -111,3 +111,17 @@ One user setting: **Off / Very low (default) / Low / Normal**.
 ## Deferred (not implemented, by choice)
 
 Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops out around level 7.5); round vs square rail nuance; kicker assist; primo/darkslide/no-comply; gazelle flips; per-family learning on by default; dataset-derived names.
+
+## v2.1 additions (2026-11-17, second request)
+
+- **Solo → "Marathon"** in all UI copy. The internal mode id stays `solo` so saved scores, boards and history keep working.
+- **Local multiplayer (2–4, pass-and-play)** for both modes (`src/engine/match.ts`):
+  - Each player gets a normal session with the same rules, scoring and receipts; the match only orchestrates turns.
+  - SKATE: S-K-A-T-E knocks a player out, and the last one standing wins. Marathon: everyone plays N in turn, and the highest score wins.
+  - **Same trick for everyone** (default on): one trick per round at the average level of the players still in. Off: each player gets tricks for their own level.
+  - Matches are saved under Scores → Multiplayer. They never feed long-term learning or solo high scores.
+  - **Online multiplayer is not included**: it would need a server, and was out of scope in the original brief.
+- **Hardflip / Inward Heelflip + 180 body spin → rare tier.** Varial + 180 stays uncommon.
+- **Difficulty staggering:** `rating = max(raw, gate + lift, gateOther + lift + 0.35 × core)`. When a stance, obstacle or pattern gate sets the floor, the trick's own difficulty still spreads ratings above it: switch Kickflip 5.9 < Varial 6.3 < Hardflip 6.7 < Tre 7.4; nollie 4.8 → 6.4. Quarterpipe lip tricks get individual difficulties (Tail Stall 1.5 … BS Noseblunt Stall 6.5), and BS lip tricks rate +0.2.
+- **Naming:** a nollie ollie displays as "Nollie"; multiplayer copy uses "Your turn" / "Pass back to you" for the default "You" player.
+- **Visuals:** KISS × Partiful sticker wordmark (SVG, lightning-bolt I, chrome horizon line, die-cut outline, sparkle); bolt-on-blob favicon; crackle-paint home background (WebGL Voronoi, about 20 fps at rest, surges for about 1 s on any setting change, static frame under reduced motion); TV-static "Finger ⇄ Skate" subtitle; red melting tunnel on the third-miss result; mobile title/description pairs at 1.05 rem / 0.95 rem.

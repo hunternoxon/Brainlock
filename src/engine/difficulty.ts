@@ -1,4 +1,4 @@
-import { CONFIG, DIFFICULTY } from './rules'
+import { CONFIG, DIFFICULTY, OBSTACLE_GATE, PATTERN_GATE, STANCE_GATE } from './rules'
 import { BOARD_MOVES, EXITS, EXTRA_FLIP_DIFF, GRINDS, LIPS, REVERT, SEQUENCE, TRANSFER, TRANSITION } from './vocab'
 import type { Trick } from './types'
 
@@ -41,13 +41,18 @@ export function rateTrick(t: Trick, gate: number): RatingParts {
   if (t.grind) core += GRINDS[t.grind]?.diff ?? 0
   if (t.grind2) core += TRANSITION.diff
   if (t.manual) core += CONFIG.families.manuals.subs[t.manual]?.diff ?? 0
-  if (t.lip) core += LIPS[t.lip]?.diff ?? 0
+  if (t.lip) core += (LIPS[t.lip]?.diff ?? 0) + (t.lipDir === 'BS' ? D.lipBS : 0)
   if (t.exit) core += EXITS[t.exit]?.diff ?? 0
   if (t.revert) core += REVERT.diff
   if (t.transferTo) core += TRANSFER.diff
 
   const modifiers = stance + obstacle + direction
   const raw = core + modifiers + combo
-  const rating = Math.min(10, Math.max(1, raw, gate + D.modifierWeight * (modifiers + combo / 2)))
+  // Stagger: when a stance/obstacle/pattern gate (not the trick itself) sets the floor,
+  // the trick's own difficulty still spreads ratings above it (switch kickflip < switch hardflip < switch tre).
+  const qpCoping = t.obstacle === 'quarterpipe' && (t.pattern === 'coping' || t.pattern === 'grind-only')
+  const gateOther = Math.max(qpCoping ? 1 : OBSTACLE_GATE[t.obstacle], STANCE_GATE[t.stance], PATTERN_GATE[t.pattern])
+  const lift = D.modifierWeight * (modifiers + combo / 2)
+  const rating = Math.min(10, Math.max(1, raw, gate + lift, gateOther + lift + D.coreSpread * core))
   return { raw, gate, modifiers, rating: Math.round(rating * 10) / 10 }
 }

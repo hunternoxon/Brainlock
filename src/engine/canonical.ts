@@ -54,6 +54,8 @@ export function airName(stance: Stance, key: string, flips: number | undefined, 
   if (!m) return [`?${key}`, false]
   const multi = flips === 3 ? 'Triple ' : flips === 2 ? 'Double ' : ''
   const base = multi + m.label
+  // A nollie ollie is just "Nollie"
+  if (!spin && m.key === 'ollie' && stance === 'nollie') return ['Nollie', true]
   if (!spin) return [base, false]
   const d = spin.dir
   const fakieFS = stance === 'fakie' && d === 'FS'

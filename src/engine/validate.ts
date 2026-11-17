@@ -147,7 +147,8 @@ export function validateTrick(t: Trick, opts: ValidateOptions = {}): ValidationR
           break
         }
         if (m.board?.deg === 180 && m.flip && t.spin.deg === 180) {
-          tier('uncommon') // BS 180 Varial Kickflip, FS 180 Hardflip…
+          // BS 180 Varial Kickflip: uncommon. 180 Hardflip / 180 Inward Heelflip: rare.
+          tier(m.key === 'hardflip' || m.key === 'inward heelflip' ? 'rare' : 'uncommon')
           break
         }
         if (m.board?.deg === 360 && t.spin.deg === 180 && sameDir) {

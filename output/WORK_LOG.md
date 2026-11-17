@@ -138,3 +138,8 @@ Full report: `output/TRICK_INTELLIGENCE_V2_REPORT.md`. Rules: `docs/TRICK_INTELL
 - Selection is now a single weighted pick (variety penalties can act across groups; legacy flavor weights normalised per group). This fixed L10 monotony and stall starvation found in the seeded report.
 - Setup hierarchy + desktop layouts. Layout width uses a `data-view` attribute, because Chrome left `:has()` widths stale after screen swaps.
 - Tests: 168/168 Vitest, 41/41 browser smoke (mobile + desktop), 0 console errors, `import/` unchanged.
+
+## 2026-11-17 · Pass 3: Marathon, multiplayer, visuals
+
+Marathon rename (UI only); local 2–4 player matches for both modes (`match.ts`, `Match.tsx`); hardflip/inward + 180 → rare; rating staggering for gate-dominated tricks and quarterpipe lip tricks; KISS×Partiful SVG logo + favicon; crackle background with selection surge; TV-static Finger⇄Skate subtitle; red melting third-miss tunnel; mobile title/description hierarchy.
+Tests: 181/181 Vitest (new: match 7, naming +4), 46/46 browser smoke (new: melt background, full 2-player SKATE match with shared trick and hand-off), 0 console errors, import/ unchanged.
