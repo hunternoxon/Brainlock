@@ -1,0 +1,79 @@
+/* Outer: where the cut leaves the piece (delayed, so it happens after the blade) */
+.cw {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.07em;
+  margin: 0 -0.07em;
+  border-radius: 0.04em;
+  transition:
+    transform 0.55s var(--ease-snap),
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.3s;
+  transition-delay: 0s;
+}
+
+/* Inner: follows the pointer immediately, at its own depth */
+.cw__in {
+  display: inline-block;
+  transition: transform 0.25s var(--ease-out);
+}
+
+/* The blade: a hot slit that races down between words */
+.cw::after {
+  content: '';
+  position: absolute;
+  top: -0.12em;
+  bottom: -0.12em;
+  right: -0.13em;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--laser);
+  box-shadow:
+    0 0 4px var(--laser),
+    0 0 12px rgb(255 36 20 / 0.6);
+  transform: scaleY(0);
+  transform-origin: top;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cutwords > span:last-child .cw::after {
+  display: none;
+}
+
+:is(.cut-host:hover, .cut-host:focus-visible, .cut-host[data-active='true']) .cw::after {
+  animation: slit 0.42s var(--ease-in-out) forwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+:is(.cut-host:hover, .cut-host:focus-visible, .cut-host[data-active='true']) .cw {
+  background: var(--paper);
+  box-shadow: var(--lift-shadow);
+  transform: translate(var(--dx), var(--dy)) rotate(var(--r));
+  transition-delay: calc(var(--i) * 70ms + 160ms);
+}
+
+:is(.cut-host:hover, .cut-host:focus-visible, .cut-host[data-active='true']) .cw[data-invert] {
+  background: var(--ink-strong);
+  color: var(--paper);
+}
+
+:is(.cut-host:hover, .cut-host:focus-visible, .cut-host[data-active='true']) .cw__in {
+  transform: translate(calc(var(--mx) * var(--depth) * 0.12em), calc(var(--my) * var(--depth) * 0.08em));
+}
+
+@keyframes slit {
+  0% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  55% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}

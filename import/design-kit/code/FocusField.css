@@ -1,0 +1,102 @@
+.focus-field {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease-out);
+}
+
+.focus-field[data-active] {
+  opacity: 1;
+}
+
+.focus-field canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: blur(1.5px);
+}
+
+/* Keep the focused piece readable: darker toward the edges, grain on top */
+.focus-field::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, rgb(0 0 0 / 0.15), rgb(0 0 0 / 0.6) 85%),
+    var(--grain);
+}
+
+/* The message, set big in the open space beside the focused piece */
+.focus-field__note {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  width: calc(var(--room, 40vw) - 8vw);
+  max-width: 16em;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(-50%) translateX(var(--shift, 1.5em));
+  transition:
+    opacity 0.3s,
+    transform 0.6s var(--ease-out);
+}
+
+.focus-field__note[data-side='right'] {
+  right: 4vw;
+  text-align: left;
+  --shift: 1.5em;
+}
+
+.focus-field__note[data-side='left'] {
+  left: 4vw;
+  text-align: right;
+  --shift: -1.5em;
+}
+
+.focus-field__note[data-show] {
+  opacity: 1;
+  transform: translateY(-50%);
+  transition-delay: 0.25s;
+}
+
+.focus-field__title {
+  color: var(--cutout);
+  font-size: clamp(2rem, 4.2vw, 4.4rem);
+  font-weight: 850;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  text-shadow: 0 0.1em 0.6em rgb(0 0 0 / 0.5);
+}
+
+.focus-field__sub {
+  margin-top: 0.9em;
+  font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.75);
+}
+
+@media (max-width: 767px) {
+  .focus-field__note {
+    display: none;
+  }
+}
+
+/* No WebGL or reduced motion: a plain dim + blur instead */
+.focus-field[data-fallback] {
+  background: rgb(10 10 12 / 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.focus-field[data-fallback] canvas,
+.focus-field[data-fallback]::after {
+  display: none;
+}
+
+/* Whatever is in focus floats above the field */
+[data-focus]:is(:hover, :focus-within, [data-open]) {
+  z-index: 61 !important;
+}

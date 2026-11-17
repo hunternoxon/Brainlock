@@ -1,0 +1,90 @@
+{
+  "version": "handoff-2026-11-16",
+  "warning": "Specification fixture only; no implementation/test runner is bundled; OpenCode must turn these into executable tests.",
+  "scoring": [
+    {
+      "name": "Regular kickflip on flat, first attempt",
+      "input": {
+        "stance": "regular",
+        "flip": "kickflip",
+        "obstacle": "flat",
+        "attempt": 1,
+        "flow": 0,
+        "repeats": 0
+      },
+      "expectedPoints": 130
+    },
+    {
+      "name": "Regular kickflip on flat, second attempt",
+      "input": {
+        "stance": "regular",
+        "flip": "kickflip",
+        "obstacle": "flat",
+        "attempt": 2,
+        "flow": 0,
+        "repeats": 0
+      },
+      "expectedPoints": 111
+    },
+    {
+      "name": "Regular kickflip on flat, third attempt",
+      "input": {
+        "stance": "regular",
+        "flip": "kickflip",
+        "obstacle": "flat",
+        "attempt": 3,
+        "flow": 0,
+        "repeats": 0
+      },
+      "expectedPoints": 98
+    }
+  ],
+  "gameplay": [
+    {
+      "case": "land attempt2 -> single award, result state until Next"
+    },
+    {
+      "case": "3 misses SKATE -> exactly 1 letter + result"
+    },
+    {
+      "case": "5 SKATE letters -> session over"
+    },
+    {
+      "case": "Solo N in 10,25,50 -> ends only after N resolved tricks"
+    },
+    {
+      "case": "skip -> configurable score penalty, result and Next"
+    },
+    {
+      "case": "reload after first miss -> same trick and attempt2"
+    }
+  ],
+  "legality": [
+    {
+      "case": "no manual on handrail"
+    },
+    {
+      "case": "no flip->manual on flat"
+    },
+    {
+      "case": "valid flip->grind possible on rail/ledge with both families on"
+    },
+    {
+      "case": "spins disabled -> 0 spins in repeated seeded trials"
+    },
+    {
+      "case": "all generated candidates validate; no empty trick fallback"
+    }
+  ],
+  "adaptation": [
+    {
+      "case": "many easy first-try lands -> small gradual skill rise"
+    },
+    {
+      "case": "many hard failed challenges -> small gradual skill reduction"
+    },
+    {
+      "case": "one land cannot jump multiple levels; bounded [1,10]"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "stance_multiplier": {
+    "regular": 1.0,
+    "fakie": 1.2,
+    "nollie": 1.15,
+    "switch": 1.25
+  },
+  "flip_tricks": {
+    "kickflip": 4.0,
+    "heelflip": 4.0,
+    "backside flip": 5.0,
+    "frontside flip": 5.0,
+    "hardflip": 5.5,
+    "inward heelflip": 5.8,
+    "varial kickflip": 5.0,
+    "varial heelflip": 5.2,
+    "tre flip": 6.0,
+    "360 flip": 6.0,
+    "laser flip": 6.3,
+    "impossible": 6.5
+  },
+  "grinds": {
+    "50-50": 1.6,
+    "5-0": 2.0,
+    "boardslide": 2.0,
+    "noseslide": 2.1,
+    "tailslide": 2.3,
+    "lipslide": 2.4,
+    "smith": 2.8,
+    "feeble": 3.0,
+    "crooked": 2.5,
+    "nosegrind": 2.5,
+    "overcrook": 3.2,
+    "bluntslide": 3.5,
+    "noseblunt": 4.0
+  },
+  "manuals": {
+    "manual": 1.0,
+    "nose manual": 1.2
+  },
+  "obstacle_bonus": {
+    "ledge": 1.5,
+    "manual pad": 1.0,
+    "rail": 2.0,
+    "flatbar": 1.8,
+    "handrail": 2.5,
+    "hubba": 2.2,
+    "gap": 2.0,
+    "bank": 1.2,
+    "quarterpipe": 1.6,
+    "curb": 1.2,
+    "box": 1.0,
+    "flat": 0.0
+  },
+  "direction_default": {
+    "50-50": "FS",
+    "5-0": "FS",
+    "boardslide": "BS",
+    "noseslide": "BS",
+    "lipslide": "FS",
+    "tailslide": "FS",
+    "bluntslide": "BS",
+    "nosegrind": "FS",
+    "crooked": "BS",
+    "feeble": "BS",
+    "smith": "BS",
+    "overcrook": "BS",
+    "noseblunt": "FS"
+  },
+  "aliases": {
+    "tre": "tre flip",
+    "treflip": "tre flip",
+    "crook": "crooked",
+    "bs": "backside",
+    "fs": "frontside",
+    "nosemanual": "nose manual",
+    "50 50": "50-50",
+    "5050": "50-50"
+  }
+}

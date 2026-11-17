@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Brainlock</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Brainlock</h1>
+    <nav>
+      <button id="tab-skate" class="tab active">SKATE</button>
+      <button id="tab-tricks" class="tab">Tricks</button>
+      <button id="tab-settings" class="tab">Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- SKATE MODE -->
+    <section id="view-skate" class="view active">
+      <div class="panel">
+        <div class="row">
+          <label>Skill lvl</label>
+          <input id="skill" type="range" min="1" max="10" value="5" />
+          <span id="skillVal">5</span>
+        </div>
+
+        <div class="row">
+          <label>Obstacles</label>
+          <div id="obstacleFilters" class="chips"></div>
+        </div>
+
+        <div class="scoreline">
+          <span>Score: <b id="score">0</b></span>
+          <span>High: <b id="highScore">0</b></span>
+          <span>Letters: <b id="letters">—</b></span>
+        </div>
+
+        <div id="challenge" class="challenge">Tap “Start Session”</div>
+
+        <div class="actions">
+          <button id="startBtn" class="primary">Start Session</button>
+          <button id="landBtn" class="good" disabled>Land</button>
+          <button id="missBtn" class="bad" disabled>Miss</button>
+          <button id="skipBtn" disabled>Skip</button>
+        </div>
+
+        <div class="meta">
+          <span>Attempt: <b id="attempt">—</b></span>
+          <span>Difficulty: <b id="difficulty">—</b></span>
+          <span>Variety: <b id="variety">On</b></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRICK LIST -->
+    <section id="view-tricks" class="view">
+      <div class="panel">
+        <div class="row">
+          <input id="trickSearch" placeholder="Search tricks…" />
+          <select id="trickObstacle">
+            <option value="">Any obstacle</option>
+          </select>
+        </div>
+        <div id="trickList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view">
+      <div class="panel">
+        <h2>Scoring</h2>
+        <p>Base = <code>difficulty × 100</code>. Land bonus (Attempt 1/2/3): <code>1.00 / 0.94 / 0.92</code>. 5 misses total = S-K-A-T-E.</p>
+        <p>No immediate repeats; variety bias rotates trick types. Obstacles filter constrains generator.</p>
+        <p>Dataset loaded from <code>data/brainlock_dataset.json</code>.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

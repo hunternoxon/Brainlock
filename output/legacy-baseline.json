@@ -1,0 +1,66 @@
+{
+  "parse": {
+    "original": "SyntaxError: SyntaxError: Unexpected token ')'",
+    "fixed": "ok"
+  },
+  "defects": {
+    "initRace": {
+      "obstaclesAfterConfigLoad": [
+        "flat"
+      ],
+      "note": "Set initialized from fallback {flat} before config loaded; never expanded to 12.",
+      "obstaclesBeforeConfig": [
+        "flat"
+      ]
+    },
+    "flipToGrindAllOn_L10": {
+      "total": 2000,
+      "fallback": 0,
+      "flipToGrind": 0,
+      "spins": 998,
+      "manualOnHandrail": 0,
+      "immediateRepeats": 5,
+      "byPattern": {
+        "flip-only": 866,
+        "grind-only": 975,
+        "manual-only": 126,
+        "flip→manual": 33
+      }
+    },
+    "spinsDisabled_L8": {
+      "total": 2000,
+      "fallback": 0,
+      "flipToGrind": 0,
+      "spins": 1002,
+      "manualOnHandrail": 0,
+      "immediateRepeats": 2,
+      "byPattern": {
+        "grind-only": 938,
+        "flip-only": 805,
+        "manual-only": 197,
+        "flip→manual": 60
+      }
+    },
+    "handrailOnly_L1": {
+      "total": 200,
+      "fallback": 200,
+      "flipToGrind": 0,
+      "spins": 0,
+      "manualOnHandrail": 0,
+      "immediateRepeats": 199,
+      "byPattern": {
+        "flip-only": 200
+      },
+      "examples": [
+        "kickflip on handrail",
+        "kickflip on handrail",
+        "kickflip on handrail"
+      ]
+    }
+  },
+  "legacyScoring": [
+    130,
+    111,
+    98
+  ]
+}

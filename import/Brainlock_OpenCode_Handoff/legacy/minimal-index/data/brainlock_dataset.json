@@ -1,0 +1,95 @@
+[
+  {
+    "id": 1,
+    "name": "Ollie",
+    "type": "flatground",
+    "difficulty": 2,
+    "obstacles": [
+      "flat"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Kickflip",
+    "type": "fliptrick",
+    "difficulty": 5,
+    "obstacles": [
+      "flat"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Heelflip",
+    "type": "fliptrick",
+    "difficulty": 5,
+    "obstacles": [
+      "flat"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "FS Boardslide",
+    "type": "slide",
+    "difficulty": 6,
+    "obstacles": [
+      "rail",
+      "park rail"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "50-50",
+    "type": "grind",
+    "difficulty": 4,
+    "obstacles": [
+      "ledge",
+      "rail"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Kickflip to 50-50",
+    "type": "combo",
+    "difficulty": 7,
+    "obstacles": [
+      "ledge",
+      "rail"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Noseslide",
+    "type": "slide",
+    "difficulty": 5,
+    "obstacles": [
+      "ledge"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Backside Smith",
+    "type": "grind",
+    "difficulty": 7,
+    "obstacles": [
+      "rail"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "360 Flip",
+    "type": "fliptrick",
+    "difficulty": 7,
+    "obstacles": [
+      "flat"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Hardflip to BS Boardslide",
+    "type": "combo",
+    "difficulty": 9,
+    "obstacles": [
+      "rail"
+    ]
+  }
+]
