@@ -35,36 +35,47 @@ float tile(vec2 tc, float lw) {
   return (1.0 - smoothstep(lw, lw * 2.2, lineD)) * step(d, 0.5);
 }
 
+// One trippy tunnel layer: spiral twist, breathing kaleidoscope, tile-lined walls
+float layer(vec2 uv, float spin, float dens, float segs, float off) {
+  float r = length(uv);
+  r *= 1.0 + 0.07 * sin(atan(uv.y, uv.x) * 5.0 + uTime * 0.4 + off);
+  float a = atan(uv.y, uv.x) + spin * (0.25 * sin(uTime * 0.11 + off) + 0.55 / (r + 0.25) * sin(uTime * 0.07 + off));
+  float s = PI / segs;
+  float m = mod(abs(a), 2.0 * s);
+  float u = abs(m - s) / s;
+  float depth = 0.32 / max(r, 0.02) + uTravel * (1.0 + 0.3 * off);
+  depth += sin(a * 3.0 + uTime * 0.6) * 0.06;
+  return tile(vec2(u * dens, depth * dens), 0.025) * smoothstep(0.03, 0.55, r);
+}
+
+float scene(vec2 uv) {
+  float segs = 7.0 + 2.0 * sin(uTime * 0.05);
+  float l1 = layer(uv, 1.0, 6.0, segs, 0.0);
+  // Counter-rotating second skin: interference moiré
+  float l2 = layer(uv * 1.08, -1.4, 4.5, segs + 2.0, 1.7);
+  return max(l1, l2 * 0.75) + l1 * l2 * 0.6;
+}
+
 void main() {
   vec2 frag = gl_FragCoord.xy;
   vec2 uv = (frag - 0.5 * uRes) / min(uRes.x, uRes.y);
 
-  // Miss language: after a surge, columns sag and drip a little, then recover
+  // Miss language: columns sag and drip after a surge, then recover
   float x = frag.x / uRes.x;
   float drip = pow(clamp(0.5 + 0.5 * sin(x * 23.0 + sin(x * 9.0) * 2.0) * sin(x * 7.3 + 1.7), 0.0, 1.0), 2.0);
   uv.y += uMelt * drip * 0.18;
+  // Slow breathing zoom; a little lurch when charged (land rush)
+  uv *= 1.0 - 0.06 * sin(uTime * 0.21) - uSpike * 0.12;
 
-  // Land language: the same tunnel, walls lined with the tile grid, streaming forward
+  // Greyscale echo ghost (trippy afterimage)
+  float line = scene(uv) * 0.75 + scene(uv * (1.035 + uSpike * 0.04)) * 0.4;
+
+  vec2 tc = floor(uv * 40.0);
+  float flick = h(tc + floor(uTime * 12.0));
+  float lum = line * (uRest * (0.7 + 0.3 * flick) + uSpike * 0.35);
   float r = length(uv);
-  float a = atan(uv.y, uv.x) + 0.15 * sin(uTime * 0.07);
-  float segs = 6.0;
-  float s = PI / segs;
-  float m = mod(abs(a), 2.0 * s);
-  float u = abs(m - s) / s;
-  float depth = 0.32 / max(r, 0.02) + uTravel;
-  vec2 tc = vec2(u * 6.0, depth * 6.0);
-  float line = tile(tc, 0.025);
+  lum += 0.0012 / (r * r + 0.006) * (0.5 + uSpike);
 
-  // Static flicker per tile; slightly brighter when charged
-  float flick = h(floor(tc) + floor(uTime * 12.0));
-  float lum = line * (uRest * (0.65 + 0.35 * flick) + uSpike * 0.35);
-  lum += step(0.996, flick) * line * 0.25;
-
-  // Fog into the dark heart; soft pale core like the land screen
-  lum *= smoothstep(0.03, 0.55, r);
-  lum += 0.0009 / (r * r + 0.006) * (0.4 + uSpike);
-
-  // Photographic finish: exposure falloff, vignette, grain (greyscale)
   vec2 sp = frag / uRes;
   float vig = 1.0 - 0.45 * smoothstep(0.4, 1.1, length(sp - 0.5) * 1.3);
   float g = (0.02 + lum) * vig;
@@ -118,7 +129,7 @@ export function Field({ pulse }: { pulse: unknown }) {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
     const U = (n: string) => gl.getUniformLocation(prog, n)
     const uRes = U('uRes'), uTime = U('uTime'), uTravel = U('uTravel'), uSpike = U('uSpike'), uMelt = U('uMelt'), uRest = U('uRest')
-    gl.uniform1f(uRest, 0.12)
+    gl.uniform1f(uRest, 0.14)
 
     let scale = 1
     const resize = () => {

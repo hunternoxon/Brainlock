@@ -300,14 +300,17 @@ h2 {
 .logo__word {
   display: inline-flex;
   font-family: 'Marcellus', 'Albertus', 'Optima', serif;
-  font-size: clamp(2.6rem, 13vw, 3.8rem);
+  font-size: clamp(2.5rem, 12vw, 3.6rem);
   font-weight: 400;
-  letter-spacing: 0.03em;
-  line-height: 0.95;
-  color: var(--ink-strong);
-  /* a touch heavier, like a stamped / cut badge, with slightly rough edges */
-  -webkit-text-stroke: 0.035em currentColor;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: #fff;
+  /* Humber weight: much heavier, wider strokes */
+  -webkit-text-stroke: 0.075em #fff;
   paint-order: stroke fill;
+  transform: scaleX(1.12);
+  transform-origin: left center;
+  margin-right: 0.12em;
   filter: url(#logo-rough);
 }
 .logo__word > span {

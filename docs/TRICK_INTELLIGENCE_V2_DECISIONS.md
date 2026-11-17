@@ -139,3 +139,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 
 - **Logo:** flared glyphic capitals after the vintage Humber badge (Marcellus, bundled via @fontsource for offline use). It's slightly heavier, with low-frequency edge roughening and per-letter baseline/angle jitter so it feels hand-cut. The red rule is dropped.
 - **Home background:** rebuilt in the Land/Miss visual language. It's a slow greyscale tunnel (same geometry family as the Land screen) whose walls are lined with semicircle-in-square tiles, finished with fog, a pale core, vignette and film grain. A selection change triggers a Land-style rush forward, then a small Miss-style drip/melt that recovers. The thick crack lines are removed. Reduced motion shows a still frame.
+
+## v2.4 (2026-11-17)
+
+- **Logo:** closer to the Humber badge lettering: pure white, much heavier (stroke-thickened), ~12% wider, more open spacing. A blur-then-threshold filter gives softened, cast-badge corners, with a gentle low-frequency hand-cut wobble.
+- **Home background (still greyscale):** more trippy. The spiralling tunnel twist follows depth, the kaleidoscope (7–9 slices) breathes, the walls ripple radially, a second counter-rotating tile skin creates moving moiré, a greyscale echo/afterimage is layered in, and there's a slow breathing zoom. A selection change still gives the Land-style rush and the Miss-style drip.
