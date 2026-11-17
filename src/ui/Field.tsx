@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Page background behind the home card: a vintage emergency-broadcast TV
- * (curved glass, scanlines, hum bar, tracking tears, hold slips, snow, beacon
- * rings, alarm throb) showing a trippy tunnel in the same visual language as the
- * Land / Miss screens: a slow greyscale tunnel whose walls are lined with
+ * Page background behind the home card: a vintage silent film (12 fps frames,
+ * gate weave, exposure flicker, scratches, dust, heavy grain, iris vignette)
+ * showing a dim trippy tunnel in the same visual language as the Land / Miss
+ * screens: a slow greyscale tunnel whose walls are lined with
  * semicircle-in-square tiles, with fog, grain and static flicker.
  * A selection change gives a Land-style rush forward, then a small Miss-style
  * melt that recovers.
@@ -59,60 +59,50 @@ float scene(vec2 uv) {
 }
 
 void main() {
+  // --- Silent film: 12 fps frames, gate weave ---
+  float frame = floor(uTime * 12.0);
+  float ft = frame / 12.0;
+  vec2 weave = vec2(h(vec2(frame, 1.0)) - 0.5, h(vec2(frame, 2.0)) - 0.5) * vec2(0.0025, 0.004);
   vec2 sp0 = gl_FragCoord.xy / uRes;
-
-  // --- Vintage TV: curved glass, vertical-hold slips, tracking tears ---
-  vec2 cc = sp0 * 2.0 - 1.0;
-  cc *= 1.0 + 0.06 * dot(cc, cc);
-  vec2 sp = cc * 0.5 + 0.5;
-  float slipP = fract(uTime / 9.0);
-  float slip = smoothstep(0.0, 0.02, slipP) * (1.0 - smoothstep(0.02, 0.06, slipP));
-  sp.y = fract(sp.y + slip * 0.25);
-  float bandY = fract(uTime * 0.06);
-  float band = smoothstep(0.05, 0.0, abs(sp.y - bandY));
-  float row = floor(sp.y * uRes.y / 3.0);
-  sp.x += band * (h(vec2(row, floor(uTime * 24.0))) - 0.5) * 0.05;
-  sp.x += (h(vec2(floor(uTime * 30.0), row)) - 0.5) * 0.002; // faint horizontal jitter
+  vec2 sp = sp0 + weave;
   vec2 frag = sp * uRes;
-
   vec2 uv = (frag - 0.5 * uRes) / min(uRes.x, uRes.y);
 
-  // Miss language: columns sag and drip after a surge, then recover
-  float x = sp.x;
-  float drip = pow(clamp(0.5 + 0.5 * sin(x * 23.0 + sin(x * 9.0) * 2.0) * sin(x * 7.3 + 1.7), 0.0, 1.0), 2.0);
-  uv.y += uMelt * drip * 0.18;
-  // Slow breathing zoom; a lurch when charged (land rush)
-  uv *= 1.0 - 0.06 * sin(uTime * 0.21) - uSpike * 0.12;
+  // Miss language: a gentle sag/drip after a selection, then recovers
+  float drip = pow(clamp(0.5 + 0.5 * sin(sp.x * 23.0 + sin(sp.x * 9.0) * 2.0) * sin(sp.x * 7.3 + 1.7), 0.0, 1.0), 2.0);
+  uv.y += uMelt * drip * 0.12;
+  uv *= 1.0 - 0.04 * sin(ft * 0.15) - uSpike * 0.08;
 
-  // Trippy tunnel with a greyscale echo ghost
-  float line = scene(uv) * 0.75 + scene(uv * (1.035 + uSpike * 0.04)) * 0.4;
-  float flick = h(floor(uv * 40.0) + floor(uTime * 12.0));
-  float lum = line * (uRest * (0.7 + 0.3 * flick) + uSpike * 0.35);
+  // Trippy tunnel, dim and soft (two slightly offset samples = gentle blur)
+  float line = scene(uv) * 0.6 + scene(uv * 1.012) * 0.4;
+  float lum = line * (uRest + uSpike * 0.18);
   float r = length(uv);
-  lum += 0.0012 / (r * r + 0.006) * (0.5 + uSpike);
+  lum += 0.0006 / (r * r + 0.008) * (0.6 + uSpike);
 
-  // --- Emergency-broadcast mood: beacon rings + slow alarm throb ---
-  float bt = fract(uTime / 3.5);
-  float ring = smoothstep(0.018, 0.0, abs(r - bt * 1.3)) * (1.0 - bt);
-  float ring2 = smoothstep(0.012, 0.0, abs(r - fract(bt + 0.5) * 1.3)) * (1.0 - fract(bt + 0.5)) * 0.5;
-  lum += (ring + ring2) * 0.22;
-  lum *= 0.72 + 0.28 * pow(0.5 + 0.5 * sin(uTime * 2.1), 4.0);
+  // Exposure flicker + slightly lifted, milky blacks
+  float flicker = 0.9 + 0.1 * h(vec2(frame, 7.0));
+  float g = (0.06 + lum) * flicker;
 
-  // --- CRT finish: hum bar, scanlines, bloom-ish lift, grain, snow bursts ---
-  lum *= 1.0 - 0.16 * smoothstep(0.55, 1.0, sin((sp.y + uTime * 0.05) * 6.2831));
-  lum += lum * lum * 0.6;
-  float scan = 0.76 + 0.24 * (0.5 + 0.5 * sin(gl_FragCoord.y * 2.094));
-  vec2 vg = sp0 - 0.5;
-  float vig = 1.0 - 0.5 * smoothstep(0.4, 1.0, length(vg * vec2(1.1, 1.25)));
-  // phosphor glow: lifted, slightly blooming blacks
-  float g = (0.055 + lum * 1.45) * scan * vig;
-  g += (h(gl_FragCoord.xy + fract(uTime * 7.0) * 113.0) - 0.5) * 0.08;
-  float snowP = fract(uTime / 11.0 + 0.3);
-  float snow = step(snowP, 0.012);
-  g = mix(g, h(gl_FragCoord.xy + uTime * 100.0) * 0.5 * vig, snow * 0.75);
-  // Curved-glass edge falloff
-  vec2 e = abs(cc);
-  g *= smoothstep(1.12, 0.92, max(e.x, e.y));
+  // Scratches: a couple of thin vertical lines that live for a few frames
+  for (int i = 0; i < 3; i++) {
+    float fi = float(i);
+    float life = floor(frame / (3.0 + fi));
+    float on = step(0.55, h(vec2(life, fi + 11.0)));
+    float sx = h(vec2(life, fi + 21.0));
+    float wob = 0.002 * sin(sp.y * 9.0 + life);
+    float scr = smoothstep(0.0012, 0.0, abs(sp0.x - sx - wob)) * on;
+    g += scr * (fi == 1.0 ? -0.05 : 0.09);
+  }
+  // Dust specks and hairs, a new set each frame
+  vec2 dcell = floor(gl_FragCoord.xy / 5.0);
+  float dust = step(0.9993, h(dcell + frame * 1.7));
+  g += dust * (h(dcell + frame) > 0.5 ? 0.35 : -0.08);
+
+  // Heavy grain + iris vignette (rounded film gate)
+  g += (h(gl_FragCoord.xy + fract(ft * 3.7) * 131.0) - 0.5) * 0.11;
+  vec2 vg = (sp0 - 0.5) * vec2(1.0, uRes.y / uRes.x * 1.2);
+  float iris = 1.0 - smoothstep(0.32, 0.62, length(vg));
+  g *= mix(0.25, 1.0, iris);
   gl_FragColor = vec4(vec3(clamp(g, 0.0, 1.0)), 1.0);
 }
 `
@@ -162,7 +152,7 @@ export function Field({ pulse }: { pulse: unknown }) {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
     const U = (n: string) => gl.getUniformLocation(prog, n)
     const uRes = U('uRes'), uTime = U('uTime'), uTravel = U('uTravel'), uSpike = U('uSpike'), uMelt = U('uMelt'), uRest = U('uRest')
-    gl.uniform1f(uRest, 0.14)
+    gl.uniform1f(uRest, 0.07)
 
     let scale = 1
     const resize = () => {
@@ -196,8 +186,8 @@ export function Field({ pulse }: { pulse: unknown }) {
         melt = tm > 0 ? (1 - Math.exp(-tm * 5)) * Math.exp(-tm * 1.6) : 0
         if (t > 3) trigger.current = null
       }
-      travel += dt * (0.04 + spike * 1.4)
-      if (spike > 0.002 || melt > 0.002 || now - last > 66) {
+      travel += dt * (0.02 + spike * 0.6)
+      if (now - last > (spike > 0.002 || melt > 0.002 ? 40 : 83)) {
         last = now
         gl.uniform1f(uSpike, spike)
         gl.uniform1f(uMelt, melt)

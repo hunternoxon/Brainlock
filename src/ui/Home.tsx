@@ -17,11 +17,10 @@ const MODE_DESC = {
   skate: 'Three misses earns a letter. Spell S-K-A-T-E and you’re out.',
   solo: 'A fixed run of 10, 25 or 50 challenges. Score as much as you can.',
 } as const
-const KEYS = 'ABCDEFGH'
 
 /**
  * Home as a Typeform-style flow: one question at a time on a glass card,
- * choices auto-advance, letter keys pick, Enter continues, arrows go back/forward.
+ * choices auto-advance, Enter continues, arrows go back/forward.
  */
 export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: HomeStep; setStep: (s: HomeStep) => void }) {
   const { settings: st, session: s, pool, match } = b
@@ -61,7 +60,7 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
 
   const stepsFor = (mode: 'skate' | 'solo', count = mu.count): HomeStep[] => ['mode', ...(mode === 'solo' ? (['length'] as const) : []), 'players', count > 1 ? 'names' : 'level', 'ready']
 
-  // Options for the current question (for letter-key shortcuts)
+  // Options for the current question
   type Opt = { id: string; label: string; desc?: string; on: boolean; pick: () => void }
   const opts: Opt[] =
     current === 'mode'
@@ -81,12 +80,7 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return
-      const k = e.key.toUpperCase()
-      const i = KEYS.indexOf(k)
-      if (i >= 0 && opts[i]) {
-        e.preventDefault()
-        opts[i].pick()
-      } else if (e.key === 'Enter' && current !== 'ready' && !(e.target instanceof HTMLButtonElement)) {
+      if (e.key === 'Enter' && current !== 'ready' && !(e.target instanceof HTMLButtonElement)) {
         e.preventDefault()
         next()
       } else if (e.key === 'ArrowUp' || e.key === 'Escape') back()
@@ -227,11 +221,8 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
 
           {opts.length > 0 && (
             <div className="choices" role="radiogroup" aria-labelledby={`q-${current}`}>
-              {opts.map((o, i) => (
+              {opts.map((o) => (
                 <button key={o.id} role="radio" aria-checked={o.on} className="choice" data-flash={picked === o.id || undefined} onClick={o.pick}>
-                  <span className="choice__key" aria-hidden="true">
-                    {KEYS[i]}
-                  </span>
                   <span className="choice__text">
                     <span className="choice__label">{o.label}</span>
                     {o.desc && <span className="choice__desc">{o.desc}</span>}

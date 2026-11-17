@@ -161,3 +161,9 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
   - Questions slide up into place (down when going back). The previous answer stays checked.
   - In-progress sessions or matches show as a slim resume strip on the first question.
   - The card is ~10% white glass with a 40 px backdrop blur and a hairline border.
+
+## v2.8 (2026-11-17)
+
+- **Background toned way down, about 50% silent film.** The 12 fps frame stepping, gate weave, exposure flicker, short-lived scratches, dust specks, heavy grain and an iris vignette replace the TV layer (scanlines, hum bar, tracking, snow and beacon rings are removed). The trippy tunnel stays, but dim, softened and slower; the selection rush and drip are gentler. It renders at ~12 fps at rest.
+- **Home UI matches the Land/Miss screens.** Question titles are tilted white cut-out labels, the step number is a small white tag, and choices are white cut-out cards (the selected one flips to black with ✓). The glass card is fainter (5% white, 40 px blur) with a thin inset double rule like a silent-film title card.
+- **Letter badges and A–D shortcuts removed.** Enter and ↑/↓ still work.
