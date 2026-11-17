@@ -279,15 +279,23 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
           {current === 'ready' && (
             <div className="q__body">
               <button className="setup-summary" onClick={() => go('setup')}>
-                <span>
+                <span className="setup-summary__text">
+                  <strong className="setup-summary__title">Make it yours</strong>
+                  <span className="setup-summary__hint">Pick the obstacles you’ve got and the tricks you want.</span>
+                  <span className="setup-summary__now">
                   {f.obstacles.length === OBSTACLES.length ? 'All 12 obstacles' : f.obstacles.length === 0 ? 'No obstacles' : f.obstacles.length <= 3 ? f.obstacles.join(', ') : `${f.obstacles.length} obstacles`} ·{' '}
                   {f.families.length}/{FAMILIES.length} trick types · {f.stances.length === STANCES.length ? 'all stances' : f.stances.join(', ')}
                   {f.rarity !== 'very-low' && ` · rare: ${f.rarity}`}
+                  </span>
                 </span>
-                <span className="setup-summary__edit">Edit</span>
+                <span className="setup-summary__edit">
+                  Customize obstacles &amp; tricks <span aria-hidden="true">→</span>
+                </span>
               </button>
               {canStart ? (
-                <p className="q__desc">{fmt(pool.atLevel)} possible tricks at your level.</p>
+                <p className="q__desc">
+                  <strong>{fmt(pool.atLevel)} possible tricks to start.</strong> Keep landing tricks to level up and expand your trick pool.
+                </p>
               ) : (
                 <div className="notice notice--warn" role="alert">
                   {pool.messages.map((m) => (
@@ -369,15 +377,15 @@ function Stepper({ label, value, onChange, small }: { label: string; value: numb
 
 /** Playful level names: about the vibe, never a dig at anyone's skill. */
 export const LEVEL_NAMES = [
-  'Fresh Grip Tape',
-  'Tiny Wheels, Big Dreams',
-  'Kitchen Table Ripper',
-  'Desk Drawer Daredevil',
-  'Knuckle Cruiser',
-  'Rail Whisperer',
-  'Pocket Pro',
-  'Coping Wizard',
-  'Trucks of Fury',
+  'First Day',
+  'Getting There',
+  'Sketchy Counts',
+  'Local Hero',
+  'Shop Flow',
+  'Actually Pretty Good',
+  'Film This',
+  'Tuff',
+  'Shred Maxing',
   'Fully Brainlocked',
 ]
 

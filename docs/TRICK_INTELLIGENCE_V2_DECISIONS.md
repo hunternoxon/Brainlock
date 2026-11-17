@@ -193,3 +193,10 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 - **Removing scores:** locked behind the passcode "Corndog" (case-insensitive, trimmed) on the Scores screen. Unlocking shows a Remove link on each board entry, plus "Clear scores and history" and the "also delete" option in the forget flow. `removeScore` takes the entry off its board; history and learning are untouched. The passcode sits in client-side code, so it's a friendly lock for shared phones, not security.
 - **Marathon 5:** SOLO_LENGTHS = [5, 10, 25, 50], with a `solo-5` board.
 - **Landing:** a small "Scoreboards" link under Get started.
+
+## v2.13 (2026-11-17)
+
+- **Ready step:** the setup summary is now a "Make it yours" card ("Pick the obstacles you've got and the tricks you want.") with a full-width **Customize obstacles & tricks →** button. The current setup is shown underneath in small text.
+- **Pool copy:** "**N possible tricks to start.** Keep landing tricks to level up and expand your trick pool."
+- **Sound is on by default.** Settings saved before this change switch to on once; settings are now saved with `soundV: 2`, so later choices stick.
+- **Level names:** 1 First Day · 2 Getting There · 3 Sketchy Counts · 4 Local Hero · 5 Shop Flow · 6 Actually Pretty Good · 7 Film This · 8 Tuff · 9 Shred Maxing · 10 Fully Brainlocked.

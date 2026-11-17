@@ -89,6 +89,9 @@ try {
   check('survey ends at Ready with setup + a single Start in the Next position', (await page.locator('.setup-summary').count()) === 1 && (await btn('Start session').count()) === 1 && (await page.locator('.survey__next').textContent()) === 'Start session' && !(await visible('Next')))
   check('level question has no OK button', okSeenOnLevel === false)
   check('all 12 obstacles by default', (await text('.setup-summary')).includes('All 12 obstacles'))
+  check('ready step invites customizing obstacles & tricks', (await text('.setup-summary')).includes('Pick the obstacles you’ve got and the tricks you want') && (await text('.setup-summary__edit')).startsWith('Customize'))
+  check('pool copy: "N possible tricks to start."', /^[\d,]+ possible tricks to start\. Keep landing tricks to level up and expand your trick pool\.$/.test(await text('.q__body > p.q__desc')))
+  check('sound is on by default', (await text('.home__foot')).includes('Sound on'))
   await shot('01-home')
 
   // Setup persists

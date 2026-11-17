@@ -74,6 +74,17 @@ describe('persistence', () => {
     expect(store.loadHistory()).toHaveLength(2)
   })
 
+  test('sound is on by default, including settings saved before it was', () => {
+    expect(createStore(memoryStorage()).loadSettings().sound).toBe(true)
+    const old = memoryStorage()
+    old.setItem(KEYS.settings, JSON.stringify({ v: 1, data: { sound: false, level: 5 } }))
+    expect(createStore(old).loadSettings()).toMatchObject({ sound: true, level: 5 })
+    const mem = memoryStorage()
+    const store = createStore(mem)
+    store.saveSettings({ ...store.loadSettings(), sound: false })
+    expect(createStore(mem).loadSettings().sound).toBe(false)
+  })
+
   test('initials and passcode helpers', () => {
     expect(sanitizeInitials('ab-cd')).toBe('ABC')
     expect(sanitizeInitials(42)).toBe('')

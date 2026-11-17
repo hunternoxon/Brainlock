@@ -103,7 +103,7 @@ export interface HistoryEntry {
 }
 
 export function defaultSettings(): Settings {
-  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: false, debug: false, multi: defaultMulti(), initials: '' }
+  return { mode: 'skate', soloLength: 10, level: 3, filters: sanitizeFilters(undefined), sound: true, debug: false, multi: defaultMulti(), initials: '' }
 }
 
 export const boardKey = (mode: Mode, soloLength?: SoloLength) => (mode === 'skate' ? 'skate' : `solo-${soloLength}`)
@@ -158,14 +158,14 @@ export function createStore(storage: StorageLike, now: () => number = Date.now) 
         soloLength: (SOLO_LENGTHS as readonly number[]).includes(s.soloLength as number) ? (s.soloLength as SoloLength) : 10,
         level: typeof s.level === 'number' && s.level >= 1 && s.level <= 10 ? Math.round(s.level) : d.level,
         filters: sanitizeFilters(s.filters),
-        sound: !!s.sound,
+        sound: (s as { soundV?: number }).soundV === 2 ? !!s.sound : true,
         debug: !!s.debug,
         multi: sanitizeMulti(s.multi),
         initials: sanitizeInitials(s.initials),
       }
     },
     saveSettings(s: Settings) {
-      write(KEYS.settings, s)
+      write(KEYS.settings, { ...s, soundV: 2 })
     },
     loadProfile(): Profile {
       return (
