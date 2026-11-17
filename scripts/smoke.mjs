@@ -34,6 +34,7 @@ const shot = (n) => page.screenshot({ path: `${OUT}/${n}.png` })
 const btn = (name) => page.getByRole('button', { name, exact: true })
 const text = async (sel) => (await page.locator(sel).first().textContent())?.trim() ?? ''
 const visible = (name) => btn(name).isVisible()
+let okSeenOnLevel = false
 const wait = (ms) => page.waitForTimeout(ms)
 const choose = async (re) => {
   await page.getByRole('radio', { name: re }).click()
@@ -44,20 +45,23 @@ const choose = async (re) => {
  * Returns the level shown on the level question (single player).
  */
 const survey = async ({ mode = 'SKATE', length = 10, players = 1, level } = {}) => {
-  while (await btn('Previous question').isVisible()) {
-    await btn('Previous question').click()
+  while (await btn('Back').isVisible()) {
+    await btn('Back').click()
     await wait(120)
   }
-  await choose(new RegExp('^' + mode))
+  await page.getByRole('radio', { name: new RegExp('^' + mode) }).click()
+  await btn('Get started').click()
+  await wait(450)
   if (mode === 'Marathon') await choose(new RegExp('^' + length + ' challenges'))
   await choose(players === 1 ? /^Just me/ : new RegExp('^' + players + ' players'))
   if (players > 1) return null
   const shown = await text('.stepper__val')
+  okSeenOnLevel = okSeenOnLevel || (await btn('OK').count()) > 0
   if (level !== undefined) {
     for (let i = 0; i < 10 && Number(await text('.stepper__val')) !== level; i++)
       await btn(Number(await text('.stepper__val')) < level ? 'Raise level' : 'Lower level').click()
   }
-  await btn('OK').click()
+  await btn('Next').click()
   await wait(450)
   return shown
 }
@@ -71,11 +75,16 @@ try {
   const card = await page.$eval('.survey', (el) => { const r = el.getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, h: r.height, bg: getComputedStyle(el).backgroundColor, blur: getComputedStyle(el).backdropFilter } })
   check('landing card is compact, centered and glassy', Math.abs(card.cx - 195) < 4 && Math.abs(card.cy - 422) < 30 && card.h < 600 && card.bg.includes('0.1') && card.blur.includes('blur'), JSON.stringify(card))
   await shot('00-landing')
-  await page.getByRole('radio', { name: /^SKATE/ }).click()
+  await page.getByRole('radio', { name: /^Marathon/ }).click()
   await wait(450)
-  check('choosing a mode auto-advances to the next question', (await text('.q__title')) === 'Who’s playing?' && (await text('.q__num')).startsWith('2'))
+  check('choosing a mode selects it without leaving the first question', (await text('.q__title')) === 'Choose a mode' && (await page.getByRole('radio', { name: /^Marathon/ }).getAttribute('aria-checked')) === 'true')
+  await page.getByRole('radio', { name: /^SKATE/ }).click()
+  await btn('Get started').click()
+  await wait(450)
+  check('Get started moves to the next question with Back / Next', (await text('.q__title')) === 'Who’s playing?' && (await visible('Back')) && (await visible('Next')))
   await survey({ level: 4 })
-  check('survey ends at Ready with setup + Start', (await page.locator('.setup-summary').count()) === 1 && (await visible('Start session')))
+  check('survey ends at Ready with setup + a single Start in the Next position', (await page.locator('.setup-summary').count()) === 1 && (await btn('Start session').count()) === 1 && (await page.locator('.survey__next').textContent()) === 'Start session' && !(await visible('Next')))
+  check('level question has no OK button', okSeenOnLevel === false)
   check('all 12 obstacles by default', (await text('.setup-summary')).includes('All 12 obstacles'))
   await shot('01-home')
 
@@ -241,7 +250,7 @@ try {
   // Local multiplayer: 2-player SKATE to the end
   await survey({ mode: 'SKATE', players: 2 })
   await page.getByRole('textbox', { name: 'Player 2 name' }).fill('Sam')
-  await btn('OK').click()
+  await btn('Next').click()
   await wait(450)
   await btn('Start 2-player match').click()
   check('match shows both players and whose turn', (await page.locator('.matchbar__p').count()) === 2 && (await text('.turn')) === 'Your turn')

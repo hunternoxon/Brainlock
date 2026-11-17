@@ -167,3 +167,11 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 - **Background toned way down, about 50% silent film.** The 12 fps frame stepping, gate weave, exposure flicker, short-lived scratches, dust specks, heavy grain and an iris vignette replace the TV layer (scanlines, hum bar, tracking, snow and beacon rings are removed). The trippy tunnel stays, but dim, softened and slower; the selection rush and drip are gentler. It renders at ~12 fps at rest.
 - **Home UI matches the Land/Miss screens.** Question titles are tilted white cut-out labels, the step number is a small white tag, and choices are white cut-out cards (the selected one flips to black with ✓). The glass card stays at 10% white with a 40 px blur with a thin inset double rule like a silent-film title card.
 - **Letter badges and A–D shortcuts removed.** Enter and ↑/↓ still work.
+
+## v2.9 (2026-11-17)
+
+- Choose a mode: tapping a mode selects it; a **Get started** button moves on. The other questions still auto-advance on a choice.
+- Navigation is a **Back** button and a **Next** button on either side of the progress bar (the ↑/↓ arrows are removed).
+- No OK buttons on the level or names questions; Next handles them.
+- The last question's Next position becomes the **single** Start session / Start N-player match button; there is no other Start button.
+- Mode and level descriptions show one sentence per line, avoiding awkward wraps on phones.

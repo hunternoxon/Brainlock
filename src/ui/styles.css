@@ -1956,3 +1956,32 @@ h3 {
 .survey .resume-strip p {
   background: rgb(255 255 255 / 0.08);
 }
+
+/* ---------- Home v5: Get started / Back · progress · Next ---------- */
+.choice__desc > span {
+  display: block;
+}
+.survey__start {
+  margin-top: 2px;
+}
+.survey__nav {
+  gap: 12px;
+}
+.survey__back,
+.survey__next {
+  flex: none;
+  min-height: 46px;
+  padding: 0 18px;
+}
+.survey__back {
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.2);
+  color: var(--ink-strong);
+}
+.survey__next {
+  min-width: 96px;
+}
+
+.q__desc .line {
+  display: block;
+}

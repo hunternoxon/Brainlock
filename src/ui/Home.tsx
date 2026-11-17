@@ -13,9 +13,10 @@ import type { Brainlock } from './useBrainlock'
 
 export type HomeStep = 'mode' | 'length' | 'players' | 'names' | 'level' | 'ready'
 
+/** One sentence per line (avoids awkward wraps on phones) */
 const MODE_DESC = {
-  skate: 'Three misses earns a letter. Spell S-K-A-T-E and you’re out.',
-  solo: 'A fixed run of 10, 25 or 50 challenges. Score as much as you can.',
+  skate: ['Three misses earns a letter.', 'Spell S-K-A-T-E and you’re out.'],
+  solo: ['A fixed run of 10, 25 or 50 challenges.', 'Score as much as you can.'],
 } as const
 
 /**
@@ -61,17 +62,17 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
   const stepsFor = (mode: 'skate' | 'solo', count = mu.count): HomeStep[] => ['mode', ...(mode === 'solo' ? (['length'] as const) : []), 'players', count > 1 ? 'names' : 'level', 'ready']
 
   // Options for the current question
-  type Opt = { id: string; label: string; desc?: string; on: boolean; pick: () => void }
+  type Opt = { id: string; label: string; desc?: readonly string[]; on: boolean; pick: () => void }
   const opts: Opt[] =
     current === 'mode'
-      ? (['skate', 'solo'] as const).map((m) => ({ id: m, label: modeLabel(m), desc: MODE_DESC[m], on: st.mode === m, pick: () => choose(m, () => b.setSettings({ mode: m }), stepsFor(m)) }))
+      ? (['skate', 'solo'] as const).map((m) => ({ id: m, label: modeLabel(m), desc: MODE_DESC[m], on: st.mode === m, pick: () => b.setSettings({ mode: m }) }))
       : current === 'length'
         ? SOLO_LENGTHS.map((n) => ({ id: String(n), label: `${n} challenges`, on: st.soloLength === n, pick: () => choose(String(n), () => b.setSettings({ soloLength: n })) }))
         : current === 'players'
           ? Array.from({ length: MAX_PLAYERS }, (_, i) => i + 1).map((n) => ({
               id: String(n),
               label: n === 1 ? 'Just me' : `${n} players`,
-              desc: n === 1 ? undefined : 'Pass the phone',
+              desc: n === 1 ? undefined : ['Pass the phone'],
               on: mu.count === n,
               pick: () => choose(String(n), () => b.setSettings({ multi: { ...mu, count: n } }), stepsFor(st.mode, n)),
             }))
@@ -195,7 +196,10 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
                     </button>
                   </>
                 ) : (
-                  '1 = just starting, 10 = pro. It adjusts slowly as you complete sessions.'
+                  <>
+                    <span className="line">1 = just starting, 10 = pro.</span>
+                    <span className="line">It adjusts slowly as you complete sessions.</span>
+                  </>
                 )}
               </p>
             </>
@@ -225,7 +229,13 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
                 <button key={o.id} role="radio" aria-checked={o.on} className="choice" data-flash={picked === o.id || undefined} onClick={o.pick}>
                   <span className="choice__text">
                     <span className="choice__label">{o.label}</span>
-                    {o.desc && <span className="choice__desc">{o.desc}</span>}
+                    {o.desc && (
+                      <span className="choice__desc">
+                        {o.desc.map((line) => (
+                          <span key={line}>{line}</span>
+                        ))}
+                      </span>
+                    )}
                   </span>
                   {o.on && (
                     <span className="choice__check" aria-hidden="true">
@@ -240,9 +250,6 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
           {current === 'level' && (
             <div className="q__body">
               <Stepper label="Level" value={st.level} onChange={(v) => b.setSettings({ level: v })} />
-              <button className="pill pill--primary q__ok" onClick={next}>
-                OK <span aria-hidden="true">✓</span>
-              </button>
             </div>
           )}
 
@@ -270,9 +277,6 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
                 on={mu.shared}
                 onChange={(v) => setMulti({ shared: v })}
               />
-              <button className="pill pill--primary q__ok" onClick={next}>
-                OK <span aria-hidden="true">✓</span>
-              </button>
             </div>
           )}
 
@@ -295,9 +299,6 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
                   ))}
                 </div>
               )}
-              <button className="pill pill--primary pill--xl" disabled={!canStart} onClick={() => go('play', b.start())}>
-                {multi ? `Start ${mu.count}-player match` : resumable ? 'Start new session' : 'Start session'}
-              </button>
               {best && !multi && (
                 <p className="q__desc center">
                   Best {modeLabel(st.mode, st.mode === 'solo' ? st.soloLength : undefined)}: {fmt(best.value)}
@@ -320,19 +321,27 @@ export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: Hom
           )}
         </section>
 
-        {current !== 'mode' && (
+        {current === 'mode' ? (
+          <button className="pill pill--primary pill--xl survey__start" onClick={next}>
+            Get started
+          </button>
+        ) : (
           <nav className="survey__nav" aria-label="Steps">
+            <button className="pill survey__back" onClick={back}>
+              Back
+            </button>
             <div className="survey__progress" aria-hidden="true">
               <span style={{ width: `${(idx / (steps.length - 1)) * 100}%` }} />
             </div>
-            <div className="survey__arrows">
-              <button className="pill pill--icon" aria-label="Previous question" onClick={back}>
-                ↑
+            {current === 'ready' ? (
+              <button className="pill pill--primary survey__next" disabled={!canStart} onClick={() => go('play', b.start())}>
+                {multi ? `Start ${mu.count}-player match` : resumable ? 'Start new session' : 'Start session'}
               </button>
-              <button className="pill pill--icon" aria-label="Next question" disabled={idx === steps.length - 1} onClick={next}>
-                ↓
+            ) : (
+              <button className="pill pill--primary survey__next" onClick={next}>
+                Next
               </button>
-            </div>
+            )}
           </nav>
         )}
       </div>
