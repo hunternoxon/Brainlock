@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Page background behind the home card, in the same visual language as the
+ * Page background behind the home card: a vintage emergency-broadcast TV
+ * (curved glass, scanlines, hum bar, tracking tears, hold slips, snow, beacon
+ * rings, alarm throb) showing a trippy tunnel in the same visual language as the
  * Land / Miss screens: a slow greyscale tunnel whose walls are lined with
  * semicircle-in-square tiles, with fog, grain and static flicker.
  * A selection change gives a Land-style rush forward, then a small Miss-style
@@ -57,29 +59,60 @@ float scene(vec2 uv) {
 }
 
 void main() {
-  vec2 frag = gl_FragCoord.xy;
+  vec2 sp0 = gl_FragCoord.xy / uRes;
+
+  // --- Vintage TV: curved glass, vertical-hold slips, tracking tears ---
+  vec2 cc = sp0 * 2.0 - 1.0;
+  cc *= 1.0 + 0.06 * dot(cc, cc);
+  vec2 sp = cc * 0.5 + 0.5;
+  float slipP = fract(uTime / 9.0);
+  float slip = smoothstep(0.0, 0.02, slipP) * (1.0 - smoothstep(0.02, 0.06, slipP));
+  sp.y = fract(sp.y + slip * 0.25);
+  float bandY = fract(uTime * 0.06);
+  float band = smoothstep(0.05, 0.0, abs(sp.y - bandY));
+  float row = floor(sp.y * uRes.y / 3.0);
+  sp.x += band * (h(vec2(row, floor(uTime * 24.0))) - 0.5) * 0.05;
+  sp.x += (h(vec2(floor(uTime * 30.0), row)) - 0.5) * 0.002; // faint horizontal jitter
+  vec2 frag = sp * uRes;
+
   vec2 uv = (frag - 0.5 * uRes) / min(uRes.x, uRes.y);
 
   // Miss language: columns sag and drip after a surge, then recover
-  float x = frag.x / uRes.x;
+  float x = sp.x;
   float drip = pow(clamp(0.5 + 0.5 * sin(x * 23.0 + sin(x * 9.0) * 2.0) * sin(x * 7.3 + 1.7), 0.0, 1.0), 2.0);
   uv.y += uMelt * drip * 0.18;
-  // Slow breathing zoom; a little lurch when charged (land rush)
+  // Slow breathing zoom; a lurch when charged (land rush)
   uv *= 1.0 - 0.06 * sin(uTime * 0.21) - uSpike * 0.12;
 
-  // Greyscale echo ghost (trippy afterimage)
+  // Trippy tunnel with a greyscale echo ghost
   float line = scene(uv) * 0.75 + scene(uv * (1.035 + uSpike * 0.04)) * 0.4;
-
-  vec2 tc = floor(uv * 40.0);
-  float flick = h(tc + floor(uTime * 12.0));
+  float flick = h(floor(uv * 40.0) + floor(uTime * 12.0));
   float lum = line * (uRest * (0.7 + 0.3 * flick) + uSpike * 0.35);
   float r = length(uv);
   lum += 0.0012 / (r * r + 0.006) * (0.5 + uSpike);
 
-  vec2 sp = frag / uRes;
-  float vig = 1.0 - 0.45 * smoothstep(0.4, 1.1, length(sp - 0.5) * 1.3);
-  float g = (0.02 + lum) * vig;
-  g += (h(frag + fract(uTime * 7.0) * 113.0) - 0.5) * 0.07;
+  // --- Emergency-broadcast mood: beacon rings + slow alarm throb ---
+  float bt = fract(uTime / 3.5);
+  float ring = smoothstep(0.018, 0.0, abs(r - bt * 1.3)) * (1.0 - bt);
+  float ring2 = smoothstep(0.012, 0.0, abs(r - fract(bt + 0.5) * 1.3)) * (1.0 - fract(bt + 0.5)) * 0.5;
+  lum += (ring + ring2) * 0.22;
+  lum *= 0.72 + 0.28 * pow(0.5 + 0.5 * sin(uTime * 2.1), 4.0);
+
+  // --- CRT finish: hum bar, scanlines, bloom-ish lift, grain, snow bursts ---
+  lum *= 1.0 - 0.16 * smoothstep(0.55, 1.0, sin((sp.y + uTime * 0.05) * 6.2831));
+  lum += lum * lum * 0.6;
+  float scan = 0.76 + 0.24 * (0.5 + 0.5 * sin(gl_FragCoord.y * 2.094));
+  vec2 vg = sp0 - 0.5;
+  float vig = 1.0 - 0.5 * smoothstep(0.4, 1.0, length(vg * vec2(1.1, 1.25)));
+  // phosphor glow: lifted, slightly blooming blacks
+  float g = (0.055 + lum * 1.45) * scan * vig;
+  g += (h(gl_FragCoord.xy + fract(uTime * 7.0) * 113.0) - 0.5) * 0.08;
+  float snowP = fract(uTime / 11.0 + 0.3);
+  float snow = step(snowP, 0.012);
+  g = mix(g, h(gl_FragCoord.xy + uTime * 100.0) * 0.5 * vig, snow * 0.75);
+  // Curved-glass edge falloff
+  vec2 e = abs(cc);
+  g *= smoothstep(1.12, 0.92, max(e.x, e.y));
   gl_FragColor = vec4(vec3(clamp(g, 0.0, 1.0)), 1.0);
 }
 `

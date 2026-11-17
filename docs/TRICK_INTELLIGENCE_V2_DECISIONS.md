@@ -148,3 +148,8 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 ## v2.5 (2026-11-17)
 
 - **Logo:** lowercase "brainlock" in Gloock, an open-source (OFL) 70s heavy display serif and the closest free match to Cinema Sunday. Pure white, bundled via @fontsource for offline use. The roughening, jitter and the Marcellus font are removed.
+
+## v2.6 (2026-11-17)
+
+- **Two-step Home.** The landing shows only the logo, the description and two mode cards (SKATE / Marathon), plus resume cards when something is in progress. Tapping a mode opens step two: mode header with "Change mode", Marathon length, players, level, setup, Start, Scores/Sound. The step persists while navigating Setup/Scores and resets to the landing on reload. Desktop step one is a narrow centered card.
+- **Background: emergency-broadcast TV layer** (about 33% of the look; still greyscale, no text) over the trippy tile tunnel. It has curved CRT glass with edge falloff, phosphor glow, scanlines, a rolling hum bar, VHS tracking tears, faint horizontal jitter, a vertical-hold slip every ~9 s, a snow burst every ~11 s, warning-beacon rings pulsing from the centre every 3.5 s and a slow alarm throb. Land rush and Miss drip on selection changes are kept.

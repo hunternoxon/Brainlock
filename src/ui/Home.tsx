@@ -10,7 +10,12 @@ import { Switch } from './SetupSheet'
 import { StaticWord } from './StaticWord'
 import type { Brainlock } from './useBrainlock'
 
-export function Home({ b, go }: { b: Brainlock; go: Go }) {
+const MODE_DESC = {
+  skate: 'Three misses earns a letter. Spell S-K-A-T-E and you’re out.',
+  solo: 'A fixed run of 10, 25 or 50 challenges. Score as much as you can.',
+} as const
+
+export function Home({ b, go, step, setStep }: { b: Brainlock; go: Go; step: 1 | 2; setStep: (s: 1 | 2) => void }) {
   const { settings: st, session: s, pool, match } = b
   const mu = st.multi
   const multi = mu.count > 1
@@ -27,8 +32,8 @@ export function Home({ b, go }: { b: Brainlock; go: Go }) {
   const setMulti = (p: Partial<typeof mu>) => b.setSettings({ multi: { ...mu, ...p } })
 
   return (
-    <main className="screen home">
-      <header className="home__head">
+    <main className="screen home" data-step={step}>
+      <header className={`home__head${step === 2 ? ' home__head--compact' : ''}`}>
         <h1 className="wordmark">
           <Logo />
         </h1>
@@ -44,6 +49,8 @@ export function Home({ b, go }: { b: Brainlock; go: Go }) {
         </p>
       )}
 
+      {step === 1 && (
+        <>
       {resumable && (
         <section className="card resume" aria-label="Session in progress">
           <p className="meta">In progress · {modeLabel(resumable.mode, resumable.mode === 'solo' ? resumable.soloLength : undefined)}</p>
@@ -84,20 +91,46 @@ export function Home({ b, go }: { b: Brainlock; go: Go }) {
         </section>
       )}
 
+      <section className="field modes" aria-labelledby="mode-t">
+        <h2 className="field__title" id="mode-t">
+          Choose a mode
+        </h2>
+        <div className="modes__list">
+          {(['skate', 'solo'] as const).map((m) => (
+            <button
+              key={m}
+              className="mode-card"
+              aria-current={st.mode === m || undefined}
+              onClick={() => {
+                b.setSettings({ mode: m })
+                setStep(2)
+              }}
+            >
+              <span className="mode-card__name">{modeLabel(m)}</span>
+              <span className="mode-card__desc">{MODE_DESC[m]}</span>
+              <span className="mode-card__go" aria-hidden="true">
+                →
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+        </>
+      )}
+
+      {step === 2 && (
       <div className="home__cols">
         <div className="home__col">
           <section className="field" aria-labelledby="mode-t">
-            <h2 className="field__title" id="mode-t">
-              Mode
-            </h2>
-            <div className="seg" role="radiogroup" aria-labelledby="mode-t">
-              {(['skate', 'solo'] as const).map((m) => (
-                <button key={m} role="radio" aria-checked={st.mode === m} className="seg__btn" onClick={() => b.setSettings({ mode: m })}>
-                  {modeLabel(m)}
-                </button>
-              ))}
+            <div className="mode-row">
+              <h2 className="field__title" id="mode-t">
+                {modeLabel(st.mode)}
+              </h2>
+              <button className="link" onClick={() => setStep(1)}>
+                Change mode
+              </button>
             </div>
-            <p className="field__desc">{st.mode === 'skate' ? 'Three misses earns a letter. Spell S-K-A-T-E and you’re out.' : 'A fixed run of challenges. Score as much as you can.'}</p>
+            <p className="field__desc">{MODE_DESC[st.mode]}</p>
             {st.mode === 'solo' && (
               <div className="seg seg--sub" role="radiogroup" aria-label="Marathon length">
                 {SOLO_LENGTHS.map((n) => (
@@ -213,7 +246,9 @@ export function Home({ b, go }: { b: Brainlock; go: Go }) {
           </div>
         </div>
       </div>
+      )}
 
+      {step === 2 && (
       <footer className="home__foot">
         <button className="link" onClick={() => go('scores')}>
           Scores &amp; history
@@ -227,6 +262,7 @@ export function Home({ b, go }: { b: Brainlock; go: Go }) {
           </button>
         )}
       </footer>
+      )}
     </main>
   )
 }

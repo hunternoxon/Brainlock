@@ -34,12 +34,21 @@ const shot = (n) => page.screenshot({ path: `${OUT}/${n}.png` })
 const btn = (name) => page.getByRole('button', { name, exact: true })
 const text = async (sel) => (await page.locator(sel).first().textContent())?.trim() ?? ''
 const visible = (name) => btn(name).isVisible()
+/** Pick a mode from either home step */
+const chooseMode = async (name) => {
+  if (!(await page.locator('.mode-card').first().isVisible())) await btn('Change mode').click()
+  await page.getByRole('button', { name: new RegExp('^' + name) }).click()
+}
 
 try {
   await page.goto(base)
   await page.evaluate(() => localStorage.clear())
   await page.reload()
   check('home loads with wordmark', await page.getByRole('heading', { name: 'Brainlock' }).isVisible())
+  check('landing shows only logo, description and mode choice', (await page.locator('.mode-card').count()) === 2 && (await page.locator('.setup-summary').count()) === 0 && (await page.locator('.home__foot').count()) === 0)
+  await shot('00-landing')
+  await page.getByRole('button', { name: /^SKATE/ }).click()
+  check('choosing a mode opens step two', (await page.locator('.setup-summary').count()) === 1 && (await visible('Change mode')))
   check('all 12 obstacles by default', (await text('.setup-summary')).includes('All 12 obstacles'))
   await shot('01-home')
 
@@ -49,6 +58,7 @@ try {
   await page.getByRole('button', { name: 'quarterpipe', exact: true }).click()
   await btn('Done').click()
   await page.reload()
+  await page.getByRole('button', { name: /^SKATE/ }).click()
   check('settings persist across reload', (await text('.stepper__val')) === '4' && (await text('.setup-summary')).includes('11 obstacles'))
 
   // SKATE
@@ -115,7 +125,7 @@ try {
   await btn('Home').click()
 
   // Solo 10
-  await page.getByRole('radio', { name: 'Marathon' }).click()
+  await chooseMode('Marathon')
   await page.getByRole('radio', { name: '10' }).click()
   await btn('Start session').click()
   check('Marathon shows progress, not SKATE letters', (await page.locator('.letters').count()) === 0 && (await text('.progress')).startsWith('1'))
@@ -204,7 +214,7 @@ try {
   await btn('Home').click()
 
   // Local multiplayer: 2-player SKATE to the end
-  await page.getByRole('radio', { name: 'SKATE' }).click()
+  await chooseMode('SKATE')
   await page.getByRole('radio', { name: '2', exact: true }).click()
   await page.getByRole('textbox', { name: 'Player 2 name' }).fill('Sam')
   await btn('Start 2-player match').click()

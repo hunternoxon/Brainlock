@@ -16,6 +16,8 @@ export function App() {
   const b = useBrainlock()
   // Never auto-enter a restored session: Home offers Resume / Start over first
   const [view, setView] = useState<View>('home')
+  // Home is two steps: 1 = logo + description + mode; 2 = everything else
+  const [homeStep, setHomeStep] = useState<1 | 2>(1)
 
   const [playing, setPlaying] = useState<'single' | 'match'>('single')
   const go = (v: View, which?: 'single' | 'match') => {
@@ -45,9 +47,9 @@ export function App() {
 
   return (
     <>
-    {view === 'home' && <Field pulse={JSON.stringify(b.settings)} />}
-    <div className="app" data-view={view === 'play' ? 'play' : view}>
-      {view === 'home' && <Home b={b} go={go} />}
+    {view === 'home' && <Field pulse={`${homeStep}:${JSON.stringify(b.settings)}`} />}
+    <div className="app" data-view={view === 'play' ? 'play' : view} data-step={view === 'home' ? homeStep : undefined}>
+      {view === 'home' && <Home b={b} go={go} step={homeStep} setStep={setHomeStep} />}
       {view === 'play' && ctl && <Play b={b} go={go} ctl={ctl} />}
       {view === 'setup' && <SetupSheet b={b} onClose={() => setView('home')} />}
       {view === 'scores' && <Scores b={b} onClose={() => setView('home')} />}
