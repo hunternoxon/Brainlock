@@ -1,5 +1,5 @@
 import '@fontsource-variable/inter'
-import '@fontsource/marcellus'
+import '@fontsource/gloock'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './ui/App'

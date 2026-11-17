@@ -144,3 +144,7 @@ Flip-ins into quarterpipe stalls and lip tricks (the quarterpipe vocabulary tops
 
 - **Logo:** closer to the Humber badge lettering: pure white, much heavier (stroke-thickened), ~12% wider, more open spacing. A blur-then-threshold filter gives softened, cast-badge corners, with a gentle low-frequency hand-cut wobble.
 - **Home background (still greyscale):** more trippy. The spiralling tunnel twist follows depth, the kaleidoscope (7–9 slices) breathes, the walls ripple radially, a second counter-rotating tile skin creates moving moiré, a greyscale echo/afterimage is layered in, and there's a slow breathing zoom. A selection change still gives the Land-style rush and the Miss-style drip.
+
+## v2.5 (2026-11-17)
+
+- **Logo:** lowercase "brainlock" in Gloock, an open-source (OFL) 70s heavy display serif and the closest free match to Cinema Sunday. Pure white, bundled via @fontsource for offline use. The roughening, jitter and the Marcellus font are removed.

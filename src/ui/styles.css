@@ -298,23 +298,13 @@ h2 {
   width: fit-content;
 }
 .logo__word {
-  display: inline-flex;
-  font-family: 'Marcellus', 'Albertus', 'Optima', serif;
-  font-size: clamp(2.5rem, 12vw, 3.6rem);
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  color: #fff;
-  /* Humber weight: much heavier, wider strokes */
-  -webkit-text-stroke: 0.075em #fff;
-  paint-order: stroke fill;
-  transform: scaleX(1.12);
-  transform-origin: left center;
-  margin-right: 0.12em;
-  filter: url(#logo-rough);
-}
-.logo__word > span {
   display: inline-block;
+  font-family: 'Gloock', 'Cinema Sunday', 'DM Serif Display', Georgia, serif;
+  font-size: clamp(3rem, 15vw, 4.4rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  color: #fff;
 }
 
 /* Page background behind the home card */
