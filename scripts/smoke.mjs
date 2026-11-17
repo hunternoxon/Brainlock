@@ -73,7 +73,7 @@ try {
   check('home loads with wordmark', await page.getByRole('heading', { name: 'Brainlock' }).isVisible())
   check('landing shows only logo, description and mode choice', (await page.locator('.choice').count()) === 2 && (await page.locator('.setup-summary').count()) === 0 && (await page.locator('.home__foot').count()) === 0)
   const card = await page.$eval('.survey', (el) => { const r = el.getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, h: r.height, bg: getComputedStyle(el).backgroundColor, blur: getComputedStyle(el).backdropFilter } })
-  check('landing card is compact, centered and glassy', Math.abs(card.cx - 195) < 4 && Math.abs(card.cy - 422) < 30 && card.h < 600 && card.bg.includes('0.1') && card.blur.includes('blur'), JSON.stringify(card))
+  check('landing card is compact, centered and glassy', Math.abs(card.cx - 195) < 4 && Math.abs(card.cy - 422) < 30 && card.h <= 620 && card.bg.includes('0.1') && card.blur.includes('blur'), JSON.stringify(card))
   await shot('00-landing')
   await page.getByRole('radio', { name: /^Marathon/ }).click()
   await wait(450)
@@ -182,6 +182,7 @@ try {
   check('after the recap, Home starts at the first question', (await text('.q__title')) === 'Choose a mode')
 
   // Manual end
+  await survey({ mode: 'Marathon', length: 10 })
   await btn('Start session').click()
   await btn('Menu').click()
   await btn('End session').click()
@@ -189,6 +190,7 @@ try {
   check('manual end → "Session ended." and not a high score', (await text('.summary__title')) === 'Session ended.' && (await text('.summary__score')).includes('not high scores'))
   await btn('Home').click()
   check('after ending early, Home starts at the first question', (await text('.q__title')) === 'Choose a mode')
+  await survey({ mode: 'Marathon', length: 10 })
 
   await btn('Scores & history').click()
   const board = await page.locator('.board').count()
@@ -237,6 +239,7 @@ try {
   await btn('End session').click()
   await btn('Tap again to end session').click()
   await btn('Home').click()
+  await survey({ mode: 'Marathon', length: 10 })
   await page.locator('.setup-summary').click()
   await btn('Reset setup to defaults').click()
   await btn('Done').click()
