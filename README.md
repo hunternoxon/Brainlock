@@ -4,6 +4,10 @@ A personal fingerboarding challenge game. One trick at a time, matched to your l
 
 Status: **Trick Intelligence v2, awaiting real playtest.** See `output/TRICK_INTELLIGENCE_V2_REPORT.md` (latest pass), `docs/TRICK_INTELLIGENCE_V2_DECISIONS.md` (rules and flags) and `output/WORK_LOG.md` (history). The previous build is tagged `v1-first-playable`.
 
+## Play it
+
+Live build (auto-deployed from `main` by GitHub Actions): see the repository's **About → website** link, or `https://<your-github-username>.github.io/brainlock/`.
+
 ## Run it
 
 Requires Node 20+ (developed on Node 26.13, npm 11.20).
